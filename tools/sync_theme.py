@@ -66,6 +66,9 @@ TOKENS = ROOT / "tokens"
 DOCS = ROOT / "docs"
 
 NAME = "ThemeForge"
+#: Names this bundle shipped under before; a copy whose VERSION carries one is still
+#: this bundle (ThemeForge was released as unifyingTheme). Same list as tools/update.py.
+LEGACY_NAMES = ("unifyingTheme",)
 REPO = "LaserLloyd/ThemeForge"
 BASE_SLUG = "purple"
 GROUNDS = {"oled", "dark", "light"}
@@ -687,7 +690,8 @@ def require_bundle_folder(folder: Path) -> None:
     if not folder.is_dir() or not any(folder.iterdir()):
         return
     version = folder / "VERSION"
-    if not (version.is_file() and version.read_text(encoding="utf-8", errors="replace").startswith(NAME + " ")):
+    names = tuple(n + " " for n in (NAME, *LEGACY_NAMES))
+    if not (version.is_file() and version.read_text(encoding="utf-8", errors="replace").startswith(names)):
         raise SyncError(f"{folder} is not empty and is not a copy of ui-theme/ (no VERSION); "
                         "point --to / bundle_dir at the ui-theme folder itself, e.g. static/ui-theme")
 

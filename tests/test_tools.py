@@ -176,6 +176,16 @@ class RegistryTests(unittest.TestCase):
         self.assertIn("not a copy of ui-theme", out)
         self.assertTrue((static / "index.html").is_file())
 
+    def test_install_to_a_copy_under_the_old_name(self):
+        """ThemeForge shipped as unifyingTheme: install --to accepts such a copy."""
+        target = self.base / "old" / "ui-theme"
+        target.mkdir(parents=True)
+        (target / "VERSION").write_text("unifyingTheme 1.0.0 68bd24d58a9c\n", encoding="utf-8")
+        (target / "ui-theme.css").write_text("/* old */", encoding="utf-8")
+        code, out = quiet(sync.main, ["install", "--to", str(target), "--quiet"])
+        self.assertEqual(code, 0, out)
+        self.assertTrue((target / "VERSION").read_text(encoding="utf-8").startswith("ThemeForge "))
+
     def test_install_needs_a_target(self):
         code, out = quiet(sync.main, ["install"])
         self.assertEqual(code, 2)
