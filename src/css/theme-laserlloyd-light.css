@@ -1,0 +1,203 @@
+/* theme-laserlloyd-light.css — OPT-IN
+   Ground: light · family: laserlloyd · color-scheme: light
+   theme-color: #f2f5f9
+   fonts: same as theme-laserlloyd (Inter + Space Grotesk + system mono).
+
+   Values are taken from the live LaserLloyd.com light mode. (D) = derived.
+
+   Two nudges from the site's values, made because this is a new theme:
+   - muted  #546675 → #506270 (was 5.94:1 on --surface-2, floor is 6:1)
+   - muted-2 #6d7f8e → #627585 (was 4.14:1 on --surface-2, floor is 4.5:1) */
+
+[data-palette="laserlloyd-light"] {
+  color-scheme: light;
+
+  --surface-void:    #cdd7e2;  /* D */
+  --surface-0:       #f2f5f9;
+  --surface-1:       #f8fafc;
+  --surface-2:       #ffffff;
+  --surface-3:       #e9eef5;
+  --surface-4:       #dfe6ee;
+  --surface-sunken:  #e9eef5;  /* D */
+  --surface-overlay: #ffffff;  /* D */
+  --glass-1:         rgba(255,255,255,.82);  /* D */
+  --glass-2:         rgba(255,255,255,.92);  /* D */
+  --glass-3:         rgba(242,245,249,.88);  /* D — header */
+  --glass-highlight: rgba(255,255,255,.72);  /* D */
+  --code-bg:         #101820;  /* D — code blocks stay dark in every theme */
+
+  --text-primary:    #16212c;
+  --text-secondary:  #506270;  /* nudged */
+  --text-tertiary:   #576876;  /* nudged */
+  --text-disabled:   #74828e;  /* D */
+  --text-inverse:    #ffffff;  /* D */
+  --text-link:       #0d69b4;
+  --text-link-hover: #0a5a9c;
+  --on-accent:       #ffffff;
+  --on-danger:       #ffffff;  /* D */
+  --on-success:      #ffffff;  /* D */
+  --on-warning:      #ffffff;  /* D */
+  --on-media:        #ffffff;  /* D */
+  --on-media-muted:  #e4ebf2;  /* D */
+
+  --accent:          #0b78d0;
+  --accent-hover:    #0d69b4;
+  --accent-pressed:  #0a5a9c;  /* D */
+  --accent-subtle:   rgba(11,120,208,.08);  /* D */
+  --accent-muted:    rgba(11,120,208,.20);  /* D */
+  --accent-glow:     rgba(11,120,208,.26);  /* D */
+  --accent-rgb:      11,120,208;
+  --accent-2:        #087569;
+  --accent-2-subtle: rgba(10,143,128,.08);  /* D */
+
+  /* CTA plate — label cut out to the page background, so the plate colour is
+     dark enough for a near-white cut-out to clear AA (4.66:1). */
+  --cta:              #96640a;
+  --cta-hover:        #845608;
+  --cta-pressed:      #6f4806;  /* D */
+  --on-cta:           #f2f5f9;
+  --cta-shadow:       0 10px 30px rgba(20,35,50,.12);
+  --cta-shadow-hover: 0 14px 36px rgba(20,35,50,.18);  /* D */
+  --cta-inset:        inset 0 1px 0 rgba(255,255,255,.30),
+                      inset 0 -6px 12px rgba(0,0,0,.20);  /* D */
+  --highlight:        #8a5c08;  /* D — amber ink, AA on white */
+  --highlight-hover:  #6f4806;  /* D */
+  --highlight-subtle: rgba(245,166,35,.14);
+  --highlight-glow:   rgba(245,166,35,.32);  /* D */
+  --on-highlight:     #ffffff;  /* D */
+  --amber-fill:       #f5a623;  /* site amber, fills only — never as text */
+  --amber-fill-hover: #e2960f;
+  --on-amber-fill:    #241703;
+
+  --border-subtle:       #e4eaf1;  /* D */
+  --border:              #d3dce6;
+  --border-strong:       #79899a;  /* D — control boundary */
+  --divider:             #d3dce6;
+  --focus-ring:          #0b78d0;
+  --focus-ring-width:    2px;
+  --focus-ring-offset:   2px;
+  --glass-stroke:        rgba(22,33,44,.10);  /* D */
+  --glass-stroke-strong: rgba(11,120,208,.32);/* D */
+
+  --success: #15803d; --success-hover: #179245;
+  --success-subtle: #e3f0e8; --success-text: #147a3a;
+  --success-border: rgba(21,128,61,.34);
+  --warning: #b4520c; --warning-hover: #9a4409;  /* D */
+  --warning-subtle: #f6eae2; --warning-text: #ab4e0b;
+  --warning-border: rgba(180,82,12,.40);
+  --danger: #c13a3a; --danger-hover: #a82f2f;  /* D — nudged from the site's #d64545 so white-on-danger clears AA */
+  --danger-subtle: #f8e9e9; --danger-text: #c03636;
+  --danger-border: rgba(193,58,58,.40);
+  --info: #3a56b0; --info-hover: #2f4899;  /* D */
+  --info-subtle: #dfe4f2; --info-text: #3a56b0;
+  --info-border: rgba(58,86,176,.36);
+  --live: #087a6d; --live-hover: #066458;  /* D */
+  --live-subtle: #d7eae8; --live-text: #076e62;
+  --live-border: rgba(10,143,128,.40);
+  --idle: #8a5c08; --idle-hover: #6f4806;  /* D */
+  --idle-subtle: #ece5d7; --idle-text: #8a5c08;
+  --idle-border: rgba(138,92,8,.34);
+  --offline: #8d9dab; --offline-hover: #78899a;  /* D */
+  --offline-subtle: #e4e7eb; --offline-text: #576876;
+  --offline-border: rgba(141,157,171,.42);
+  --heartbeat: #a8326c; --heartbeat-hover: #90295c;  /* D */
+  --heartbeat-subtle: #f1dee7; --heartbeat-text: #a8326c;
+  --heartbeat-border: rgba(168,50,108,.34);
+  --on-info: #ffffff; --on-live: #ffffff; --on-idle: #ffffff;  /* D */
+  --on-offline: #16212c; --on-heartbeat: #ffffff;              /* D */
+
+  --scrim:        rgba(20,35,50,.46);  /* D */
+  --scrim-strong: rgba(10,20,30,.80);  /* D */
+  --scrim-light:  rgba(20,35,50,.26);  /* D */
+  --scrim-media:  linear-gradient(to top, rgba(10,20,30,.88), rgba(10,20,30,0)); /* D */
+  --backdrop-blur: 14px;  /* D */
+
+  --bubble-user-bg:        #c9dff4;  /* D */
+  --bubble-user-text:      #16212c;  /* D */
+  --bubble-user-border:    #a8cbec;  /* D */
+  --bubble-assistant-bg:   #ffffff;  /* D */
+  --bubble-assistant-text: #2e3d4a;  /* D — site prose body */
+  --quote-bar:             #0b78d0;  /* D */
+  --mark-bg:               #ffe4a8;  /* D */
+  --md-bold:               #0c141c;  /* D */
+  --md-italic:             #076e62;  /* D */
+  --md-bolditalic:         #076e62;  /* D */
+  --md-bolditalic-glow:    rgba(7,110,98,.20);  /* D */
+  --rp-speech:  #16212c;  /* D */
+  --rp-action:  #506270;  /* D */
+  --rp-thought: #076e62;  /* D */
+  --rp-whisper: #627585;  /* D */
+  --rp-ooc:     var(--text-tertiary);
+  --rp-shout:   #b4520c;  /* D */
+  --rp-shout-glow: rgba(180,82,12,.22);  /* D */
+  --rp-critical: #b62f2f;  /* D */
+  --rp-critical-glow: rgba(182,47,47,.24);  /* D */
+  --diff-add-bg: rgba(21,128,61,.12); --diff-add-text: #10642f;      /* D */
+  --diff-remove-bg: rgba(214,69,69,.12); --diff-remove-text: #a82d2d; /* D */
+
+  /* Syntax — D, on the dark --code-bg */
+  --syn-fg: #dbe6f0;      --syn-bg: #101820;
+  --syn-comment: #8298a8; --syn-keyword: #9fbcff; --syn-string: #4fe3d0;
+  --syn-number: #ffc36b;  --syn-function: #62bcff; --syn-title: #62bcff;
+  --syn-type: #7cf2e6;    --syn-variable: #ff9fc0; --syn-attr: #ffd28f;
+  --syn-tag: #9fbcff;     --syn-builtin: #7cf2e6;  --syn-literal: #ffc36b;
+  --syn-meta: #93a6b6;    --syn-operator: #c4d4e2; --syn-punctuation: #aabdcc;
+  --syn-deletion: #ffa6a6; --syn-addition: #8cefb0;
+
+  /* Categorical — D, ≥3:1 on --surface-0 */
+  --cat-1: #0b78d0; --cat-2: #0a8f80; --cat-3: #8a5c08; --cat-4: #a8326c;
+  --cat-5: #3a56b0; --cat-6: #15803d; --cat-7: #b4520c; --cat-8: #076e62;
+  --cat-9: #6b3fa0; --cat-10: #c03636; --cat-11: #4f6b13; --cat-12: #2c5670;
+  --chart-grid: rgba(22,33,44,.09);  /* D */
+  --chart-axis: #788794;             /* D */
+
+  --canvas-mask:    rgba(20,35,50,.52);  /* D */
+  --canvas-handle:  #ffffff;             /* light: it sits on the dark mask */
+  --canvas-guide:   rgba(11,120,208,.58);/* D */
+  --canvas-outline: #16212c;             /* D */
+
+  --font-sans:    'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-serif:   var(--font-sans);
+  --font-display: 'Space Grotesk', 'Inter', system-ui, sans-serif;
+  --font-mono:    ui-monospace, SFMono-Regular, 'Cascadia Code', Menlo, Consolas, monospace;
+
+  --radius-xs: 7px;
+  --radius-sm: 9px;
+  --radius-md: 11px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+
+  --shadow-1: 0 1px 3px rgba(20,35,50,.08);   /* D */
+  --shadow-2: 0 10px 30px rgba(20,35,50,.12);
+  --shadow-3: 0 20px 52px rgba(20,35,50,.18); /* D */
+  --shadow-4: 0 32px 78px rgba(20,35,50,.24); /* D */
+  --shadow-glow:  0 0 0 1px rgba(11,120,208,.28), 0 10px 30px rgba(20,35,50,.14); /* D */
+  --shadow-inset: inset 0 1px 0 rgba(255,255,255,.80);  /* D */
+
+  --selection-bg:    rgba(11,120,208,.20);  /* D */
+  --selection-text:  #16212c;               /* D */
+  --scrollbar-track: transparent;
+  --scrollbar-thumb: #c4cfda;               /* D */
+  --scrollbar-hover: #a6b4c2;               /* D */
+
+  --prose-text:    #2e3d4a;
+  --table-zebra:   rgba(22,33,44,.025);  /* D */
+  --table-total:   rgba(245,166,35,.12); /* D */
+  --beam-dot-d:    10px;
+  --motion-site:   140ms;
+  --hatch:         repeating-linear-gradient(-45deg,
+                     rgba(22,33,44,.030) 0 1px, transparent 1px 7px);  /* D */
+  --wash-blue:     radial-gradient(900px 520px at 88% -8%, rgba(11,120,208,.08), transparent 70%);  /* D */
+  --wash-cyan:     radial-gradient(760px 480px at 8% -6%, rgba(10,143,128,.06), transparent 70%);   /* D */
+  /* Control-boundary fill. --surface-4 is an elevation step and can never be
+     3:1 from its neighbouring surface while still reading as subtle elevation,
+     so the slider track / toggle off-track role gets its own token.
+     3.38:1 on surface-2, 3.09:1 on surface-0. */
+  --control-track: #888c91;
+
+}
+
+[data-palette="laserlloyd-light"] .ambient {
+  background-image: var(--wash-blue), var(--wash-cyan), var(--hatch);
+  background-color: var(--surface-0);
+}

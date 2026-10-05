@@ -1,0 +1,422 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>ui-theme runtime tests</title>
+<style>
+  /* Harness chrome only; the frames under test carry the themes. */
+  body { font: 14px/1.5 system-ui, sans-serif; margin: 20px; }
+  .pass::marker { content: "✔ "; }
+  .fail { font-weight: 700; }
+  .fail::marker { content: "✘ "; }
+  /* Frames render off-screen (not display: none), so media queries and
+     focus behave as on a real page. */
+  iframe { position: absolute; left: -10000px; top: 0; width: 800px; height: 600px; border: 0; }
+  code { font-family: ui-monospace, Consolas, monospace; }
+</style>
+</head>
+<body>
+<h1>ui-theme.js runtime tests</h1>
+<p id="summary">running…</p>
+<ol id="results"></ol>
+<script>
+(async function () {
+  'use strict';
+  // The bundle as an app loads it: ui-theme/ at the repository root.
+  const RUNTIME = new URL('../ui-theme/ui-theme.js', location.href).href;
+  const CSS = ['ui-theme-base.css', 'ui-components.css', 'ui-theme.css']
+    .map((n) => new URL(`../ui-theme/${n}`, location.href).href);
+  const CORE = 'purple,midnight-gold,glacier,forest,paper,daylight';
+  const results = [];
+  const tick = (ms = 30) => new Promise((r) => setTimeout(r, ms));
+
+  function check(name, actual, expected) {
+    const ok = JSON.stringify(actual) === JSON.stringify(expected);
+    results.push({ name, ok, detail: ok ? '' : `got ${JSON.stringify(actual)}, want ${JSON.stringify(expected)}` });
+  }
+
+  function preset(values) {
+    for (const [k, v] of Object.entries(values)) {
+      if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v);
+    }
+  }
+
+  function frame({ attrs = {}, manifest = null, head = '', css = false, sandbox = null, probe = '' }) {
+    return new Promise((resolve) => {
+      const f = document.createElement('iframe');
+      if (sandbox !== null) f.setAttribute('sandbox', sandbox);
+      const attrText = Object.entries(attrs).map(([k, v]) => ` ${k}="${v}"`).join('');
+      const m = manifest ? `<script>window.UI_THEME_MANIFEST = ${JSON.stringify(manifest)};<\/script>` : '';
+      // Transitions off, so a colour read right after a theme switch is the final one.
+      const links = css ? CSS.map((h) => `<link rel="stylesheet" href="${h}">`).join('') +
+        '<style>*, *::before, *::after { transition: none !important; }</style>' : '';
+      f.srcdoc = `<!doctype html><html><head>${head}${m}<script src="${RUNTIME}"${attrText}><\/script>${links}</head>` +
+        `<body><select id="p" data-ui-theme-picker></select>${probe}</body></html>`;
+      f.addEventListener('load', () => resolve(f), { once: true });
+      document.body.appendChild(f);
+    });
+  }
+
+  const attrsFor = (key, extra = {}) => Object.assign(
+    { 'data-themes': CORE, 'data-default': 'glacier', 'data-storage-key': key }, extra);
+  const html = (f) => f.contentDocument.documentElement;
+  const metaOf = (f, name) => {
+    const el = f.contentDocument.querySelector(`meta[name="${name}"]`);
+    return el ? el.getAttribute('content') : null;
+  };
+
+  // 1. No stored value -> default, attributes, theme-color meta created, nothing written.
+  preset({ t1: null });
+  const f1 = await frame({ attrs: attrsFor('t1') });
+  check('default applied: data-palette', html(f1).getAttribute('data-palette'), 'glacier');
+  check('default applied: data-theme (oled -> amoled)', html(f1).getAttribute('data-theme'), 'amoled');
+  check('theme-color meta created', metaOf(f1, 'theme-color'), '#000000');
+  check('current()', f1.contentWindow.UITheme.current(), 'glacier');
+  check('init does not write storage', localStorage.getItem('t1'), null);
+
+  // 2. Stored light theme.
+  preset({ t2: 'paper' });
+  const f2 = await frame({ attrs: attrsFor('t2') });
+  check('stored paper: data-palette', html(f2).getAttribute('data-palette'), 'paper');
+  check('stored paper: data-theme', html(f2).getAttribute('data-theme'), 'light');
+  check('stored paper: theme-color', metaOf(f2, 'theme-color'), '#e6d2a8');
+
+  // 3. Stored slug the app does not enable -> default.
+  preset({ t3: 'laserlloyd' });
+  const f3 = await frame({ attrs: attrsFor('t3') });
+  check('disabled slug falls back', html(f3).getAttribute('data-palette'), 'glacier');
+
+  // 4. Purple default -> no attribute at all.
+  preset({ t4: null });
+  const f4 = await frame({ attrs: attrsFor('t4', { 'data-default': 'purple' }) });
+  check('purple: no data-palette', html(f4).hasAttribute('data-palette'), false);
+  check('purple: data-theme dark', html(f4).getAttribute('data-theme'), 'dark');
+  check('purple: theme-color', metaOf(f4, 'theme-color'), '#0e0e1b');
+
+  // 5-7. Manifest config with legacy migration and a mirror attribute.
+  const manifest = (key) => ({
+    app: 'test', themes: CORE.split(','), default: 'midnight-gold', storageKey: key, families: false,
+    legacy: { key: key + '-legacy', map: { 'old-dark': 'midnight-gold', 'old-light': 'purple' } },
+    mirrorAttr: 'data-skin', fontsHref: null,
+  });
+  preset({ t5: null, 't5-legacy': 'old-light' });
+  const f5 = await frame({ manifest: manifest('t5') });
+  check('legacy old-light -> purple: no data-palette', html(f5).hasAttribute('data-palette'), false);
+  check('legacy old-light: mirror attr', html(f5).getAttribute('data-skin'), 'purple');
+  check('legacy old-light: new key written', localStorage.getItem('t5'), 'purple');
+  check('legacy key kept', localStorage.getItem('t5-legacy'), 'old-light');
+
+  preset({ t6: null, 't6-legacy': 'old-dark' });
+  const f6 = await frame({ manifest: manifest('t6') });
+  check('legacy old-dark -> midnight-gold', html(f6).getAttribute('data-palette'), 'midnight-gold');
+  check('legacy old-dark: new key written', localStorage.getItem('t6'), 'midnight-gold');
+
+  preset({ t7: null, 't7-legacy': 'weird' });
+  const f7 = await frame({ manifest: manifest('t7') });
+  check('unknown legacy value -> default', html(f7).getAttribute('data-palette'), 'midnight-gold');
+  check('unknown legacy value: nothing written', localStorage.getItem('t7'), null);
+
+  preset({ t7b: 'glacier', 't7b-legacy': 'old-light' });
+  const f7b = await frame({ manifest: manifest('t7b') });
+  check('new key wins over legacy', html(f7b).getAttribute('data-palette'), 'glacier');
+
+  // 8. set(), events, onChange.
+  const w1 = f1.contentWindow;
+  const seen = [];
+  w1.UITheme.onChange((d) => seen.push([d.slug, d.previous]));
+  let evented = null;
+  f1.contentDocument.addEventListener('ui-theme-change', (e) => { evented = e.detail.slug; });
+  check('set returns slug', w1.UITheme.set('daylight'), 'daylight');
+  check('set: data-palette', html(f1).getAttribute('data-palette'), 'daylight');
+  check('set: data-theme', html(f1).getAttribute('data-theme'), 'light');
+  check('set: storage', localStorage.getItem('t1'), 'daylight');
+  check('set: theme-color', metaOf(f1, 'theme-color'), '#ffffff');
+  check('set: event detail', evented, 'daylight');
+  check('set: bogus -> default', w1.UITheme.set('bogus'), 'glacier');
+  check('onChange log', seen, [['daylight', 'glacier'], ['glacier', 'daylight']]);
+  check('set same theme: no duplicate event', (w1.UITheme.set('glacier'), seen.length), 2);
+
+  // 9. Picker auto-mounted and synced both ways.
+  const sel = f1.contentDocument.getElementById('p');
+  check('picker options', Array.from(sel.options).map((o) => o.value), CORE.split(','));
+  check('picker labels', sel.options[1].textContent, 'Midnight Gold');
+  check('picker value follows set()', (w1.UITheme.set('paper'), sel.value), 'paper');
+  sel.value = 'forest';
+  sel.dispatchEvent(new w1.Event('change'));
+  check('picker change -> set', w1.UITheme.current(), 'forest');
+  check('picker aria-label', sel.getAttribute('aria-label'), 'Theme');
+
+  // 10. Another document writing the key -> storage event -> repaint.
+  localStorage.setItem('t1', 'daylight');
+  await tick(80);
+  check('cross-tab storage event', html(f1).getAttribute('data-palette'), 'daylight');
+  check('cross-tab: picker synced', sel.value, 'daylight');
+
+  // 11. Families.
+  preset({ t9: null });
+  const f9 = await frame({ attrs: { 'data-themes': 'laserlloyd,laserlloyd-light,purple', 'data-default': 'laserlloyd', 'data-storage-key': 't9', 'data-families': 'true' } });
+  const w9 = f9.contentWindow;
+  check('partner()', w9.UITheme.partner(), 'laserlloyd-light');
+  check('partner(purple) is null', w9.UITheme.partner('purple'), null);
+  check('toggleFamily -> light', w9.UITheme.toggleFamily(), 'laserlloyd-light');
+  check('toggleFamily: data-theme', html(f9).getAttribute('data-theme'), 'light');
+  check('toggleFamily -> dark', w9.UITheme.toggleFamily(), 'laserlloyd');
+  check('picker groups opt-in themes', f9.contentDocument.querySelectorAll('#p optgroup').length, 2);
+  check('families off: toggle is a no-op', f1.contentWindow.UITheme.toggleFamily(), null);
+
+  // 12. Existing color-scheme meta is kept in step.
+  preset({ t11: 'daylight' });
+  const f11 = await frame({ attrs: attrsFor('t11'), head: '<meta name="color-scheme" content="dark">' });
+  check('color-scheme meta updated', metaOf(f11, 'color-scheme'), 'light');
+
+  // 13. Tokens resolve from the stylesheets.
+  preset({ t12: 'paper' });
+  const f12 = await frame({ attrs: attrsFor('t12'), css: true });
+  await tick(50);
+  const w12 = f12.contentWindow;
+  check('token(--surface-0) on paper', w12.UITheme.token('--surface-0'), '#e6d2a8');
+  check('tokens() accepts bare names', w12.UITheme.tokens(['--accent', 'surface-2']), { '--accent': '#a3241c', 'surface-2': '#efdfb8' });
+  w12.UITheme.set('purple');
+  check('purple tokens come from :root', w12.UITheme.token('--surface-0'), '#0e0e1b');
+  check('color() resolves a token to rgb()', w12.UITheme.color('--surface-0'), 'rgb(14, 14, 27)');
+  f12.contentDocument.body.innerHTML = '';
+  check('color() survives the body being replaced', w12.UITheme.color('--surface-0'), 'rgb(14, 14, 27)');
+  check('colors() resolves color-mix() tokens', /^rgba?\(/.test(w12.UITheme.colors(['--seq-2'])['--seq-2']), true);
+  check('theme() metadata', w12.UITheme.theme('glacier').ground, 'oled');
+  check('list() is a copy', (w12.UITheme.list()[0].name = 'x', w12.UITheme.list()[0].name), 'Purple');
+
+  // 14. Storage blocked (private mode / blocked site data: the accessor throws)
+  //     -> still paints the default, and set() still repaints.
+  //     (An opaque-origin sandbox would be the real thing, but the preview
+  //     browser refuses its subresource requests, so the accessor is stubbed.)
+  const blocker = `<script>Object.defineProperty(window, 'localStorage', { configurable: true, get() { throw new DOMException('blocked', 'SecurityError'); } });<\/script>`;
+  preset({ t13: 'paper' });
+  const f13 = await frame({ attrs: attrsFor('t13'), head: blocker });
+  const w13 = f13.contentWindow;
+  check('blocked storage: default painted', [html(f13).getAttribute('data-palette'), html(f13).getAttribute('data-theme'), w13.UITheme.current()], ['glacier', 'amoled', 'glacier']);
+  check('blocked storage: set still works', [w13.UITheme.set('forest'), html(f13).getAttribute('data-palette')], ['forest', 'forest']);
+  check('blocked storage: real storage untouched', localStorage.getItem('t13'), 'paper');
+
+  // 15. Key cleared in another document -> repaint the default.
+  localStorage.setItem('t1', 'paper');
+  await tick(80);
+  check('cross-tab set before clear', html(f1).getAttribute('data-palette'), 'paper');
+  localStorage.removeItem('t1');
+  await tick(80);
+  check('cross-tab clear -> default', html(f1).getAttribute('data-palette'), 'glacier');
+
+  // 16. onChange unsubscribe.
+  const w16 = f1.contentWindow;
+  const seen16 = [];
+  const off = w16.UITheme.onChange((d) => seen16.push(d.slug));
+  w16.UITheme.set('forest');
+  off();
+  w16.UITheme.set('daylight');
+  check('onChange unsubscribe stops delivery', seen16, ['forest']);
+
+  // 17. mountPicker into a container, and the double-mount guard.
+  const d1 = f1.contentDocument;
+  const host = d1.createElement('div');
+  d1.body.appendChild(host);
+  const made = w16.UITheme.mountPicker(host, { label: 'Colour theme' });
+  check('mountPicker(container) appends a select', [made && made.tagName, host.querySelectorAll('select').length], ['SELECT', 1]);
+  check('mountPicker label option', made.getAttribute('aria-label'), 'Colour theme');
+  w16.UITheme.mountPicker(made);
+  check('remount rebuilds options instead of duplicating them', made.options.length, 6);
+  check('remount keeps the mounted guard', made.__uiThemeMounted, true);
+  made.value = 'paper';
+  made.dispatchEvent(new w16.Event('change'));
+  check('remounted picker still drives the theme', html(f1).getAttribute('data-palette'), 'paper');
+  w16.UITheme.set('forest');
+  check('remounted picker still follows the theme', made.value, 'forest');
+
+  // 18. list() puts a default the picker does not offer first.
+  preset({ t18: null });
+  const f18 = await frame({ attrs: { 'data-themes': 'glacier,paper', 'data-default': 'purple', 'data-storage-key': 't18' } });
+  check('list() prepends a non-offered default', f18.contentWindow.UITheme.list().map((t) => t.slug), ['purple', 'glacier', 'paper']);
+  check('non-offered default still paints', html(f18).hasAttribute('data-palette'), false);
+
+  // 19. Legacy value mapped onto a theme this app does not offer: ignored,
+  //     nothing stored, default painted.
+  preset({ t19: null, 't19-legacy': 'old-dark' });
+  const f19 = await frame({ manifest: {
+    app: 'test', themes: ['purple', 'glacier'], default: 'glacier', storageKey: 't19', families: false,
+    legacy: { key: 't19-legacy', map: { 'old-dark': 'midnight-gold' } }, mirrorAttr: null, fontsHref: null,
+  } });
+  check('legacy -> disabled theme: default painted', html(f19).getAttribute('data-palette'), 'glacier');
+  check('legacy -> disabled theme: nothing stored', localStorage.getItem('t19'), null);
+
+  // 20. data-default="auto": follows the OS colour scheme until a choice is stored.
+  preset({ t20: null });
+  const f20 = await frame({ attrs: { 'data-themes': CORE, 'data-default': 'auto', 'data-default-dark': 'forest',
+                                     'data-default-light': 'paper', 'data-storage-key': 't20' } });
+  const w20 = f20.contentWindow;
+  const light20 = w20.matchMedia('(prefers-color-scheme: light)').matches;
+  check('auto: paints the OS scheme default', w20.UITheme.current(), light20 ? 'paper' : 'forest');
+  check('auto: config.auto', w20.UITheme.config.auto, true);
+  check('auto: nothing stored', localStorage.getItem('t20'), null);
+  const sel20 = f20.contentDocument.getElementById('p');
+  check('auto: picker offers Match system first', [sel20.options[0].value, sel20.options[0].textContent], ['', 'Match system']);
+  check('auto: picker shows Match system while nothing is stored', sel20.value, '');
+  w20.UITheme.set('glacier');
+  check('auto: a pick is stored', localStorage.getItem('t20'), 'glacier');
+  check('auto: picker shows the pick', sel20.value, 'glacier');
+  sel20.value = '';
+  sel20.dispatchEvent(new w20.Event('change'));
+  check('auto: Match system clears the choice', localStorage.getItem('t20'), null);
+  check('auto: Match system repaints the OS default', w20.UITheme.current(), light20 ? 'paper' : 'forest');
+  check('auto: picker back on Match system', sel20.value, '');
+
+  // 21. auto without light/dark defaults: the first enabled theme of that kind.
+  preset({ t21: null });
+  const f21 = await frame({ attrs: { 'data-themes': 'glacier,daylight,paper', 'data-default': 'auto', 'data-storage-key': 't21' } });
+  const light21 = f21.contentWindow.matchMedia('(prefers-color-scheme: light)').matches;
+  check('auto: first enabled theme of the scheme', f21.contentWindow.UITheme.current(), light21 ? 'daylight' : 'glacier');
+
+  // 22. reset() without auto returns to the fixed default.
+  preset({ t22: 'paper' });
+  const f22 = await frame({ attrs: attrsFor('t22') });
+  check('reset() -> default', f22.contentWindow.UITheme.reset(), 'glacier');
+  check('reset() clears storage', localStorage.getItem('t22'), null);
+  check('no auto: picker has no Match system option', f22.contentDocument.getElementById('p').options[0].value, 'purple');
+
+  // 23. Components: a checked switch is filled with --selected; a disabled one is not.
+  const d12 = f12.contentDocument;
+  d12.body.insertAdjacentHTML('beforeend',
+    '<input type="checkbox" role="switch" class="ui-switch" id="sw1" checked>' +
+    '<input type="checkbox" role="switch" class="ui-switch" id="sw2" checked disabled>' +
+    '<input type="checkbox" role="switch" class="ui-switch" id="sw3">' +
+    '<span id="probe" style="color: var(--selected)"></span>');
+  const cs = (id, prop) => w12.getComputedStyle(d12.getElementById(id))[prop];
+  for (const slug of ['purple', 'glacier', 'paper']) {
+    w12.UITheme.set(slug);
+    check(`${slug}: checked switch is filled with --selected`, cs('sw1', 'backgroundColor'), cs('probe', 'color'));
+    check(`${slug}: off switch has no fill`, cs('sw3', 'backgroundColor'), 'rgba(0, 0, 0, 0)');
+    check(`${slug}: disabled checked switch has no fill`, cs('sw2', 'backgroundColor'), 'rgba(0, 0, 0, 0)');
+    check(`${slug}: disabled switch outline is dashed`, cs('sw2', 'outlineStyle'), 'dashed');
+  }
+
+  // 25. Auto mode: storing the theme that is already showing still moves the
+  //     picker off "Match system", and reset() moves it back (no slug change).
+  preset({ t25: null });
+  const f25 = await frame({ attrs: { 'data-themes': CORE, 'data-default': 'auto', 'data-default-dark': 'forest',
+                                     'data-default-light': 'paper', 'data-storage-key': 't25' } });
+  const w25 = f25.contentWindow, sel25 = f25.contentDocument.getElementById('p');
+  const now25 = w25.UITheme.current();
+  w25.UITheme.set(now25);
+  check('auto: set(current) shows the slug in the picker', sel25.value, now25);
+  w25.UITheme.reset();
+  check('auto: reset() shows Match system again', sel25.value, '');
+
+  // 26. A manifest may give themes as a comma string.
+  preset({ t26: null });
+  const f26 = await frame({ manifest: { themes: 'glacier,paper', default: 'paper', storageKey: 't26' } });
+  check('manifest with comma-string themes paints', [html(f26).getAttribute('data-palette'),
+        f26.contentWindow.UITheme.list().map((t) => t.slug)], ['paper', ['glacier', 'paper']]);
+
+  // 27. localStorage.clear() in another document repaints the default.
+  localStorage.setItem('t25', 'glacier');
+  await tick(80);
+  check('cross-tab set before clear()', html(f25).getAttribute('data-palette'), 'glacier');
+  const keep = {};
+  for (const k of Object.keys(localStorage)) keep[k] = localStorage.getItem(k);
+  localStorage.clear();
+  await tick(80);
+  check('cross-tab clear() -> default', w25.UITheme.current(), now25);
+  for (const [k, v] of Object.entries(keep)) if (k !== 't25') localStorage.setItem(k, v);
+
+  // 28. A picker added after load mounts itself.
+  const late = f25.contentDocument.createElement('select');
+  late.setAttribute('data-ui-theme-picker', '');
+  f25.contentDocument.body.appendChild(late);
+  await tick(30);
+  check('late picker is filled', late.options.length, 7);
+
+  // 29. ui-components.js and the Quasar adapter load next to the runtime.
+  preset({ t29: null });
+  const extras = `<script src="${new URL('../ui-theme/ui-components.js', location.href).href}"><\/script>` +
+                 `<script src="${new URL('../ui-theme/adapters/quasar.js', location.href).href}"><\/script>`;
+  const f29 = await frame({ attrs: attrsFor('t29'), css: true, probe: extras });
+  await tick(50);
+  const w29 = f29.contentWindow, d29 = f29.contentDocument;
+  check('UIComponents API', ['confirm', 'alert', 'prompt', 'toast'].map((k) => typeof w29.UIComponents[k]),
+        ['function', 'function', 'function', 'function']);
+  w29.UIComponents.toast('Saved <b>x</b>', { kind: 'success', timeout: 0 });
+  const toast = d29.querySelector('.ui-toasts .ui-toast--success');
+  check('toast shows text, never HTML', [toast && toast.textContent, d29.querySelector('.ui-toast b')], ['Saved <b>x</b>', null]);
+  w29.UIComponents.confirm({ title: 'Delete?', message: 'Gone for good.', danger: true });
+  const dlg = d29.querySelector('dialog.ui-dialog');
+  check('confirm opens a modal dialog', [!!dlg, dlg && dlg.open, dlg && dlg.querySelector('.ui-dialog__title').textContent], [true, true, 'Delete?']);
+  check('danger confirm focuses Cancel', d29.activeElement && d29.activeElement.textContent, 'Cancel');
+  check('confirm: Cancel then the danger action', Array.from(dlg.querySelectorAll('.ui-dialog__actions button')).map((b) => [b.textContent, b.className]),
+        [['Cancel', 'ui-btn'], ['OK', 'ui-btn ui-btn--danger']]);
+  check('confirm: labelled by its title', d29.getElementById(dlg.getAttribute('aria-labelledby')).textContent, 'Delete?');
+  if (dlg) dlg.remove();
+
+  // 30. Printing: a dark theme prints in a light one, then comes back; nothing is stored.
+  preset({ t30: 'glacier' });
+  const f30 = await frame({ attrs: attrsFor('t30') });
+  const w30 = f30.contentWindow;
+  const printEvents = [];
+  w30.UITheme.onChange((d) => printEvents.push([d.slug, d.print]));
+  w30.dispatchEvent(new w30.Event('beforeprint'));
+  check('print: dark theme prints in the first light one', html(f30).getAttribute('data-palette'), 'paper');
+  w30.dispatchEvent(new w30.Event('afterprint'));
+  check('print: screen theme restored', [html(f30).getAttribute('data-palette'), localStorage.getItem('t30')], ['glacier', 'glacier']);
+  check('print: both switches are announced, marked print', printEvents, [['paper', true], ['glacier', true]]);
+  preset({ t31: 'glacier' });
+  const f31 = await frame({ attrs: attrsFor('t31', { 'data-print-theme': 'none' }) });
+  f31.contentWindow.dispatchEvent(new f31.contentWindow.Event('beforeprint'));
+  check('print: data-print-theme="none" keeps the theme', html(f31).getAttribute('data-palette'), 'glacier');
+  preset({ t32: null });
+  const f32 = await frame({ attrs: { 'data-themes': 'laserlloyd,laserlloyd-light', 'data-default': 'laserlloyd', 'data-storage-key': 't32' } });
+  f32.contentWindow.dispatchEvent(new f32.contentWindow.Event('beforeprint'));
+  check('print: a family prints in its light partner', html(f32).getAttribute('data-palette'), 'laserlloyd-light');
+
+  // 24. The same state rules in every theme, opt-in ones included.
+  preset({ t24: null });
+  const f24 = await frame({ attrs: { 'data-themes': 'purple,midnight-gold,glacier,forest,paper,daylight,electric-yellow,laserlloyd,laserlloyd-light,night-red',
+                                     'data-default': 'purple', 'data-storage-key': 't24' }, css: true });
+  await tick(50);
+  const w24 = f24.contentWindow, d24 = f24.contentDocument;
+  d24.body.insertAdjacentHTML('beforeend',
+    '<input type="checkbox" class="ui-checkbox" id="cb1" checked>' +
+    '<input type="checkbox" class="ui-checkbox" id="cb2" checked disabled>' +
+    '<input type="checkbox" role="switch" class="ui-switch" id="s1" checked>' +
+    '<input type="checkbox" role="switch" class="ui-switch" id="s2">' +
+    '<button class="ui-btn ui-btn--primary" id="b1" disabled>x</button>' +
+    '<nav class="ui-pagination"><a class="ui-btn" id="pg" aria-current="page">2</a></nav>' +
+    '<span class="ui-dot ui-dot--danger" id="dot"></span><span id="probeDanger" style="color: var(--danger-text)"></span>' +
+    '<span id="probe24" style="color: var(--selected)"></span>');
+  const cs24 = (id, prop) => w24.getComputedStyle(d24.getElementById(id))[prop];
+  for (const t of w24.UITheme.list()) {
+    w24.UITheme.set(t.slug);
+    check(`${t.slug}: on = --selected fill`, [cs24('s1', 'backgroundColor'), cs24('cb1', 'backgroundColor')],
+          [cs24('probe24', 'color'), cs24('probe24', 'color')]);
+    check(`${t.slug}: off and disabled are unfilled`, [cs24('s2', 'backgroundColor'), cs24('cb2', 'backgroundColor'), cs24('b1', 'backgroundColor')],
+          ['rgba(0, 0, 0, 0)', 'rgba(0, 0, 0, 0)', 'rgba(0, 0, 0, 0)']);
+    check(`${t.slug}: disabled edges are dashed`, [cs24('cb2', 'borderTopStyle'), cs24('b1', 'borderTopStyle')], ['dashed', 'dashed']);
+    check(`${t.slug}: current page and status dot`, [cs24('pg', 'backgroundColor'), cs24('dot', 'backgroundColor')],
+          [cs24('probe24', 'color'), cs24('probeDanger', 'color')]);
+  }
+
+  // Report.
+  const list = document.getElementById('results');
+  for (const r of results) {
+    const li = document.createElement('li');
+    li.className = r.ok ? 'pass' : 'fail';
+    li.textContent = r.name + (r.detail ? ' — ' + r.detail : '');
+    list.appendChild(li);
+  }
+  const failed = results.filter((r) => !r.ok).length;
+  const text = `${results.length - failed}/${results.length} passed` + (failed ? `, ${failed} FAILED` : '');
+  document.getElementById('summary').textContent = text;
+  document.title = (failed ? 'FAIL ' : 'PASS ') + text;
+  for (const k of Object.keys(localStorage)) if (/^t\d+b?(-legacy)?$/.test(k)) localStorage.removeItem(k);
+})().catch((e) => {
+  document.getElementById('summary').textContent = 'harness error: ' + e;
+  document.title = 'ERROR';
+});
+</script>
+</body>
+</html>

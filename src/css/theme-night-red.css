@@ -1,0 +1,232 @@
+/* theme-night-red.css — OPT-IN · contrast profile: night
+   Ground: oled · family: night-red · color-scheme: dark · theme-color: #000000
+   fonts: Inter, JetBrains Mono (shared with base)
+
+   A low-blue-light night theme for a dark room and an OLED screen: warm
+   red-orange text on true black, red structure, zero blue.
+
+   Why it is not simply "everything pure red", as astronomy night modes are:
+   - Pure red text has almost no luma. #ff0000 carries 54/255 of BT.709
+     luma, and luma is the signal that keeps glyph edges sharp. Chroma is
+     halved (4:2:0 remote desktop and video coding) or sampled on a sparse
+     red grid (PenTile/diamond OLED phones), so red-only text smears. It
+     also tops out at 5.25:1, and APCA puts it at Lc 37, below the level
+     APCA sets even for large headings.
+   - A flat ladder of three reds within 1.4:1 lets nothing stand forward,
+     and apps put real content (labels, hints, small print) in the lower
+     tiers.
+   - Faint lines vanish: a dark-red border at 1.2:1 and strokes at 1.1:1
+     disappear on a dimmed OLED, and so do the boxes they draw.
+
+   Rules this file keeps (tools/check_contrast.py audits 1, 4, 5 and 6):
+   1. Zero blue. No colour here has a blue channel. The display's blue
+      primary is by far the strongest melanopic stimulus per unit of
+      luminance, so extra brightness comes from the green channel. By a
+      rough per-primary estimate, body text drives about 5% of what white
+      text does; Midnight Gold's body text drives about 70%.
+   2. Red is the room. Surfaces, lines, tracks, scrollbars, the accent at
+      rest and every fill that is only structure light the red sub-pixel
+      only (green = 0).
+   3. Text is an ember ladder. Every tier adds some green, which is what
+      restores luma: primary #ff5800 carries 117/255 (pure red: 54),
+      secondary #ff3000 88, tertiary #f01c00 71. It is the one place
+      usability outranks purity.
+   4. A hierarchy of heat and brightness. The more important the text, the
+      hotter and brighter it is: primary 6.65:1 (hue 21), secondary 5.68
+      (hue 11), tertiary 4.87 (hue 7), disabled 2.34. Each step is at least
+      1.15:1 and shifts toward pure red.
+   5. Visible structure at Midnight Gold's levels: --border 2.0:1 (card and
+      panel outlines), --border-subtle 1.32:1, --border-strong 3.46:1
+      (control boundaries), strokes at 1.7-2.5:1. Surfaces step up in
+      luminance like Midnight Gold's do.
+   6. The alert ladder moves one step toward yellow, because red is taken
+      by the ground. Danger is hot orange #ff9000, warning is amber-yellow
+      #d49a00, info is yellow-olive #a4a000 and success is olive #6e9e00.
+      Danger clears the red accent by 1.76:1 and dE00 26, so Delete never
+      looks like Save; body text by dE00 16, so an error line stands out
+      from prose; and bold prose (#ff6c00) by dE00 11.
+   7. Calm: black shadows, opaque glass, and glow only on shout, critical
+      and bold-italic text. Accent fills are bright red with a black label
+      (5.25:1).
+   8. On is amber, off is red. A red "on" next to a red "off" differs by
+      1.6:1 at most, so the control states (--selected, from the base) use
+      the amber link colour: a filled amber switch or box with a black knob
+      or tick, against a hollow red outline when off.
+
+   Templates it follows: Apple Watch Ultra Night Mode (one hue family on
+   true black), KStars "Night Vision" (red ladder, amber and gold accents),
+   N.I.N.A.'s night schema (oxblood surfaces, amber warning) and f.lux
+   "Ember" (white becomes a 1200 K red-orange; #ff5800 sits beside it).
+   Legibility floors come from WCAG 2.2 and APCA.
+
+   Contrast profile "night" (src/themes.json): text-primary 5.5:1 on every
+   ground, secondary 4.5, tertiary 4, disabled 2, md-bold 6, plus the
+   structure, ladder and separation checks in tools/check_contrast.py. The
+   surface ramp is sized so --text-tertiary stays above 4:1 on
+   --surface-4; lift a surface and it fails first. Text dimmed with
+   opacity is the one thing this file can't fix: 60% of #ff5800 is 2.9:1,
+   which is why docs/TEXT.md bans dimming text with opacity. */
+
+[data-palette="night-red"] {
+  color-scheme: dark;
+
+  --surface-void:    #000000;
+  --surface-0:       #000000;
+  --surface-1:       #140000;
+  --surface-2:       #1d0000;
+  --surface-3:       #250000;
+  --surface-4:       #2d0000;
+  --surface-sunken:  #080000;
+  --surface-overlay: #1d0000;   /* opaque: glass bands on true black */
+  --glass-1:         #1d0000;
+  --glass-2:         #250000;
+  --glass-3:         #140000;
+  --glass-highlight: rgba(255,0,0,.07);
+  --code-bg:         #0c0000;
+
+  --text-primary:    #ff5800;
+  --text-secondary:  #ff3000;
+  --text-tertiary:   #f01c00;
+  --text-disabled:   #960a00;
+  --text-inverse:    #000000;
+  --text-link:       #c88400;
+  --text-link-hover: #e09a00;
+  --on-accent:       #000000;
+  --on-danger:       #000000;
+  --on-success:      #000000;
+  --on-warning:      #000000;
+  --on-media:        #ff5800;
+  --on-media-muted:  #ff3000;
+
+  --accent:          #ff0000;
+  --accent-hover:    #ff2a00;
+  --accent-pressed:  #ec0000;
+  --accent-subtle:   rgba(255,0,0,.12);
+  --accent-muted:    rgba(255,0,0,.22);
+  --accent-glow:     rgba(255,0,0,.40);
+  --accent-rgb:      255,0,0;
+  --accent-2:        #c88400;
+  --accent-2-subtle: rgba(200,132,0,.14);
+
+  --cta:              #ff0000;  /* aliases accent */
+  --cta-hover:        #ff2a00;
+  --cta-pressed:      #ec0000;
+  --on-cta:           #000000;
+  --cta-shadow:       0 6px 20px rgba(0,0,0,.55);
+  --cta-shadow-hover: 0 10px 28px rgba(0,0,0,.60);
+  --highlight:        #c88400;
+  --highlight-subtle: rgba(200,132,0,.14);
+  --on-highlight:     #000000;
+
+  --border-subtle:       #4d0000;
+  --border:              #850000;
+  --border-strong:       #c80000;
+  --divider:             #4d0000;
+  --focus-ring:          #e09a00;
+  --glass-stroke:        rgba(255,0,0,.45);
+  --glass-stroke-strong: rgba(255,0,0,.62);
+
+  --success: #6e9e00; --success-hover: #82b400;
+  --success-subtle: rgba(110,158,0,.14); --success-text: #6e9e00;
+  --success-border: rgba(110,158,0,.50);
+  --warning: #d49a00; --warning-hover: #e8aa00;
+  --warning-subtle: rgba(212,154,0,.14); --warning-text: #d49a00;
+  --warning-border: rgba(212,154,0,.50);
+  --danger: #ff9000; --danger-hover: #ffa000;
+  --danger-subtle: rgba(255,144,0,.14); --danger-text: #ff9000;
+  --danger-border: rgba(255,144,0,.55);
+  --info: #a4a000; --info-hover: #b8b400;
+  --info-subtle: rgba(164,160,0,.14); --info-text: #a4a000;
+  --info-border: rgba(164,160,0,.50);
+  --live: #4aa800; --live-hover: #5cc000;
+  --live-subtle: rgba(74,168,0,.14); --live-text: #4aa800;
+  --live-border: rgba(74,168,0,.50);
+  --idle: #c88400; --idle-hover: #e09a00;
+  --idle-subtle: rgba(200,132,0,.14); --idle-text: #c88400;
+  --idle-border: rgba(200,132,0,.50);
+  --offline: #5a0000; --offline-hover: #700000;
+  --offline-subtle: rgba(255,0,0,.08); --offline-text: #ff3000;
+  --offline-border: rgba(255,0,0,.40);
+  --heartbeat: #ff0000; --heartbeat-hover: #ff2a00;
+  --heartbeat-subtle: rgba(255,0,0,.10); --heartbeat-text: #ff3000;
+  --heartbeat-border: rgba(255,0,0,.50);
+  --on-info: #000000; --on-live: #000000; --on-idle: #000000;
+  --on-offline: #ff6400; --on-heartbeat: #000000;
+
+  --scrim:        rgba(0,0,0,.92);  /* on-media 4.5:1+ over it on a white photo */
+  --scrim-strong: rgba(0,0,0,.95);
+  --scrim-light:  rgba(0,0,0,.50);
+  --scrim-media:  linear-gradient(to top, rgba(0,0,0,.92), rgba(0,0,0,0));
+
+  /* Your own bubbles: an oxblood plate, a visible edge and hotter text. */
+  --bubble-user-bg:        #4c0000;
+  --bubble-user-text:      #ff6400;
+  --bubble-user-border:    #850000;
+  --bubble-assistant-bg:   #000000;
+  --bubble-assistant-text: #ff5800;
+  --quote-bar:             #c88400;
+  --mark-bg:               rgba(200,132,0,.18);
+  --md-bold:               #ff6c00;
+  --md-italic:             #c88400;
+  --md-bolditalic:         #e8a000;
+  --md-bolditalic-glow:    rgba(232,160,0,.40);
+  --rp-speech:  #ff5800;
+  --rp-action:  #ff3000;
+  --rp-thought: #c88400;
+  --rp-whisper: #f01c00;
+  --rp-ooc:     #f01c00;
+  --rp-shout:   #ff9000;
+  --rp-shout-glow: rgba(255,144,0,.45);
+  --rp-critical: #ff9a00;
+  --rp-critical-glow: rgba(255,154,0,.55);
+  --diff-add-bg: rgba(110,158,0,.16); --diff-add-text: #6e9e00;
+  --diff-remove-bg: rgba(255,0,0,.16); --diff-remove-text: #ff3000;
+
+  /* Syntax, on --code-bg. Plain code is the body ember; token kinds take
+     the warm accents, and the reds carry keywords, comments and
+     punctuation. */
+  --syn-fg: #ff5800;      --syn-bg: #0c0000;
+  --syn-comment: #e01400; --syn-keyword: #ff3000; --syn-string: #c88400;
+  --syn-number: #a4a000;  --syn-function: #ff8400; --syn-title: #ff8400;
+  --syn-type: #6e9e00;    --syn-variable: #ff6c00; --syn-attr: #d49a00;
+  --syn-tag: #ff3000;     --syn-builtin: #6e9e00;  --syn-literal: #a4a000;
+  --syn-meta: #f00000;    --syn-operator: #ff2a00; --syn-punctuation: #f00000;
+  --syn-deletion: #ff0000; --syn-addition: #6e9e00;
+
+  /* Categorical: the red ladder plus the warm accents, all zero-blue. Two
+     channels can't give twelve well-separated colours, so the order puts
+     the six most separable first (apps hand them out in order). */
+  --cat-1: #ff0000; --cat-2: #ff6a00; --cat-3: #58a000; --cat-4: #e8a000;
+  --cat-5: #b04000; --cat-6: #909000; --cat-7: #c88400; --cat-8: #7a9a00;
+  --cat-9: #d40000; --cat-10: #c8b400; --cat-11: #a89400; --cat-12: #ff3300;
+  --chart-grid: rgba(255,0,0,.18);
+  --chart-axis: #bc0000;
+
+  --canvas-mask:    rgba(0,0,0,.78);
+  --canvas-handle:  #ff0000;
+  --canvas-guide:   rgba(255,0,0,.60);
+  --canvas-outline: #ff0000;
+
+  --shadow-1: 0 1px 2px rgba(0,0,0,.40);
+  --shadow-2: 0 6px 20px rgba(0,0,0,.50);
+  --shadow-3: 0 18px 50px rgba(0,0,0,.65);
+  --shadow-4: 0 32px 80px rgba(0,0,0,.78);
+  --shadow-glow:  0 0 0 1px rgba(255,0,0,.45), 0 8px 30px rgba(0,0,0,.6);
+  --shadow-inset: inset 0 1px 0 rgba(255,0,0,.07);
+
+  --selection-bg:    rgba(255,0,0,.30);
+  --selection-text:  #ff6c00;
+  --scrollbar-track: transparent;
+  --scrollbar-thumb: #5a0000;
+  --scrollbar-hover: #850000;
+  /* Control-boundary fill (slider track): 3.08:1 on surface-2, 3.24:1 on
+     surface-0. Switches and checkboxes take --selected (amber) when on and
+     an outline when off: see rule 8 in the header. */
+  --control-track: #c00000;
+
+  /* Images and video marked .ui-media drop to a red monochrome, close to
+     what the theme allows on screen (a CSS filter cannot remove every
+     trace of blue, but it takes it near zero). */
+  --media-filter: grayscale(1) sepia(1) saturate(9) hue-rotate(-38deg) brightness(.72);
+
+}

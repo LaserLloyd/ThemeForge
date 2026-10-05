@@ -1,0 +1,199 @@
+/* theme-electric-yellow.css — OPT-IN
+   Ground: dark (graphite) · family: electric-yellow · color-scheme: dark
+   theme-color: #0a0a0b
+   fonts: Archivo (400/500/600/700, geometric grotesk w/ tabular figures),
+          JetBrains Mono. Self-host or preload; no @import.
+
+   Design notes
+   - Accent #e8ff00 is a cold acid yellow. Every large surface stays neutral
+     graphite; yellow appears only on primary action, active nav marker,
+     focus ring, slider fill, live dot and selection.
+   - Reads apart from Midnight Gold by four moves: colder/more saturated
+     yellow, graphite ground (not true black), tighter radii (4/6/10/14),
+     crisp 1px strokes instead of gold hairlines.
+   - Text on yellow is near-black (--on-accent #0e1200, 17.0:1).
+   - Warning is orange (#f78a1f) so it never reads as a primary action.
+   - Second accent is cool ice-blue (#5ad8ff). No second warm colour.
+   - One ambient effect: .ambient scanline, disabled under reduced motion. */
+
+[data-palette="electric-yellow"] {
+  color-scheme: dark;
+
+  --surface-void:    #050506;
+  --surface-0:       #0a0a0b;
+  --surface-1:       #111113;
+  --surface-2:       #18181b;
+  --surface-3:       #202024;
+  --surface-4:       #2a2a2f;
+  --surface-sunken:  #0d0d0f;
+  --surface-overlay: #18181b;
+  --glass-1:         rgba(24,24,27,.76);
+  --glass-2:         rgba(24,24,27,.88);
+  --glass-3:         rgba(10,10,11,.94);
+  --glass-highlight: rgba(255,255,255,.06);
+  --code-bg:         #0d0d0f;
+
+  --text-primary:    #f4f5f7;
+  --text-secondary:  #a8acb6;
+  --text-tertiary:   #8d929e;
+  --text-disabled:   #717581;
+  --text-inverse:    #0a0a0b;
+  --text-link:       #e8ff00;
+  --text-link-hover: #f2ff5c;
+  --on-accent:       #0e1200;
+  --on-danger:       #1a0303;
+  --on-success:      #04210f;
+  --on-warning:      #1a0d00;
+  --on-media:        #ffffff;
+  --on-media-muted:  #dcdee3;
+
+  --accent:          #e8ff00;
+  --accent-hover:    #f2ff3d;
+  --accent-pressed:  #ccdf00;
+  --accent-subtle:   rgba(232,255,0,.12);
+  --accent-muted:    rgba(232,255,0,.24);
+  --accent-glow:     rgba(232,255,0,.30);
+  --accent-rgb:      232,255,0;
+  --accent-2:        #5ad8ff;
+  --accent-2-subtle: rgba(90,216,255,.12);
+
+  --cta:              #e8ff00;
+  --cta-hover:        #f2ff3d;
+  --cta-pressed:      #ccdf00;
+  --on-cta:           #0e1200;
+  --cta-shadow:       0 6px 20px rgba(0,0,0,.55);
+  --cta-shadow-hover: 0 10px 28px rgba(232,255,0,.18);
+  --highlight:        #5ad8ff;
+  --highlight-subtle: rgba(90,216,255,.10);
+  --on-highlight:     #001420;
+
+  --border-subtle:       #1c1c20;
+  --border:              #2a2a2f;
+  --border-strong:       #6a6f7a;
+  --divider:             #1c1c20;
+  --focus-ring:          #e8ff00;
+  --glass-stroke:        rgba(255,255,255,.09);
+  --glass-stroke-strong: rgba(232,255,0,.30);
+
+  --success: #4ade80; --success-hover: #86efac;
+  --success-subtle: rgba(74,222,128,.12); --success-text: #4ade80;
+  --success-border: rgba(74,222,128,.38);
+  --warning: #f78a1f; --warning-hover: #ffa24a;
+  --warning-subtle: rgba(247,138,31,.12); --warning-text: #ffa24a;
+  --warning-border: rgba(247,138,31,.40);
+  --danger: #ff5c5c; --danger-hover: #ff8585;
+  --danger-subtle: rgba(255,92,92,.12); --danger-text: #ff8585;
+  --danger-border: rgba(255,92,92,.40);
+  --info: #63b3ff; --info-hover: #8cc8ff;
+  --info-subtle: rgba(99,179,255,.12); --info-text: #63b3ff;
+  --info-border: rgba(99,179,255,.38);
+  --live: #e8ff00; --live-hover: #f2ff3d;
+  --live-subtle: rgba(232,255,0,.14); --live-text: #e8ff00;
+  --live-border: rgba(232,255,0,.44);
+  --idle: #f78a1f; --idle-hover: #ffa24a;
+  --idle-subtle: rgba(247,138,31,.12); --idle-text: #ffa24a;
+  --idle-border: rgba(247,138,31,.34);
+  --offline: #666b77; --offline-hover: #828794;
+  --offline-subtle: rgba(102,107,119,0.15); --offline-text: #888d99;
+  --offline-border: rgba(102,107,119,.48);
+  --heartbeat: #ff7ab8; --heartbeat-hover: #ffa0cd;
+  --heartbeat-subtle: rgba(255,122,184,.12); --heartbeat-text: #ff7ab8;
+  --heartbeat-border: rgba(255,122,184,.38);
+  --on-info: #001220; --on-live: #0e1200; --on-idle: #1a0d00;
+  --on-offline: #ffffff; --on-heartbeat: #2a0616;
+
+  --scrim:        rgba(5,5,6,.72);
+  --scrim-strong: rgba(3,3,4,.92);
+  --scrim-light:  rgba(5,5,6,.48);
+  --scrim-media:  linear-gradient(to top, rgba(5,5,6,.90), rgba(5,5,6,0));
+  --backdrop-blur: 12px;
+
+  --bubble-user-bg:        #303014;
+  --bubble-user-text:      #f4f5f7;
+  --bubble-user-border:    #47471b;
+  --bubble-assistant-bg:   #18181b;
+  --bubble-assistant-text: #f4f5f7;
+  --quote-bar:             #e8ff00;
+  --mark-bg:               rgba(232,255,0,.26);
+  --md-bold:               #ffffff;
+  --md-italic:             #5ad8ff;
+  --md-bolditalic:         #a3e8ff;
+  --md-bolditalic-glow:    rgba(163,232,255,.40);
+  --rp-speech:  #f4f5f7;
+  --rp-action:  #a8acb6;
+  --rp-thought: #a3e8ff;
+  --rp-whisper: #828794;
+  --rp-ooc:     var(--text-tertiary);
+  --rp-shout:   #ffa24a;
+  --rp-shout-glow: rgba(255,162,74,.45);
+  --rp-critical: #ff8585;
+  --rp-critical-glow: rgba(255,133,133,.45);
+  --diff-add-bg: rgba(74,222,128,.14); --diff-add-text: #9ce8a8;
+  --diff-remove-bg: rgba(255,92,92,.14); --diff-remove-text: #ff9a9a;
+
+  --syn-fg: #e4e6ea;      --syn-bg: #0d0d0f;
+  --syn-comment: #8a8f9a; --syn-keyword: #b8c4ff; --syn-string: #9ce8a8;
+  --syn-number: #ffd166;  --syn-function: #5ad8ff; --syn-title: #5ad8ff;
+  --syn-type: #7ee7d0;    --syn-variable: #f0a8d0; --syn-attr: #ffd9a0;
+  --syn-tag: #b8c4ff;     --syn-builtin: #7ee7d0;  --syn-literal: #ffd166;
+  --syn-meta: #9aa0ac;    --syn-operator: #d0d5df; --syn-punctuation: #b8bec9;
+  --syn-deletion: #ff9a9a; --syn-addition: #9ce8a8;
+
+  --cat-1: #e8ff00; --cat-2: #5ad8ff; --cat-3: #f78a1f; --cat-4: #ff7ab8;
+  --cat-5: #63b3ff; --cat-6: #4ade80; --cat-7: #c9a3ff; --cat-8: #ffd166;
+  --cat-9: #7ee7d0; --cat-10: #ff8585; --cat-11: #a3e635; --cat-12: #b8c4ff;
+  --chart-grid: rgba(255,255,255,.07);
+  --chart-axis: #666b77;
+
+  --canvas-mask:    rgba(5,5,6,.76);
+  --canvas-handle:  #e8ff00;
+  --canvas-guide:   rgba(232,255,0,.55);
+  --canvas-outline: #f4f5f7;
+
+  --font-sans:    'Archivo', 'Helvetica Neue', Helvetica, system-ui, sans-serif;
+  --font-serif:   var(--font-sans);
+  --font-display: 'Archivo', 'Helvetica Neue', Helvetica, system-ui, sans-serif;
+  --font-mono:    'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* Tighter geometry — a second signal against Midnight Gold */
+  --radius-xs: 3px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 10px;
+  --radius-xl: 14px;
+
+  --shadow-1: 0 1px 2px rgba(0,0,0,.45);
+  --shadow-2: 0 6px 18px rgba(0,0,0,.52);
+  --shadow-3: 0 16px 44px rgba(0,0,0,.62);
+  --shadow-4: 0 30px 74px rgba(0,0,0,.72);
+  --shadow-glow:  0 0 0 1px rgba(232,255,0,.26), 0 8px 26px rgba(232,255,0,.14);
+  --shadow-inset: inset 0 1px 0 rgba(255,255,255,.05);
+
+  --selection-bg:    rgba(232,255,0,.30);
+  --selection-text:  #ffffff;
+  --scrollbar-track: transparent;
+  --scrollbar-thumb: #33333a;
+  --scrollbar-hover: #4a4a54;
+
+  /* Component tokens */
+  --table-zebra: rgba(255,255,255,.02);
+  --table-total: rgba(232,255,0,.06);
+  /* Control-boundary fill. --surface-4 is an elevation step and can never be
+     3:1 from its neighbouring surface while still reading as subtle elevation,
+     so the slider track / toggle off-track role gets its own token.
+     3.10:1 on surface-2, 3.46:1 on surface-0. */
+  --control-track: #666669;
+
+}
+
+/* Ambient: one faint scanline field. Off under reduced motion (theme-base). */
+[data-palette="electric-yellow"] .ambient::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    180deg, rgba(255,255,255,.022) 0 1px, transparent 1px 3px);
+  animation: ey-scan 9s linear infinite;
+}
+@keyframes ey-scan { to { background-position: 0 3px; } }

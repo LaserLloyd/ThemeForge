@@ -1,0 +1,3 @@
+/* The app's own CSS: layout only, colours from tokens. */
+.tasks-picker { width: 11rem; }
+.ui-table form { margin: 0; }

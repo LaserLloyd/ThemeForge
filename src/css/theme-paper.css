@@ -1,0 +1,174 @@
+/* theme-paper.css — CORE
+   Ground: light (warm) · family: paper · color-scheme: light
+   theme-color: #e6d2a8
+   (D) = derived from this theme's own palette.
+
+   Type rule: Paper is the one core theme that uses a real serif. --font-serif
+   is a Charter/Georgia stack and is the intended family for long-form prose
+   and blockquotes here; headings stay on --font-display (sans). */
+
+/* Status fills: Paper's two grounds (#e6d2a8 page, #efdfb8 card) are only
+   Δ16 apart, so no single fill can be hue-visible, Δ-separated from BOTH
+   grounds, and clear 4.5:1 for dark ink at once. The fill here is therefore a
+   modest hue wash and is NOT the role signal: Paper's status components carry
+   --{status}-border (3:1 or more) as the signal. */
+[data-palette="paper"] {
+  color-scheme: light;
+
+  --surface-void:    #c9a968;  /* D */
+  --surface-0:       #e6d2a8;
+  --surface-1:       #dcc491;
+  --surface-2:       #efdfb8;
+  --surface-3:       #d4b87e;
+  --surface-4:       #c9a968;  /* D */
+  --surface-sunken:  #f4e8c8;  /* D */
+  --surface-overlay: #efdfb8;
+  --glass-1:         rgba(239,223,184,.82);  /* D */
+  --glass-2:         rgba(239,223,184,.92);  /* D */
+  --glass-3:         rgba(230,210,168,.95);  /* D */
+  --glass-highlight: rgba(255,255,255,.45);  /* D */
+  --code-bg:         #2a1e10;  /* D — code blocks stay dark in every theme */
+
+  --text-primary:    #2e2013;
+  --text-secondary:  #4a3722;
+  --text-tertiary:   #4f3e26;  /* D */
+  --text-disabled:   #69573d;  /* D */
+  --text-inverse:    #f4e8c8;  /* D */
+  --text-link:       #781a14;
+  --text-link-hover: #6b1611;  /* D */
+  --on-accent:       #ffffff;
+  --on-danger:       #2a0808;  /* D */
+  --on-success:      #052215;  /* D */
+  --on-warning:      #251a00;  /* D */
+  --on-media:        #ffffff;  /* D */
+  --on-media-muted:  #ecddc0;  /* D */
+
+  --accent:          #a3241c;
+  --accent-hover:    #b8362d;
+  --accent-pressed:  #8a1f18;  /* D */
+  --accent-subtle:   rgba(163,36,28,.12);  /* D */
+  --accent-muted:    rgba(163,36,28,.24);  /* D */
+  --accent-glow:     rgba(163,36,28,.26);  /* D */
+  --accent-rgb:      163,36,28;
+  --accent-2:        #2b3a66;
+  --accent-2-subtle: rgba(43,58,102,.10);  /* D */
+
+  --cta:              #a3241c;  /* D — aliases accent */
+  --cta-hover:        #b8362d;  /* D */
+  --cta-pressed:      #8a1f18;  /* D */
+  --on-cta:           #ffffff;  /* D */
+  --cta-shadow:       0 6px 20px rgba(20,15,5,.16);  /* D */
+  --cta-shadow-hover: 0 10px 28px rgba(20,15,5,.22); /* D */
+  --highlight:        #7a4f00;  /* D */
+  --highlight-subtle: rgba(122,79,0,0.04);  /* D */
+  --on-highlight:     #ffffff;  /* D */
+
+  --border-subtle:       #d8cbaa;  /* D */
+  --border:              #c7bda0;
+  --border-strong:       #787466;
+  --divider:             #d0c2a0;  /* D */
+  --focus-ring:          #8a1f18;
+  --glass-stroke:        rgba(46,32,19,.12);  /* D */
+  --glass-stroke-strong: rgba(46,32,19,.24);  /* D */
+
+  --success: #34d399; --success-hover: #5fe0b0;
+  --success-subtle: #d1ddb3; --success-text: #0e4a2e;
+  --success-border: rgba(19,100,62,.34);
+  --warning: #fbbf24; --warning-hover: #fcd34d;
+  --warning-subtle: #f1daa0; --warning-text: #5a3a00;
+  --warning-border: rgba(122,79,0,.34);
+  --danger: #f87171; --danger-hover: #fca5a5;
+  --danger-subtle: #f1c4a6; --danger-text: #8a1a15;
+  --danger-border: rgba(170,33,28,.34);
+  --info: #2b3a66; --info-hover: #3a4d84;
+  --info-subtle: #d0c5ab; --info-text: #2b3a66;
+  --info-border: rgba(43,58,102,.34);
+  --live: #13643e; --live-hover: #1a7d4e;
+  --live-subtle: #d0cea7; --live-text: #0e4a2e;
+  --live-border: rgba(19,100,62,.36);
+  --idle: #7a4f00; --idle-hover: #966200;
+  --idle-subtle: #dbc799; --idle-text: #5a3a00;
+  --idle-border: rgba(122,79,0,.32);
+  --offline: #787466; --offline-hover: #918c7c;
+  --offline-subtle: #d8cba8; --offline-text: #5b472b;
+  --offline-border: rgba(120,116,102,.40);
+  --heartbeat: #8a2f5a; --heartbeat-hover: #a53c6d;
+  --heartbeat-subtle: #dfc3a9; --heartbeat-text: #6e2648;
+  --heartbeat-border: rgba(138,47,90,.34);
+  --on-info: #ffffff; --on-live: #ffffff; --on-idle: #ffffff;  /* D */
+  --on-offline: #ffffff; --on-heartbeat: #ffffff;              /* D */
+
+  --scrim:        rgba(46,32,19,.52);  /* D */
+  --scrim-strong: rgba(30,20,10,.82);  /* D */
+  --scrim-light:  rgba(46,32,19,.32);  /* D */
+  --scrim-media:  linear-gradient(to top, rgba(30,20,10,.86), rgba(30,20,10,0)); /* D */
+
+  --bubble-user-bg:        #d8a789;
+  --bubble-user-text:      #2e2013;  /* D */
+  --bubble-user-border:    #c08f70;  /* D */
+  --bubble-assistant-bg:   #efdfb8;
+  --bubble-assistant-text: #2e2013;  /* D */
+  --quote-bar:             #2b3a66;
+  --mark-bg:               #eddb8a;
+  --md-bold:               #0a0806;
+  --md-italic:             #a3241c;
+  --md-bolditalic:         #7a1410;  /* D */
+  --md-bolditalic-glow:    rgba(122,20,16,.22);  /* D */
+  --rp-speech:  #2e2013;  /* D */
+  --rp-action:  #5a4429;  /* D */
+  --rp-thought: #1c274a;  /* D */
+  --rp-whisper: #6b5433;  /* D */
+  --rp-ooc:     var(--text-tertiary);
+  --rp-shout:   #9c3a00;  /* D */
+  --rp-shout-glow: rgba(156,58,0,.24);  /* D */
+  --rp-critical: #8f1512;  /* D */
+  --rp-critical-glow: rgba(143,21,18,.26);  /* D */
+  --diff-add-bg: rgba(19,100,62,0.05); --diff-add-text: #0e4d30;      /* D */
+  --diff-remove-bg: rgba(170,33,28,.12); --diff-remove-text: #8a1a15; /* D */
+
+  /* Syntax — D, on the dark --code-bg */
+  --syn-fg: #e8dfd0;      --syn-bg: #2a1e10;
+  --syn-comment: #a2947e; --syn-keyword: #f0a08f; --syn-string: #b8d4a6;
+  --syn-number: #f0cd8a;  --syn-function: #9fc8e4; --syn-title: #9fc8e4;
+  --syn-type: #96d4cb;    --syn-variable: #e9b2c8; --syn-attr: #efd399;
+  --syn-tag: #f0a08f;     --syn-builtin: #96d4cb;  --syn-literal: #f0cd8a;
+  --syn-meta: #a99f8e;    --syn-operator: #dcd0bd; --syn-punctuation: #c8bdac;
+  --syn-deletion: #ffb3ab; --syn-addition: #96ecbe;
+
+  /* Categorical — D, ≥3:1 on --surface-0 */
+  --cat-1: #a3241c; --cat-2: #2b3a66; --cat-3: #7a4f00; --cat-4: #1f5c4a;
+  --cat-5: #6b3f7a; --cat-6: #8a5a00; --cat-7: #24506b; --cat-8: #5c3a1e;
+  --cat-9: #8a2f5a; --cat-10: #3f5a1c; --cat-11: #1c274a; --cat-12: #6b2a2a;
+  --chart-grid: rgba(46,32,19,.10);  /* D */
+  --chart-axis: #8a7350;             /* D */
+
+  --canvas-mask:    rgba(46,32,19,.58);  /* D */
+  --canvas-handle:  #ffffff;             /* light: it sits on the dark mask */
+  --canvas-guide:   rgba(163,36,28,.60); /* D */
+  --canvas-outline: #2e2013;             /* D */
+
+  --font-serif: 'Charter', 'Iowan Old Style', Georgia, 'Times New Roman', serif;
+
+  --shadow-1: 0 1px 2px rgba(20,15,5,.10);
+  --shadow-2: 0 6px 20px rgba(20,15,5,.14);
+  --shadow-3: 0 18px 50px rgba(20,15,5,.20);
+  --shadow-4: 0 30px 72px rgba(20,15,5,.26);  /* D */
+  --shadow-glow:  0 0 0 1px rgba(163,36,28,.26), 0 8px 26px rgba(20,15,5,.18); /* D */
+  --shadow-inset: inset 0 1px 0 rgba(255,255,255,.40);  /* D */
+
+  --selection-bg:    rgba(163,36,28,.22);  /* D */
+  --selection-text:  #2e2013;              /* D */
+  --scrollbar-track: transparent;
+  --scrollbar-thumb: #bfa678;              /* D */
+  --scrollbar-hover: #a68c5c;              /* D */
+  /* Control-boundary fill. --surface-4 is an elevation step and can never be
+     3:1 from its neighbouring surface while still reading as subtle elevation,
+     so the slider track / toggle off-track role gets its own token.
+     3.46:1 on surface-2, 3.07:1 on surface-0. */
+  --control-track: #897347;
+
+  /* The off outline of checkboxes, radios and switches. The nav ground
+     (surface-1) is darker than the page here, and --border-strong drops to
+     about 2.8:1 on it; the tertiary ink clears 5.5:1 on every surface. */
+  --unselected-border: var(--text-tertiary);
+}

@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Notes — ThemeForge example</title>
+  <!-- In a real app the folder sits next to this page: src="ui-theme/ui-theme.js".
+       This example uses the repository's own copy, two folders up. -->
+  <script src="../../ui-theme/ui-theme.js"
+          data-themes="purple,midnight-gold,glacier,forest,paper,daylight,night-red"
+          data-default="auto"
+          data-default-dark="midnight-gold"
+          data-default-light="daylight"
+          data-storage-key="notes-example.theme"></script>
+  <link rel="stylesheet" href="../../ui-theme/ui-theme-base.css">
+  <link rel="stylesheet" href="../../ui-theme/ui-components.css">
+  <link rel="stylesheet" href="app.css">
+  <link rel="stylesheet" href="../../ui-theme/ui-theme.css">
+  <script src="../../ui-theme/ui-components.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+<div class="ui-app">
+  <header class="ui-app__header">
+    <button class="ui-btn ui-btn--ghost ui-btn--icon notes-menu" type="button" aria-label="Menu" data-ui-tooltip="Menu">☰</button>
+    <a class="ui-brand" href="#">Notes</a>
+    <span class="ui-spacer"></span>
+    <select class="ui-select notes-picker" data-ui-theme-picker aria-label="Theme"></select>
+  </header>
+
+  <nav class="ui-app__nav ui-nav" aria-label="Folders">
+    <span class="ui-nav__label">Folders</span>
+    <a class="ui-nav__item" href="#" aria-current="page">Inbox <span class="ui-spacer"></span><span class="ui-count ui-count--accent">3</span></a>
+    <a class="ui-nav__item" href="#">Ideas</a>
+    <a class="ui-nav__item" href="#">Archive</a>
+  </nav>
+
+  <main class="ui-app__main ui-stack" style="--ui-gap: var(--space-5)">
+    <div class="ui-row">
+      <h1 class="ui-title">Inbox</h1>
+      <span class="ui-spacer"></span>
+      <button class="ui-btn ui-btn--primary" type="button" id="new-note">New note</button>
+    </div>
+
+    <div class="ui-callout ui-callout--info" role="note">
+      <strong class="ui-callout__title">This page is an example</strong>
+      Every colour on it comes from the theme. Pick another theme at the top right.
+    </div>
+
+    <div class="ui-grid" id="notes" style="--ui-grid-min: 260px"></div>
+
+    <section class="ui-card" aria-labelledby="activity-title">
+      <h2 class="ui-card__title" id="activity-title">Notes this week</h2>
+      <canvas id="activity" class="notes-chart" role="img" aria-label="Notes written per day this week"></canvas>
+    </section>
+
+    <section class="ui-card" aria-labelledby="settings-title">
+      <h2 class="ui-card__title" id="settings-title">Settings</h2>
+      <label class="ui-check">
+        <input type="checkbox" role="switch" class="ui-switch" checked> Sync across devices
+        <span class="ui-spacer"></span><span class="ui-switch-state" aria-hidden="true"></span>
+      </label>
+      <label class="ui-check">
+        <input type="checkbox" role="switch" class="ui-switch"> Weekly summary email
+        <span class="ui-spacer"></span><span class="ui-switch-state" aria-hidden="true"></span>
+      </label>
+      <label class="ui-check">
+        <input type="checkbox" role="switch" class="ui-switch" disabled> Team sharing (on paid plans)
+        <span class="ui-spacer"></span><span class="ui-switch-state" aria-hidden="true"></span>
+      </label>
+      <div class="ui-segmented" role="group" aria-label="Sort notes by">
+        <button type="button" aria-pressed="true">Newest</button>
+        <button type="button" aria-pressed="false">Oldest</button>
+        <button type="button" aria-pressed="false">Title</button>
+      </div>
+    </section>
+  </main>
+</div>
+</body>
+</html>

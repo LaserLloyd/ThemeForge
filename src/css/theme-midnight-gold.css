@@ -1,0 +1,159 @@
+/* theme-midnight-gold.css — CORE
+   Ground: oled · family: midnight-gold · color-scheme: dark
+   theme-color: #000000 · fonts: Inter, JetBrains Mono (shared with base)
+   Values marked (D) are derived from this theme's own palette. */
+
+[data-palette="midnight-gold"] {
+  color-scheme: dark;
+
+  --surface-void:    #000000;
+  --surface-0:       #000000;
+  --surface-1:       #060504;
+  --surface-2:       #0d0a06;
+  --surface-3:       #120e08;
+  --surface-4:       #171209;
+  --surface-sunken:  #030201;
+  --surface-overlay: #0d0a06;   /* D — opaque: glass bands on true black */
+  --glass-1:         #0d0a06;   /* D */
+  --glass-2:         #120e08;   /* D */
+  --glass-3:         #060504;   /* D */
+  --glass-highlight: rgba(255,255,255,.045);  /* D */
+  --code-bg:         #030201;
+
+  --text-primary:    #f1e6cf;
+  --text-secondary:  #b7a883;
+  --text-tertiary:   #96896a;
+  --text-disabled:   #6b6250;  /* D */
+  --text-inverse:    #000000;  /* D */
+  --text-link:       #e3bf5a;
+  --text-link-hover: #f2d585;  /* D */
+  --on-accent:       #ffffff;
+  --on-danger:       #2a0808;  /* D */
+  --on-success:      #052215;  /* D */
+  --on-warning:      #251a00;  /* D */
+  --on-media:        #ffffff;  /* D */
+  --on-media-muted:  #e2d8c4;  /* D */
+
+  --accent:          #7a5c12;
+  --accent-hover:    #916d15;
+  --accent-pressed:  #5f470d;  /* D */
+  --accent-subtle:   rgba(122,92,18,.20);  /* D */
+  --accent-muted:    rgba(122,92,18,.34);  /* D */
+  --accent-glow:     rgba(227,191,90,.30); /* D */
+  --accent-rgb:      122,92,18;
+  --accent-2:        #7fc4b8;
+  --accent-2-subtle: rgba(127,196,184,.12); /* D */
+
+  --cta:              #7a5c12;  /* D — aliases accent */
+  --cta-hover:        #916d15;  /* D */
+  --cta-pressed:      #5f470d;  /* D */
+  --on-cta:           #ffffff;  /* D */
+  --cta-shadow:       0 6px 20px rgba(0,0,0,.55);           /* D */
+  --cta-shadow-hover: 0 10px 28px rgba(227,191,90,.18);     /* D */
+  --highlight:        #e3bf5a;
+  --highlight-subtle: rgba(227,191,90,.12);  /* D */
+  --on-highlight:     #241c05;  /* D */
+
+  --border-subtle:       #2a2419;  /* D */
+  --border:              #474133;
+  --border-strong:       #736952;
+  --divider:             #2a2419;  /* D */
+  --focus-ring:          #e3bf5a;
+  --glass-stroke:        rgba(227,191,90,.14);  /* D */
+  --glass-stroke-strong: rgba(227,191,90,.28);  /* D */
+
+  --success: #34d399; --success-hover: #5fe0b0;
+  --success-subtle: rgba(52,211,153,.12); --success-text: #34d399;
+  --success-border: rgba(52,211,153,.36);
+  --warning: #fbbf24; --warning-hover: #fcd34d;
+  --warning-subtle: rgba(251,191,36,.12); --warning-text: #fbbf24;
+  --warning-border: rgba(251,191,36,.36);
+  --danger: #f87171; --danger-hover: #fca5a5;
+  --danger-subtle: rgba(248,113,113,.12); --danger-text: #f87171;
+  --danger-border: rgba(248,113,113,.36);
+  --info: #9fc7d8; --info-hover: #bcdbe8;
+  --info-subtle: rgba(159,199,216,.12); --info-text: #9fc7d8;
+  --info-border: rgba(159,199,216,.36);
+  --live: #4ade80; --live-hover: #86efac;
+  --live-subtle: rgba(74,222,128,.14); --live-text: #4ade80;
+  --live-border: rgba(74,222,128,.38);
+  --idle: #e3bf5a; --idle-hover: #f2d585;
+  --idle-subtle: rgba(227,191,90,.12); --idle-text: #e3bf5a;
+  --idle-border: rgba(227,191,90,.34);
+  --offline: #6b6250; --offline-hover: #8a806a;
+  --offline-subtle: rgba(107,98,80,.20); --offline-text: #96896a;
+  --offline-border: rgba(107,98,80,.44);
+  --heartbeat: #e8a8c8; --heartbeat-hover: #f2c4da;
+  --heartbeat-subtle: rgba(232,168,200,.12); --heartbeat-text: #e8a8c8;
+  --heartbeat-border: rgba(232,168,200,.36);
+  --on-info: #041017; --on-live: #052210; --on-idle: #241c05;   /* D */
+  --on-offline: #ffffff; --on-heartbeat: #2a0c1c;               /* D */
+
+  --scrim:        rgba(0,0,0,.72);  /* D */
+  --scrim-strong: rgba(0,0,0,.92);  /* D */
+  --scrim-light:  rgba(0,0,0,.50);  /* D */
+  --scrim-media:  linear-gradient(to top, rgba(0,0,0,.90), rgba(0,0,0,0)); /* D */
+
+  --bubble-user-bg:        #3e2f0c;
+  --bubble-user-text:      #f1e6cf;  /* D */
+  --bubble-user-border:    #55410f;  /* D */
+  --bubble-assistant-bg:   #000000;
+  --bubble-assistant-text: #f1e6cf;  /* D */
+  --quote-bar:             #7fc4b8;
+  --mark-bg:               rgba(227,191,90,.30);
+  --md-bold:               #fff6df;
+  --md-italic:             #e3bf5a;
+  --md-bolditalic:         #ffe9b0;  /* D */
+  --md-bolditalic-glow:    rgba(255,233,176,.40);  /* D */
+  --rp-speech:  #f1e6cf;  /* D */
+  --rp-action:  #b7a883;  /* D */
+  --rp-thought: #b9e6dd;  /* D */
+  --rp-whisper: #96896a;  /* D */
+  --rp-ooc:     #857a5e;  /* D */
+  --rp-shout:   #ffab6a;  /* D */
+  --rp-shout-glow: rgba(255,171,106,.45);  /* D */
+  --rp-critical: #ff8a9c;  /* D */
+  --rp-critical-glow: rgba(255,138,156,.45);  /* D */
+  --diff-add-bg: rgba(52,211,153,.14); --diff-add-text: #7ee7bc;      /* D */
+  --diff-remove-bg: rgba(248,113,113,.14); --diff-remove-text: #ffa0a0; /* D */
+
+  /* Syntax — D, derived on --code-bg */
+  --syn-fg: #e8dcc2;      --syn-bg: #030201;
+  --syn-comment: #8a7f66; --syn-keyword: #d9a84c; --syn-string: #a8c98a;
+  --syn-number: #e8c06a;  --syn-function: #9fc7d8; --syn-title: #9fc7d8;
+  --syn-type: #8ec9b8;    --syn-variable: #dfae8a; --syn-attr: #e3c987;
+  --syn-tag: #d9a84c;     --syn-builtin: #8ec9b8;  --syn-literal: #e8c06a;
+  --syn-meta: #9b9078;    --syn-operator: #cbbd9c; --syn-punctuation: #b9ad92;
+  --syn-deletion: #ffa0a0; --syn-addition: #7ee7bc;
+
+  /* Categorical — D */
+  --cat-1: #e3bf5a; --cat-2: #8ec9b8; --cat-3: #d99a3c; --cat-4: #e09a9a;
+  --cat-5: #9fc7d8; --cat-6: #c9a3e0; --cat-7: #a8c98a; --cat-8: #f0d9a0;
+  --cat-9: #7fd4c8; --cat-10: #e8c06a; --cat-11: #e8a8c8; --cat-12: #b8c8e0;
+  --chart-grid: rgba(227,191,90,.10);  /* D */
+  --chart-axis: #6b6250;               /* D */
+
+  --canvas-mask:    rgba(0,0,0,.76);        /* D */
+  --canvas-handle:  #e3bf5a;                /* D */
+  --canvas-guide:   rgba(227,191,90,.55);   /* D */
+  --canvas-outline: #f1e6cf;                /* D */
+
+  --shadow-1: 0 1px 2px rgba(0,0,0,.40);
+  --shadow-2: 0 6px 20px rgba(0,0,0,.50);
+  --shadow-3: 0 18px 50px rgba(0,0,0,.65);
+  --shadow-4: 0 32px 80px rgba(0,0,0,.78);  /* D */
+  --shadow-glow:  0 0 0 1px rgba(227,191,90,.22), 0 8px 30px rgba(0,0,0,.6); /* D */
+  --shadow-inset: inset 0 1px 0 rgba(255,255,255,.04);  /* D */
+
+  --selection-bg:    rgba(227,191,90,.32);  /* D */
+  --selection-text:  #fff6df;               /* D */
+  --scrollbar-track: transparent;
+  --scrollbar-thumb: #3a3325;               /* D */
+  --scrollbar-hover: #55492f;               /* D */
+  /* Control-boundary fill. --surface-4 is an elevation step and can never be
+     3:1 from its neighbouring surface while still reading as subtle elevation,
+     so the slider track / toggle off-track role gets its own token.
+     3.06:1 on surface-2, 3.25:1 on surface-0. */
+  --control-track: #615e58;
+
+}

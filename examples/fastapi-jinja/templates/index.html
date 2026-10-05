@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block content %}
+<h1 class="ui-title">Tasks</h1>
+
+<form class="ui-card" method="post" action="/tasks">
+  <label class="ui-field">
+    <span class="ui-label">New task</span>
+    <div class="ui-input-group">
+      <input class="ui-input" name="title" placeholder="What needs doing?" required>
+      <button class="ui-btn ui-btn--primary" type="submit">Add</button>
+    </div>
+  </label>
+</form>
+
+{% set open = tasks | rejectattr("done") | list %}
+<div class="ui-row">
+  <span class="ui-badge ui-badge--accent">{{ open | length }} open</span>
+  <span class="ui-badge ui-badge--success">{{ (tasks | length) - (open | length) }} done</span>
+</div>
+
+<div class="ui-table-wrap">
+  <table class="ui-table ui-table--hover">
+    <thead><tr><th>Task</th><th>State</th><th class="num">Action</th></tr></thead>
+    <tbody>
+      {% for task in tasks %}
+      <tr>
+        <td>{{ task.title }}</td>
+        <td>
+          {% if task.done %}<span class="ui-badge ui-badge--success">done</span>
+          {% else %}<span class="ui-badge">open</span>{% endif %}
+        </td>
+        <td class="num">
+          <form method="post" action="/tasks/{{ loop.index0 }}/toggle">
+            <button class="ui-btn ui-btn--sm" type="submit">{{ "Reopen" if task.done else "Done" }}</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

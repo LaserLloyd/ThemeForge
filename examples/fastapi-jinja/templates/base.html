@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Tasks{% endblock %}</title>
+  {# The theme block. Order matters: the runtime first (blocking), then the base and
+     component layers, then the app's CSS, then the tokens. #}
+  <script src="{{ url_for('ui-theme', path='ui-theme.js') }}"
+          data-themes="purple,midnight-gold,glacier,forest,paper,daylight"
+          data-default="auto"
+          data-default-dark="midnight-gold"
+          data-default-light="daylight"
+          data-storage-key="tasks-example.theme"></script>
+  <link rel="stylesheet" href="{{ url_for('ui-theme', path='ui-theme-base.css') }}">
+  <link rel="stylesheet" href="{{ url_for('ui-theme', path='ui-components.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', path='app.css') }}">
+  <link rel="stylesheet" href="{{ url_for('ui-theme', path='ui-theme.css') }}">
+  <script src="{{ url_for('ui-theme', path='ui-components.js') }}" defer></script>
+</head>
+<body>
+<div class="ui-app">
+  <header class="ui-app__header">
+    <a class="ui-brand" href="/">Tasks</a>
+    <span class="ui-spacer"></span>
+    <select class="ui-select tasks-picker" data-ui-theme-picker aria-label="Theme"></select>
+  </header>
+  <main class="ui-app__main">
+    <div class="ui-container ui-stack" style="--ui-gap: var(--space-5)">
+      {% block content %}{% endblock %}
+    </div>
+  </main>
+</div>
+</body>
+</html>

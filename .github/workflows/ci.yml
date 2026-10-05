@@ -1,0 +1,60 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Generated files are current
+        run: |
+          python tools/sync_theme.py build --quiet
+          git diff --exit-code -- ui-theme tokens docs
+          python tools/sync_theme.py check
+      - name: Contrast
+        run: python tools/check_contrast.py --fail-on any > /dev/null
+      - name: Shipped JavaScript parses
+        run: for f in ui-theme/*.js ui-theme/adapters/*.js; do node --check "$f" || exit 1; done
+      - name: Unit tests
+        run: python -m unittest discover -s tests -v
+      - name: Runtime tests in headless Chrome
+        run: python tests/run_browser_tests.py
+      - name: No CRLF in committed text files
+        run: |
+          if git ls-files --eol | grep -E '^i/crlf'; then
+            echo "files committed with CRLF line endings"; exit 1
+          fi
+
+  tools-on-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Check and unit tests
+        run: |
+          python tools/sync_theme.py check
+          python -m unittest discover -s tests
+
+  updater-on-oldest-python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.9"
+      - name: update.py installs from a local archive
+        run: |
+          git archive --format=tar.gz --prefix=ThemeForge-test/ -o /tmp/repo.tar.gz HEAD
+          python ui-theme/update.py --source /tmp/repo.tar.gz --dest /tmp/app/static/ui-theme
+          python ui-theme/update.py --source /tmp/repo.tar.gz --dest /tmp/app/static/ui-theme | grep "already up to date"

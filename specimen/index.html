@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ThemeForge — specimen</title>
+<!-- ?theme=<slug> in the URL picks a theme (used for screenshots). -->
+<script>
+  try {
+    var shot = new URLSearchParams(location.search).get('theme');
+    if (shot) localStorage.setItem('ui-theme-specimen', shot);
+  } catch (e) { /* storage blocked: the default paints */ }
+</script>
+<script src="../ui-theme/ui-theme.js"
+        data-themes="purple,midnight-gold,glacier,forest,paper,daylight,electric-yellow,laserlloyd,laserlloyd-light,night-red"
+        data-default="auto"
+        data-default-dark="midnight-gold"
+        data-default-light="daylight"
+        data-families="true"
+        data-storage-key="ui-theme-specimen"></script>
+<link rel="stylesheet" href="../ui-theme/ui-theme-base.css">
+<link rel="stylesheet" href="../ui-theme/ui-components.css">
+<link rel="stylesheet" href="specimen.css">
+<link rel="stylesheet" href="../ui-theme/ui-theme.css">
+<script src="../ui-theme/ui-components.js" defer></script>
+</head>
+<body>
+<header class="spec-header">
+  <div class="ui-stack" style="--ui-gap: 2px">
+    <span class="ui-kicker">ThemeForge</span>
+    <strong class="spec-brand">Specimen</strong>
+  </div>
+  <div role="tablist" aria-label="Theme" id="theme-tablist" class="spec-tabs"><!-- built by specimen.js --></div>
+  <div class="spec-readout">
+    <span>data-palette=<b id="readout-palette"></b></span>
+    <span>data-theme=<b id="readout-theme"></b></span>
+    <span id="readout-set"></span>
+  </div>
+</header>
+
+<main class="ui-container spec-main">
+
+  <section class="spec-section" id="states">
+    <h2 class="ui-heading">On, off, selected, disabled</h2>
+    <p class="ui-lead">Every control shows its state by shape as well as colour: on is filled with <code class="ui-code">--selected</code>, off is an outline, disabled is dashed with no fill.</p>
+    <div class="ui-grid" style="--ui-grid-min: 250px">
+      <div class="ui-card">
+        <span class="ui-kicker">Switches</span>
+        <label class="ui-check"><input type="checkbox" role="switch" class="ui-switch"> Off <span class="ui-spacer"></span><span class="ui-switch-state" aria-hidden="true"></span></label>
+        <label class="ui-check"><input type="checkbox" role="switch" class="ui-switch" checked> On <span class="ui-spacer"></span><span class="ui-switch-state" aria-hidden="true"></span></label>
+        <label class="ui-check"><input type="checkbox" role="switch" class="ui-switch" disabled> Off, disabled <span class="ui-spacer"></span><span class="ui-switch-state" aria-hidden="true"></span></label>
+        <label class="ui-check"><input type="checkbox" role="switch" class="ui-switch" checked disabled> On, disabled <span class="ui-spacer"></span><span class="ui-switch-state" aria-hidden="true"></span></label>
+      </div>
+      <div class="ui-card">
+        <span class="ui-kicker">Checkboxes and radios</span>
+        <label class="ui-check"><input type="checkbox" class="ui-checkbox"> Unchecked</label>
+        <label class="ui-check"><input type="checkbox" class="ui-checkbox" checked> Checked</label>
+        <label class="ui-check"><input type="checkbox" class="ui-checkbox" id="spec-indet"> Mixed</label>
+        <label class="ui-check"><input type="checkbox" class="ui-checkbox" disabled> Unchecked, disabled</label>
+        <label class="ui-check"><input type="checkbox" class="ui-checkbox" checked disabled> Checked, disabled</label>
+        <div class="ui-row">
+          <label class="ui-check"><input type="radio" name="spec-r" class="ui-radio" checked> One</label>
+          <label class="ui-check"><input type="radio" name="spec-r" class="ui-radio"> Two</label>
+          <label class="ui-check"><input type="radio" name="spec-r2" class="ui-radio" checked disabled> Off-limits</label>
+        </div>
+      </div>
+      <div class="ui-card">
+        <span class="ui-kicker">Selection</span>
+        <div class="ui-segmented" role="group" aria-label="Range">
+          <button type="button" aria-pressed="true">Day</button>
+          <button type="button" aria-pressed="false">Week</button>
+          <button type="button" aria-pressed="false" disabled>Year</button>
+        </div>
+        <div class="ui-tabs" role="tablist" aria-label="Sections">
+          <button class="ui-tab" role="tab" aria-selected="true">Overview</button>
+          <button class="ui-tab" role="tab" aria-selected="false">Jobs <span class="ui-count">3</span></button>
+          <button class="ui-tab" role="tab" aria-selected="false" disabled>Archive</button>
+        </div>
+        <nav class="ui-nav" aria-label="Example">
+          <a class="ui-nav__item" href="#states" aria-current="page">Current page</a>
+          <a class="ui-nav__item" href="#states">Another page</a>
+        </nav>
+      </div>
+    </div>
+    <div class="ui-row">
+      <button class="ui-btn ui-btn--primary" type="button">Primary</button>
+      <button class="ui-btn" type="button">Secondary</button>
+      <button class="ui-btn ui-btn--ghost" type="button">Ghost</button>
+      <button class="ui-btn ui-btn--outline" type="button">Outline</button>
+      <button class="ui-btn ui-btn--danger" type="button">Delete</button>
+      <button class="ui-btn" type="button" aria-pressed="true">Pressed</button>
+      <button class="ui-btn ui-btn--primary" type="button" disabled>Disabled</button>
+      <button class="ui-btn" type="button" aria-busy="true">Saving</button>
+      <button class="ui-btn ui-btn--icon" type="button" aria-label="More" data-ui-tooltip="More">⋯</button>
+    </div>
+    <div class="ui-grid" style="--ui-grid-min: 220px">
+      <label class="ui-field"><span class="ui-label">Name</span><input class="ui-input" value="kerf-test" ><span class="ui-help">Lowercase, no spaces.</span></label>
+      <label class="ui-field"><span class="ui-label">Passes</span><input class="ui-input" value="0" aria-invalid="true" aria-describedby="spec-err"><span class="ui-error" id="spec-err">Must be at least 1.</span></label>
+      <label class="ui-field"><span class="ui-label">Locked</span><input class="ui-input" value="read only" disabled><span class="ui-help">Disabled field.</span></label>
+      <label class="ui-field"><span class="ui-label">Material</span><select class="ui-select"><option>Birch ply 3 mm</option><option>Acrylic 5 mm</option></select></label>
+    </div>
+  </section>
+
+  <section class="spec-section">
+    <h2 class="ui-heading">Surfaces</h2>
+    <div class="spec-swatches">
+      <div><span style="background:var(--surface-void)"></span>void</div>
+      <div><span style="background:var(--surface-0)"></span>0 page</div>
+      <div><span style="background:var(--surface-1)"></span>1 nav</div>
+      <div><span style="background:var(--surface-2)"></span>2 card</div>
+      <div><span style="background:var(--surface-3)"></span>3 hover</div>
+      <div><span style="background:var(--surface-4)"></span>4 active</div>
+      <div><span style="background:var(--surface-sunken)"></span>sunken</div>
+      <div><span style="background:var(--surface-overlay)"></span>overlay</div>
+      <div><span style="background:var(--code-bg)"></span>code</div>
+    </div>
+  </section>
+
+  <section class="spec-section">
+    <h2 class="ui-heading">Text</h2>
+    <div class="ui-grid" style="--ui-grid-min: 300px">
+      <div class="ui-card">
+        <span class="ui-text-primary">.ui-text-primary — body text, values, headings</span>
+        <span class="ui-text-secondary">.ui-text-secondary — labels, descriptions, table cells</span>
+        <span class="ui-text-tertiary ui-small">.ui-text-tertiary — hints, timestamps, metadata</span>
+        <span class="ui-text-disabled ui-small">.ui-text-disabled — disabled controls only</span>
+        <span class="ui-text-link">.ui-text-link — links and link-like actions</span>
+      </div>
+      <div class="ui-card ui-markdown">
+        <h3>Render finished</h3>
+        <p>The queue is <strong>empty</strong>, the <em>rain kept tapping</em>, and <strong><em>this part matters most</em></strong>. Open <a href="#states">the log</a> or run <code>make check</code>.</p>
+        <ul><li>two runs compared</li><li><del>old plan</del> replaced</li></ul>
+        <blockquote>Quotes keep their own bar colour.</blockquote>
+        <table><thead><tr><th>Item</th><th>Size</th></tr></thead><tbody><tr><td>notes.txt</td><td>18 KB</td></tr><tr><td>photo.jpg</td><td><mark>4.2 MB</mark></td></tr></tbody></table>
+      </div>
+    </div>
+  </section>
+
+  <section class="spec-section">
+    <h2 class="ui-heading">Status</h2>
+    <div class="ui-row">
+      <span class="ui-badge">neutral</span>
+      <span class="ui-badge ui-badge--accent">accent</span>
+      <span class="ui-badge ui-badge--success"><span class="ui-dot ui-dot--success"></span>done</span>
+      <span class="ui-badge ui-badge--warning">warning</span>
+      <span class="ui-badge ui-badge--danger">failed</span>
+      <span class="ui-badge ui-badge--info">info</span>
+      <span class="ui-badge ui-badge--live"><span class="ui-dot ui-dot--live"></span>live</span>
+      <span class="ui-badge ui-badge--idle">idle</span>
+      <span class="ui-badge ui-badge--offline">offline</span>
+    </div>
+    <div class="ui-grid" style="--ui-grid-min: 260px">
+      <div class="ui-callout ui-callout--info" role="note"><strong class="ui-callout__title">Note</strong>Measured on the left half of the bed.</div>
+      <div class="ui-callout ui-callout--success" role="status"><strong class="ui-callout__title">Saved</strong>Your settings are stored.</div>
+      <div class="ui-callout ui-callout--warning" role="status"><strong class="ui-callout__title">Heads up</strong>The disk is 90% full.</div>
+      <div class="ui-callout ui-callout--danger" role="alert"><strong class="ui-callout__title">Failed</strong>The job stopped after 4 minutes.</div>
+    </div>
+    <div class="ui-row" style="--ui-gap: var(--space-4)">
+      <progress class="ui-progress" value="42" max="100" style="max-width: 240px" aria-label="Progress"></progress>
+      <span class="ui-spinner" role="status" aria-label="Loading"></span>
+      <div class="ui-stack" style="flex: 1 1 200px; --ui-gap: 6px"><span class="ui-skeleton"></span><span class="ui-skeleton" style="width: 60%"></span></div>
+    </div>
+  </section>
+
+  <section class="spec-section">
+    <h2 class="ui-heading">Data</h2>
+    <div class="ui-table-wrap">
+      <table class="ui-table ui-table--hover">
+        <thead><tr><th>Job</th><th>State</th><th class="num">Minutes</th></tr></thead>
+        <tbody>
+          <tr><td>kerf-ladder</td><td><span class="ui-badge ui-badge--live">running</span></td><td class="num">12.4</td></tr>
+          <tr aria-selected="true"><td>hinge-plate-v4</td><td><span class="ui-badge ui-badge--success">done</span></td><td class="num">38.0</td></tr>
+          <tr><td>sign-b</td><td><span class="ui-badge ui-badge--danger">failed</span></td><td class="num">4.2</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="ui-grid" style="--ui-grid-min: 150px">
+      <div class="ui-card"><div class="ui-stat"><span class="ui-stat__label">Jobs today</span><span class="ui-stat__value">128</span></div></div>
+      <div class="ui-card"><div class="ui-stat"><span class="ui-stat__label">Success rate</span><span class="ui-stat__value">97.6%</span></div></div>
+      <div class="ui-card"><div class="ui-stat"><span class="ui-stat__label">Queue</span><span class="ui-stat__value">3</span></div></div>
+    </div>
+    <div class="spec-cats" aria-hidden="true">
+      <span style="background:var(--cat-1)"></span><span style="background:var(--cat-2)"></span><span style="background:var(--cat-3)"></span>
+      <span style="background:var(--cat-4)"></span><span style="background:var(--cat-5)"></span><span style="background:var(--cat-6)"></span>
+      <span style="background:var(--cat-7)"></span><span style="background:var(--cat-8)"></span><span style="background:var(--cat-9)"></span>
+      <span style="background:var(--cat-10)"></span><span style="background:var(--cat-11)"></span><span style="background:var(--cat-12)"></span>
+    </div>
+  </section>
+
+  <section class="spec-section">
+    <h2 class="ui-heading">Navigation and structure</h2>
+    <nav aria-label="Breadcrumb"><ol class="ui-breadcrumbs">
+      <li><a href="#states">Home</a></li><li><a href="#states">Jobs</a></li><li><span aria-current="page">render-12</span></li>
+    </ol></nav>
+    <div class="ui-row">
+      <nav class="ui-pagination" aria-label="Pages">
+        <a class="ui-btn ui-btn--sm" href="#states">Previous</a>
+        <a class="ui-btn ui-btn--sm" href="#states">1</a>
+        <a class="ui-btn ui-btn--sm" href="#states" aria-current="page">2</a>
+        <a class="ui-btn ui-btn--sm" href="#states">3</a>
+        <a class="ui-btn ui-btn--sm" href="#states">Next</a>
+      </nav>
+      <span class="ui-spacer"></span>
+      <span class="ui-avatar ui-avatar--sm" aria-hidden="true">AL</span>
+      <span class="ui-avatar" aria-hidden="true">JL</span>
+      <span class="ui-avatar ui-avatar--lg" aria-hidden="true">MK</span>
+    </div>
+    <div class="ui-row">
+      <span class="ui-chip">python <button class="ui-chip__remove" type="button" aria-label="Remove python">×</button></span>
+      <button class="ui-chip" type="button" aria-pressed="true">Pinned</button>
+      <button class="ui-chip" type="button" aria-pressed="false">Archived</button>
+      <button class="ui-chip" type="button" disabled>Locked</button>
+      <span class="ui-count">3</span><span class="ui-count ui-count--accent">5</span><span class="ui-count ui-count--danger">2</span>
+    </div>
+    <div class="ui-grid" style="--ui-grid-min: 300px">
+      <div>
+        <details class="ui-details" open name="spec-acc"><summary>General</summary><div class="ui-details__body">Name, description and visibility.</div></details>
+        <details class="ui-details" name="spec-acc"><summary>Advanced</summary><div class="ui-details__body">Webhooks and retention.</div></details>
+      </div>
+      <fieldset class="ui-fieldset">
+        <legend>Upload</legend>
+        <input class="ui-input" type="file" aria-label="File to upload">
+        <button class="ui-btn" type="button" id="spec-drawer-open">Open drawer</button>
+      </fieldset>
+    </div>
+    <dialog class="ui-drawer" id="spec-drawer" aria-labelledby="spec-drawer-title">
+      <form method="dialog" class="ui-stack">
+        <h2 class="ui-heading" id="spec-drawer-title">Filters</h2>
+        <label class="ui-check"><input type="checkbox" class="ui-checkbox" checked> Only failed jobs</label>
+        <button class="ui-btn ui-btn--primary" value="ok">Apply</button>
+      </form>
+    </dialog>
+  </section>
+
+  <section class="spec-section">
+    <h2 class="ui-heading">Overlays, chat and code</h2>
+    <div class="ui-grid" style="--ui-grid-min: 300px">
+      <div class="ui-stack">
+        <div class="ui-dialog spec-static-dialog" role="group" aria-label="Dialog sample">
+          <h3 class="ui-dialog__title">Delete job?</h3>
+          <div class="ui-dialog__body">This cannot be undone.</div>
+          <div class="ui-dialog__actions"><button class="ui-btn" type="button">Cancel</button><button class="ui-btn ui-btn--danger" type="button">Delete</button></div>
+        </div>
+        <div class="ui-row">
+          <button class="ui-btn" type="button" id="spec-confirm">Open confirm()</button>
+          <button class="ui-btn" type="button" id="spec-toast">Show a toast</button>
+          <button class="ui-btn" type="button" popovertarget="spec-menu">Menu</button>
+        </div>
+        <div class="ui-menu" id="spec-menu" popover>
+          <button class="ui-menu__item" type="button">Rename</button>
+          <button class="ui-menu__item" type="button" role="menuitemcheckbox" aria-checked="true">Pinned</button>
+          <button class="ui-menu__item" type="button" disabled>Move (none)</button>
+          <hr class="ui-menu__separator">
+          <button class="ui-menu__item ui-menu__item--danger" type="button">Delete</button>
+        </div>
+        <div class="ui-toast ui-toast--success spec-static">Settings saved</div>
+      </div>
+      <div class="ui-stack">
+        <div class="ui-bubble ui-bubble--user">Cut a test ladder in 3 mm birch and tell me the tightest slot that still fits.</div>
+        <div class="ui-bubble ui-markdown"><p>The <strong>2.84 mm</strong> slot pressed in by hand. <em>Re-run after any lens change.</em></p></div>
+        <span class="ui-typing" aria-label="Typing"><span></span><span></span><span></span></span>
+      </div>
+      <figure class="ui-codeblock">
+        <figcaption class="ui-codeblock__bar"><span>python</span><button class="ui-codeblock__button" type="button">Copy</button></figcaption>
+        <pre class="hljs"><code><span class="hljs-comment"># slot ladder from 0.10 to 0.30 mm</span>
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">ladder</span>(<span class="hljs-params">lo=<span class="hljs-number">0.10</span>, hi=<span class="hljs-number">0.30</span></span>):
+    <span class="hljs-keyword">return</span> {<span class="hljs-string">"slots"</span>: <span class="hljs-built_in">list</span>(steps(lo, hi))}
+<span class="hljs-deletion">-   tolerance = 0.0</span>
+<span class="hljs-addition">+   tolerance = 0.02</span></code></pre>
+      </figure>
+    </div>
+    <div class="ui-row">
+      <div class="spec-media ui-media" role="img" aria-label="Colour gradient with the theme's media filter"></div>
+      <span class="ui-small ui-text-tertiary">.ui-media: images opt in to the theme's filter (Night Red turns them red).</span>
+    </div>
+  </section>
+
+</main>
+<script src="specimen.js"></script>
+</body>
+</html>
