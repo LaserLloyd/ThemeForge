@@ -1,22 +1,22 @@
 {
   "name": "ThemeForge",
-  "version": "1.1.0",
-  "hash": "734950bc052a",
+  "version": "1.1.1",
+  "hash": "70612e77cc24",
   "repo": "LaserLloyd/ThemeForge",
   "files": {
-    "README.md": "17d237cb8f9a21b1ddfb79b35f63d7d8e759311d30e1dbed826ca8d90c281346",
-    "VERSION": "f24a3be0ae43bd4f3108f10a6a90511e7aa15db27446a8ce64c213ab281eafa5",
-    "adapters/quasar.css": "0353e122e59cba0c726a37c2596c7fd88b42ac52b97f85595247f22da3c57c05",
-    "adapters/quasar.js": "375afefb568b21f2a9ca91c01e0119170fdeee58f6e85d4bc14cb8485d57270c",
-    "adapters/tailwind-v3.preset.js": "b67a27b5130c997fa48dcd4d8b511466a064fe848563af544fe7595ef7532bb1",
-    "adapters/tailwind.css": "b33a2538a83a29a41779c00884a7fa04483318ffc0cd926c81cd5b80dac8eecf",
-    "themes.json": "cc9844f549910d904afc428627e8fff06b36661b49b8fe6298618b87530fa9fb",
-    "ui-components.css": "05b4e66cbee4ab0dfa25f6f719da4a8468ca9e7027b83a05d4058e646a5dc16b",
-    "ui-components.js": "087daeefbb5041ab3f2b9e4e41802b3e027568c4b08b19f00fc9cec3d7c954b7",
-    "ui-theme-base.css": "6440e01d87501daefdb73492a095a1ded8c93aae411b64fe9e89b5ab10fddf0e",
-    "ui-theme.css": "e0e078e7830b699b160b710c959ddaa698ac9c59ec1e3390a2dda4063d06bc35",
+    "README.md": "b3e6641ad4ea828ad8dd27c63bd9540b4a623f60553ee5a86b9ec68ffdbbf3d7",
+    "VERSION": "268d21e6f695b6bb564d4fb497869a4daea4de8a31675f00346fa5bec22ef8e2",
+    "adapters/quasar.css": "359bc9c4d93c0ba52ef86cd5e3e587f0ee600adf42e8582a717464a95753f5d3",
+    "adapters/quasar.js": "6cd4d6fb97b9400bf6b5f314203bc7186f5c30f52426d328f7c23916fddae2de",
+    "adapters/tailwind-v3.preset.js": "7c700fec1660a6abc20db57f965e737b9b22cb5338e92dadced797410c42f436",
+    "adapters/tailwind.css": "edfffad864bac98cee0965ea0be615cf77b5128a4d21f828f348f091f85c8de2",
+    "themes.json": "e2dcfa8100a20dc376ca432e142d75fbb66b4bd39b75c2da4ca8ed4aa590ec5a",
+    "ui-components.css": "bdd6a164f6fe0b29c3a9c3f93a5f4ca0a3ab6be08704f846b3dac730591dd2e0",
+    "ui-components.js": "80847257cf41b2cc98f1aad67e78c95293f52f8f0ed83013dbfa220e521e25dc",
+    "ui-theme-base.css": "ebd41da6f4bb91c2592789c7f3d0ec53bce7b0212f7542fa0a699271f85a3137",
+    "ui-theme.css": "3ced1c22e295b969d883b00454629a066f965ca700abdc5b98c3ec7006112da3",
     "ui-theme.d.ts": "5f6dd40ba3e1df150ea752d5c2ebd444a390eb39661e2fbc668a59582d8141ea",
-    "ui-theme.js": "555bf981df562b69ef9669643ac6ce343710997226c7fb7acfeee1670aae72d5",
-    "update.py": "e4031f44e5688c9cb1c42975a2b7f0e97855a4ae00ad8cd4b5ce10c6a9c838b9"
+    "ui-theme.js": "1ff1f08921250c6a3ce71e8f0cddf49f9915cd89ace3aa319c7d9c76b5521a52",
+    "update.py": "e44ece9810c55b339628d3c0b57760ea78f050b9a90a0cd072c428e29983b922"
   }
 }

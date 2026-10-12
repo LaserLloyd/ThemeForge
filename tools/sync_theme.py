@@ -67,8 +67,9 @@ DOCS = ROOT / "docs"
 
 NAME = "ThemeForge"
 #: Names this bundle shipped under before; a copy whose VERSION carries one is still
-#: this bundle (ThemeForge was released as unifyingTheme). Same list as tools/update.py.
-LEGACY_NAMES = ("unifyingTheme",)
+#: this bundle (ThemeForge was released as unifyingTheme, and before that the drop-in
+#: folder stamped "ui-theme <date> <hash>"). Same list as tools/update.py.
+LEGACY_NAMES = ("unifyingTheme", "ui-theme")
 REPO = "LaserLloyd/ThemeForge"
 BASE_SLUG = "purple"
 GROUNDS = {"oled", "dark", "light"}

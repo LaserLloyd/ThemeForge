@@ -4,6 +4,12 @@ Versions follow [Semantic Versioning](https://semver.org/). A release is a git t
 `ui-theme/VERSION` and `UITheme.version` carry the same number. Token names are the public
 API: removing or renaming one is a major version.
 
+## 1.1.1
+
+- `install` and `update.py` accept a copy whose `VERSION` reads `ui-theme <date> <hash>`, the
+  stamp the drop-in folder carried before the first release, instead of refusing it as "not
+  a ui-theme folder".
+
 ## 1.1.0
 
 Three tokens every theme now defines, and the runtime says which contrast profile is on.

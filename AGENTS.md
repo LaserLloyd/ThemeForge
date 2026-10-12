@@ -53,9 +53,9 @@ Other ways, if Python is not available:
 
 - **git:** `git clone --depth 1 https://github.com/LaserLloyd/ThemeForge.git ut-tmp`, copy
   `ut-tmp/ui-theme` into the app, delete `ut-tmp`.
-- **Node:** `npx degit LaserLloyd/ThemeForge/ui-theme#v1.1.0 static/ui-theme`.
+- **Node:** `npx degit LaserLloyd/ThemeForge/ui-theme#v1.1.1 static/ui-theme`.
 - **No install (prototypes, single HTML files):** load the files from jsDelivr, pinned to a
-  release: `https://cdn.jsdelivr.net/gh/LaserLloyd/ThemeForge@v1.1.0/ui-theme/ui-theme.js`
+  release: `https://cdn.jsdelivr.net/gh/LaserLloyd/ThemeForge@v1.1.1/ui-theme/ui-theme.js`
   (and the same path for each CSS file). Never pin `@main`; the CDN caches it for up to
   12 hours. A CDN page updates by changing the pinned version; `update.py` and steps 8.5, 9
   and 10 below do not apply to it.
@@ -268,7 +268,7 @@ Add this line to the app's own `AGENTS.md` or `CLAUDE.md` (create one if missing
 agent working on the app keeps using the theme:
 
 ```
-UI styling uses ThemeForge 1.1.0 in static/ui-theme/ (read static/ui-theme/README.md before
+UI styling uses ThemeForge 1.1.1 in static/ui-theme/ (read static/ui-theme/README.md before
 writing CSS). Every page head carries the theme block from the base template: ui-theme.js first
 and blocking, ui-theme-base.css + ui-components.css before the app's CSS, ui-theme.css after it.
 Build from its tokens and ui-* classes, never write colour literals, never edit that folder;

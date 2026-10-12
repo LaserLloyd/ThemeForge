@@ -202,6 +202,16 @@ class RegistryTests(unittest.TestCase):
         self.assertEqual(code, 0, out)
         self.assertTrue((target / "VERSION").read_text(encoding="utf-8").startswith("ThemeForge "))
 
+    def test_install_to_a_copy_stamped_ui_theme_date(self):
+        """Before the first release the folder's VERSION read "ui-theme <date> <hash>"."""
+        target = self.base / "older" / "ui-theme"
+        target.mkdir(parents=True)
+        (target / "VERSION").write_text("ui-theme 2026-09-24 638060cc7dc6\n", encoding="utf-8")
+        (target / "ui-theme.css").write_text("/* old */", encoding="utf-8")
+        code, out = quiet(sync.main, ["install", "--to", str(target), "--quiet"])
+        self.assertEqual(code, 0, out)
+        self.assertTrue((target / "VERSION").read_text(encoding="utf-8").startswith("ThemeForge "))
+
     def test_install_needs_a_target(self):
         code, out = quiet(sync.main, ["install"])
         self.assertEqual(code, 2)
@@ -362,6 +372,14 @@ class UpdateTests(unittest.TestCase):
         self.assertEqual(code, 0, out)
         self.assertTrue((self.dest / "adapters" / "app-only.css").is_file())
         self.assertTrue((self.dest / "files.json").is_file())
+
+    def test_copy_stamped_ui_theme_date_is_upgraded(self):
+        self.dest.mkdir(parents=True)
+        (self.dest / "VERSION").write_text("ui-theme 2026-09-24 638060cc7dc6\n", encoding="utf-8")
+        (self.dest / "ui-theme.css").write_text("old", encoding="utf-8")
+        code, out = quiet(update.main, ["--source", str(self.archive), "--dest", str(self.dest)])
+        self.assertEqual(code, 0, out)
+        self.assertTrue((self.dest / "VERSION").read_text(encoding="utf-8").startswith("ThemeForge "))
 
     def test_copy_under_the_old_name_is_upgraded(self):
         """ThemeForge shipped as unifyingTheme: such a copy is still this bundle."""
