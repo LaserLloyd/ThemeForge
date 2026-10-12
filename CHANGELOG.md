@@ -4,6 +4,11 @@ Versions follow [Semantic Versioning](https://semver.org/). A release is a git t
 `ui-theme/VERSION` and `UITheme.version` carry the same number. Token names are the public
 API: removing or renaming one is a major version.
 
+## 1.1.2
+
+- Forest: `--cta-gradient` starts from a lighter step of its green accent and `--notify` is
+  the pale lichen of its focus ring. 1.1.0 had carried the stops of an earlier brown Forest.
+
 ## 1.1.1
 
 - `install` and `update.py` accept a copy whose `VERSION` reads `ui-theme <date> <hash>`, the

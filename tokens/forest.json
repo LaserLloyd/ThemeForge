@@ -1,5 +1,5 @@
 {
-  "$description": "Forest: ThemeForge 1.1.1 design tokens in the W3C DTCG format (Format Module 2025.10), generated from src/css. The CSS custom property for a token is --<token name>.",
+  "$description": "Forest: ThemeForge 1.1.2 design tokens in the W3C DTCG format (Format Module 2025.10), generated from src/css. The CSS custom property for a token is --<token name>.",
   "$extensions": {
     "com.laserlloyd.themeforge": {
       "theme": {
@@ -13,7 +13,7 @@
       },
       "css": {
         "--accent-rgb": "57,98,55",
-        "--cta-gradient": "linear-gradient(135deg, #9c6b30, #447341, #396237)",
+        "--cta-gradient": "linear-gradient(135deg, #5b9257, #447341, #396237)",
         "--scrim-media": "linear-gradient(to top, rgba(0,0,0,.90), rgba(0,0,0,0))",
         "--media-filter": "none",
         "--ls-tight": "-0.02em",
@@ -1346,12 +1346,12 @@
       "$value": {
         "colorSpace": "srgb",
         "components": [
-          1.0,
-          0.6157,
-          0.302
+          0.7098,
+          0.8353,
+          0.6078
         ],
         "alpha": 1.0,
-        "hex": "#ff9d4d"
+        "hex": "#b5d59b"
       }
     },
     "notify-idle": {

@@ -568,11 +568,11 @@ tool's docstring. Every theme must pass every row of its contrast profile.
 | unselected-border on surface-2 (off control outline) | #7c6b55 | #000000 | 4.09 | 3:1 | pass |
 | unselected-fg on surface-2 (off switch knob) | #8da083 | #000000 | 7.49 | 3:1 | pass |
 | text-secondary vs text-disabled (enabled vs disabled) | #acbda1 | #64735e | 2.54 | 1.5:1 | pass |
-| notify on surface-0 (unread mark) | #ff9d4d | #000000 | 10.18 | 4.5:1 | pass |
+| notify on surface-0 (unread mark) | #b5d59b | #000000 | 12.96 | 4.5:1 | pass |
 | notify-idle on surface-0 (at most: must stay quiet) | #3c4536 | #000000 | 2.10 | ≤ 3:1 | pass |
-| notify on surface-1 (unread mark) | #ff9d4d | #000000 | 10.18 | 4.5:1 | pass |
+| notify on surface-1 (unread mark) | #b5d59b | #000000 | 12.96 | 4.5:1 | pass |
 | notify-idle on surface-1 (at most: must stay quiet) | #3c4536 | #000000 | 2.10 | ≤ 3:1 | pass |
-| notify vs notify-idle (the two states never blur) | #ff9d4d | #3c4536 | 4.86 | 3:1 | pass |
+| notify vs notify-idle (the two states never blur) | #b5d59b | #3c4536 | 6.18 | 3:1 | pass |
 | on-media on scrim-media (dark stop, over #ffffff) | #ffffff | rgba(0,0,0,.90) | 17.58 | 4.5:1 | pass |
 | syn-fg on syn-bg | #dbe5d5 | #000000 | 16.18 | 4.5:1 | pass |
 | syn-comment on syn-bg | #819179 | #000000 | 6.26 | 3.5:1 | pass |

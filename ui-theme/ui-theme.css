@@ -1,7 +1,7 @@
-/* GENERATED theme tokens: ThemeForge 1.1.1, drop-in bundle (ui-theme/).
+/* GENERATED theme tokens: ThemeForge 1.1.2, drop-in bundle (ui-theme/).
    https://github.com/LaserLloyd/ThemeForge . Do not edit this copy: update the whole
    folder (python ui-theme/update.py) and keep app styles in the app.
-   body sha256: e728c0f2dc241f6e */
+   body sha256: daf978d316e98e16 */
 /* ============================================================================
    theme-base.css — the token contract, Purple (the base theme), and the
    theme-agnostic element layer.
@@ -797,8 +797,8 @@
   --accent:          #396237;
   --accent-hover:    #447341;
   --accent-pressed:  #2e502f;
-  --cta-gradient:    linear-gradient(135deg, #9c6b30, var(--accent-hover), var(--accent));  /* D */
-  --notify: #ff9d4d; --notify-idle: #3c4536;  /* D — unread indicator, solved as a pair */
+  --cta-gradient:    linear-gradient(135deg, #5b9257, var(--accent-hover), var(--accent));  /* D — a lighter step of the green accent */
+  --notify: #b5d59b; --notify-idle: #3c4536;  /* D — unread indicator, solved as a pair: notify = the pale lichen of the focus ring; idle a mossy step above --border */
   --accent-subtle:   rgba(57,98,55,.26);
   --accent-muted:    rgba(57,98,55,.42);
   --accent-glow:     rgba(181,213,155,.28);
