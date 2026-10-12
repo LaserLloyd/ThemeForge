@@ -88,6 +88,22 @@ class BuildTests(unittest.TestCase):
         self.assertIn('"slug": "night-red"', js)
         self.assertNotIn("UI_THEME_MANIFEST =", js)
 
+    def test_runtime_registry_carries_the_contrast_profile(self):
+        js = self.bundle["ui-theme.js"]
+        self.assertIn('"contrastProfile": "night"', js)
+        self.assertEqual(js.count('"contrastProfile": "standard"'), len(self.data["themes"]) - 1)
+        self.assertIn("data-contrast-profile", js)
+        self.assertIn("contrastProfile: 'standard' | 'night'", self.bundle["ui-theme.d.ts"])
+
+    def test_no_apple_only_mono_names(self):
+        """SFMono-Regular and Menlo resolve to a proportional sans on Linux; ui-monospace covers Apple."""
+        css = self.bundle["ui-theme.css"]
+        for line in css.splitlines():
+            value = line.split("/*")[0]
+            if "--font-mono" in value and ":" in value:
+                self.assertNotIn("SFMono", value, line)
+                self.assertNotIn("Menlo", value, line)
+
     def test_public_registry_has_no_private_fields(self):
         registry = json.loads(self.bundle["themes.json"])
         allowed = {"slug", "name", "family", "ground", "colorScheme", "themeColor", "set", "swatch",
@@ -190,6 +206,40 @@ class RegistryTests(unittest.TestCase):
         code, out = quiet(sync.main, ["install"])
         self.assertEqual(code, 2)
 
+    def test_version_is_written_last(self):
+        """A copy's VERSION line is what check and update.py trust, so it must be
+        the last file written: a copy that failed partway never reads as current."""
+        order: list[str] = []
+        files = {"ui-theme.css": "a", "VERSION": "ThemeForge x y", "adapters/z.css": "b", "README.md": "c"}
+        target = self.base / "order"
+        real_open = open
+
+        def spy_open(path, *a, **k):
+            order.append(Path(path).relative_to(target).as_posix())
+            return real_open(path, *a, **k)
+
+        sync.open = spy_open  # the module's global shadows the builtin
+        try:
+            quiet(sync.write_all, target, files)
+        finally:
+            del sync.open
+        self.assertEqual(order[-1], "VERSION", order)
+        self.assertEqual(sorted(order[:-1]), ["README.md", "adapters/z.css", "ui-theme.css"])
+        self.assertEqual((target / "VERSION").read_text(encoding="utf-8"), "ThemeForge x y")
+
+    def test_skipping_every_app_is_not_success(self):
+        """Every manifest points at a repo that is not on this machine: the old
+        code printed "installed" and returned 0 after writing nothing."""
+        for name in ("demo", "other"):
+            (self.registry / f"{name}.json").write_text(json.dumps({
+                "app": name, "repo": str(self.base / "nowhere" / name), "bundle_dir": "static/ui-theme"}),
+                encoding="utf-8")
+        code, out = quiet(sync.main, ["install", "--apps", str(self.registry), "--quiet"])
+        self.assertEqual(code, 1, out)
+        self.assertIn("into 0 apps", out)
+        self.assertEqual(out.count("SKIP"), 2)
+        self.assertNotIn("into 1 app", out)
+
 
 class ContrastTests(unittest.TestCase):
     def test_every_theme_passes(self):
@@ -206,6 +256,34 @@ class ContrastTests(unittest.TestCase):
         checks = contrast.apply_profile(contrast.build_checks({}), "night")
         step = [c for c in checks if c["label"].startswith("text-secondary vs text-disabled")]
         self.assertEqual([c["floor"] for c in step], [1.5])
+
+    def test_notify_idle_is_a_ceiling(self):
+        """--notify-idle must stay quiet: a loud idle mark FAILS its row even though
+        its ratio is above the number in the floor column."""
+        base = contrast.load_base_props(contrast.read(ROOT / "src" / "css" / "theme-base.css"))
+        surface0 = contrast.parse_color(contrast.resolve("--surface-0", base))
+        idle = [c for c in contrast.build_checks(base) if c["fg"] == "notify-idle" and c["bg"] == "surface-0"]
+        self.assertEqual(len(idle), 1)
+        self.assertTrue(idle[0]["ceiling"])
+        ok = contrast.evaluate(idle[0], base, surface0)
+        self.assertTrue(ok["pass"], ok)
+        loud = contrast.evaluate(idle[0], dict(base, **{"--notify-idle": "#ffffff"}), surface0)
+        self.assertFalse(loud["pass"], loud)
+        self.assertGreater(loud["ratio"], 3)
+        self.assertTrue(loud["ceiling"])
+        # And the unread mark itself is a plain floor.
+        mark = [c for c in contrast.build_checks(base) if c["fg"] == "notify" and c["bg"] == "surface-0"]
+        self.assertFalse(mark[0]["ceiling"])
+        self.assertFalse(contrast.evaluate(mark[0], dict(base, **{"--notify": "#38385c"}), surface0)["pass"])
+
+    def test_every_theme_resolves_the_unread_pair_and_cta_gradient(self):
+        base = contrast.load_base_props(contrast.read(ROOT / "src" / "css" / "theme-base.css"))
+        for theme in contrast.load_registry():
+            props = contrast.merged_props(theme, base)
+            for name in ("--notify", "--notify-idle"):
+                self.assertIsNotNone(contrast.parse_color(contrast.resolve(name, props)), f"{theme['slug']} {name}")
+            self.assertNotEqual(contrast.resolve("--notify", props), contrast.resolve("--notify-idle", props), theme["slug"])
+            self.assertTrue(contrast.resolve("--cta-gradient", props).startswith("linear-gradient("), theme["slug"])
 
 
 class LintTests(unittest.TestCase):

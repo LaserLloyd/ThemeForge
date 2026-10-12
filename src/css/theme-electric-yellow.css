@@ -50,6 +50,8 @@
   --accent:          #e8ff00;
   --accent-hover:    #f2ff3d;
   --accent-pressed:  #ccdf00;
+  --cta-gradient:    linear-gradient(135deg, var(--cta-hover), var(--cta));  /* D */
+  --notify: #e8ff00; --notify-idle: #3a3a40;  /* D — notify = the focus yellow; idle a step above --border */
   --accent-subtle:   rgba(232,255,0,.12);
   --accent-muted:    rgba(232,255,0,.24);
   --accent-glow:     rgba(232,255,0,.30);
@@ -153,7 +155,7 @@
   --font-sans:    'Archivo', 'Helvetica Neue', Helvetica, system-ui, sans-serif;
   --font-serif:   var(--font-sans);
   --font-display: 'Archivo', 'Helvetica Neue', Helvetica, system-ui, sans-serif;
-  --font-mono:    'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-mono:    'JetBrains Mono', ui-monospace, monospace;
 
   /* Tighter geometry — a second signal against Midnight Gold */
   --radius-xs: 3px;

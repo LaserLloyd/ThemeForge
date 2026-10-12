@@ -51,6 +51,8 @@
   --accent:          #2ea8ff;
   --accent-hover:    #4fb6ff;
   --accent-pressed:  #1f8ad6;  /* D */
+  --cta-gradient:    linear-gradient(135deg, var(--cta-hover), var(--cta));  /* D */
+  --notify: #2ea8ff; --notify-idle: #2f3b49;  /* D — notify = link blue; idle a step above --border */
   --accent-subtle:   rgba(46,168,255,.10);
   --accent-muted:    rgba(46,168,255,.22);  /* D */
   --accent-glow:     rgba(46,168,255,.35);
@@ -163,7 +165,7 @@
   --font-sans:    'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-serif:   var(--font-sans);
   --font-display: 'Space Grotesk', 'Inter', system-ui, sans-serif;
-  --font-mono:    ui-monospace, SFMono-Regular, 'Cascadia Code', Menlo, Consolas, monospace;
+  --font-mono:    ui-monospace, 'Cascadia Code', Consolas, monospace;
 
   --radius-xs: 7px;
   --radius-sm: 9px;

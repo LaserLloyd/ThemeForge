@@ -97,6 +97,11 @@ tool's docstring. Every theme must pass every row of its contrast profile.
 | unselected-border on surface-2 (off control outline) | #6f6f9c | #1d1d39 | 3.44 | 3:1 | pass |
 | unselected-fg on surface-2 (off switch knob) | #8d8db0 | #1d1d39 | 5.10 | 3:1 | pass |
 | text-secondary vs text-disabled (enabled vs disabled) | #a0a0bd | #717195 | 1.84 | 1.5:1 | pass |
+| notify on surface-0 (unread mark) | #a78bfa | #0e0e1b | 7.03 | 4.5:1 | pass |
+| notify-idle on surface-0 (at most: must stay quiet) | #38385c | #0e0e1b | 1.72 | ≤ 3:1 | pass |
+| notify on surface-1 (unread mark) | #a78bfa | #14142a | 6.63 | 4.5:1 | pass |
+| notify-idle on surface-1 (at most: must stay quiet) | #38385c | #14142a | 1.62 | ≤ 3:1 | pass |
+| notify vs notify-idle (the two states never blur) | #a78bfa | #38385c | 4.09 | 3:1 | pass |
 | on-media on scrim-media (dark stop, over #ffffff) | #ffffff | rgba(8,8,15,.88) | 15.04 | 4.5:1 | pass |
 | syn-fg on syn-bg | #e2e2ef | #0b0b16 | 15.24 | 4.5:1 | pass |
 | syn-comment on syn-bg | #7b7b9c | #0b0b16 | 4.80 | 3.5:1 | pass |
@@ -249,6 +254,11 @@ tool's docstring. Every theme must pass every row of its contrast profile.
 | unselected-border on surface-2 (off control outline) | #736952 | #0d0a06 | 3.64 | 3:1 | pass |
 | unselected-fg on surface-2 (off switch knob) | #96896a | #0d0a06 | 5.72 | 3:1 | pass |
 | text-secondary vs text-disabled (enabled vs disabled) | #b7a883 | #6b6250 | 2.56 | 1.5:1 | pass |
+| notify on surface-0 (unread mark) | #ffca28 | #000000 | 13.73 | 4.5:1 | pass |
+| notify-idle on surface-0 (at most: must stay quiet) | #474133 | #000000 | 2.07 | ≤ 3:1 | pass |
+| notify on surface-1 (unread mark) | #ffca28 | #060504 | 13.32 | 4.5:1 | pass |
+| notify-idle on surface-1 (at most: must stay quiet) | #474133 | #060504 | 2.01 | ≤ 3:1 | pass |
+| notify vs notify-idle (the two states never blur) | #ffca28 | #474133 | 6.63 | 3:1 | pass |
 | on-media on scrim-media (dark stop, over #ffffff) | #ffffff | rgba(0,0,0,.90) | 17.58 | 4.5:1 | pass |
 | syn-fg on syn-bg | #e8dcc2 | #030201 | 15.25 | 4.5:1 | pass |
 | syn-comment on syn-bg | #8a7f66 | #030201 | 5.24 | 3.5:1 | pass |
@@ -401,6 +411,11 @@ tool's docstring. Every theme must pass every row of its contrast profile.
 | unselected-border on surface-2 (off control outline) | #5c7480 | #0d161c | 3.71 | 3:1 | pass |
 | unselected-fg on surface-2 (off switch knob) | #7fa3b0 | #0d161c | 6.76 | 3:1 | pass |
 | text-secondary vs text-disabled (enabled vs disabled) | #9fc0cc | #5a747f | 2.57 | 1.5:1 | pass |
+| notify on surface-0 (unread mark) | #7fe0f2 | #000000 | 13.85 | 4.5:1 | pass |
+| notify-idle on surface-0 (at most: must stay quiet) | #33424a | #000000 | 2.02 | ≤ 3:1 | pass |
+| notify on surface-1 (unread mark) | #7fe0f2 | #060b0f | 13.03 | 4.5:1 | pass |
+| notify-idle on surface-1 (at most: must stay quiet) | #33424a | #060b0f | 1.90 | ≤ 3:1 | pass |
+| notify vs notify-idle (the two states never blur) | #7fe0f2 | #33424a | 6.86 | 3:1 | pass |
 | on-media on scrim-media (dark stop, over #ffffff) | #ffffff | rgba(0,0,0,.90) | 17.58 | 4.5:1 | pass |
 | syn-fg on syn-bg | #d8eaf2 | #030608 | 16.42 | 4.5:1 | pass |
 | syn-comment on syn-bg | #7891a0 | #030608 | 6.15 | 3.5:1 | pass |
@@ -553,6 +568,11 @@ tool's docstring. Every theme must pass every row of its contrast profile.
 | unselected-border on surface-2 (off control outline) | #7c6b55 | #000000 | 4.09 | 3:1 | pass |
 | unselected-fg on surface-2 (off switch knob) | #8da083 | #000000 | 7.49 | 3:1 | pass |
 | text-secondary vs text-disabled (enabled vs disabled) | #acbda1 | #64735e | 2.54 | 1.5:1 | pass |
+| notify on surface-0 (unread mark) | #ff9d4d | #000000 | 10.18 | 4.5:1 | pass |
+| notify-idle on surface-0 (at most: must stay quiet) | #3c4536 | #000000 | 2.10 | ≤ 3:1 | pass |
+| notify on surface-1 (unread mark) | #ff9d4d | #000000 | 10.18 | 4.5:1 | pass |
+| notify-idle on surface-1 (at most: must stay quiet) | #3c4536 | #000000 | 2.10 | ≤ 3:1 | pass |
+| notify vs notify-idle (the two states never blur) | #ff9d4d | #3c4536 | 4.86 | 3:1 | pass |
 | on-media on scrim-media (dark stop, over #ffffff) | #ffffff | rgba(0,0,0,.90) | 17.58 | 4.5:1 | pass |
 | syn-fg on syn-bg | #dbe5d5 | #000000 | 16.18 | 4.5:1 | pass |
 | syn-comment on syn-bg | #819179 | #000000 | 6.26 | 3.5:1 | pass |
@@ -705,6 +725,11 @@ tool's docstring. Every theme must pass every row of its contrast profile.
 | unselected-border on surface-2 (off control outline) | #4f3e26 | #efdfb8 | 7.77 | 3:1 | pass |
 | unselected-fg on surface-2 (off switch knob) | #4f3e26 | #efdfb8 | 7.77 | 3:1 | pass |
 | text-secondary vs text-disabled (enabled vs disabled) | #4a3722 | #69573d | 1.63 | 1.5:1 | pass |
+| notify on surface-0 (unread mark) | #8f1d16 | #e6d2a8 | 6.01 | 4.5:1 | pass |
+| notify-idle on surface-0 (at most: must stay quiet) | #c7bda0 | #e6d2a8 | 1.26 | ≤ 3:1 | pass |
+| notify on surface-1 (unread mark) | #8f1d16 | #dcc491 | 5.24 | 4.5:1 | pass |
+| notify-idle on surface-1 (at most: must stay quiet) | #c7bda0 | #dcc491 | 1.10 | ≤ 3:1 | pass |
+| notify vs notify-idle (the two states never blur) | #8f1d16 | #c7bda0 | 4.76 | 3:1 | pass |
 | on-media on scrim-media (dark stop, over #ffffff) | #ffffff | rgba(30,20,10,.86) | 12.00 | 4.5:1 | pass |
 | syn-fg on syn-bg | #e8dfd0 | #2a1e10 | 12.31 | 4.5:1 | pass |
 | syn-comment on syn-bg | #a2947e | #2a1e10 | 5.48 | 3.5:1 | pass |
@@ -857,6 +882,11 @@ tool's docstring. Every theme must pass every row of its contrast profile.
 | unselected-border on surface-2 (off control outline) | #5b6472 | #ffffff | 5.98 | 3:1 | pass |
 | unselected-fg on surface-2 (off switch knob) | #5b6472 | #ffffff | 5.98 | 3:1 | pass |
 | text-secondary vs text-disabled (enabled vs disabled) | #4b5563 | #7b838f | 1.97 | 1.5:1 | pass |
+| notify on surface-0 (unread mark) | #1d47b8 | #ffffff | 7.94 | 4.5:1 | pass |
+| notify-idle on surface-0 (at most: must stay quiet) | #c3c8d1 | #ffffff | 1.68 | ≤ 3:1 | pass |
+| notify on surface-1 (unread mark) | #1d47b8 | #f5f7fa | 7.40 | 4.5:1 | pass |
+| notify-idle on surface-1 (at most: must stay quiet) | #c3c8d1 | #f5f7fa | 1.57 | ≤ 3:1 | pass |
+| notify vs notify-idle (the two states never blur) | #1d47b8 | #c3c8d1 | 4.73 | 3:1 | pass |
 | on-media on scrim-media (dark stop, over #ffffff) | #ffffff | rgba(10,14,24,.86) | 13.23 | 4.5:1 | pass |
 | syn-fg on syn-bg | #dfe6ef | #12161d | 14.42 | 4.5:1 | pass |
 | syn-comment on syn-bg | #8e98a6 | #12161d | 6.21 | 3.5:1 | pass |
@@ -1009,6 +1039,11 @@ tool's docstring. Every theme must pass every row of its contrast profile.
 | unselected-border on surface-2 (off control outline) | #6a6f7a | #18181b | 3.52 | 3:1 | pass |
 | unselected-fg on surface-2 (off switch knob) | #8d929e | #18181b | 5.68 | 3:1 | pass |
 | text-secondary vs text-disabled (enabled vs disabled) | #a8acb6 | #717581 | 2.03 | 1.5:1 | pass |
+| notify on surface-0 (unread mark) | #e8ff00 | #0a0a0b | 17.66 | 4.5:1 | pass |
+| notify-idle on surface-0 (at most: must stay quiet) | #3a3a40 | #0a0a0b | 1.75 | ≤ 3:1 | pass |
+| notify on surface-1 (unread mark) | #e8ff00 | #111113 | 16.83 | 4.5:1 | pass |
+| notify-idle on surface-1 (at most: must stay quiet) | #3a3a40 | #111113 | 1.67 | ≤ 3:1 | pass |
+| notify vs notify-idle (the two states never blur) | #e8ff00 | #3a3a40 | 10.08 | 3:1 | pass |
 | on-media on scrim-media (dark stop, over #ffffff) | #ffffff | rgba(5,5,6,.90) | 16.66 | 4.5:1 | pass |
 | syn-fg on syn-bg | #e4e6ea | #0d0d0f | 15.54 | 4.5:1 | pass |
 | syn-comment on syn-bg | #8a8f9a | #0d0d0f | 5.99 | 3.5:1 | pass |
@@ -1161,6 +1196,11 @@ tool's docstring. Every theme must pass every row of its contrast profile.
 | unselected-border on surface-2 (off control outline) | #62727f | #12171e | 3.63 | 3:1 | pass |
 | unselected-fg on surface-2 (off switch knob) | #7d90a1 | #12171e | 5.46 | 3:1 | pass |
 | text-secondary vs text-disabled (enabled vs disabled) | #9aabbc | #647380 | 2.07 | 1.5:1 | pass |
+| notify on surface-0 (unread mark) | #2ea8ff | #080a0d | 7.70 | 4.5:1 | pass |
+| notify-idle on surface-0 (at most: must stay quiet) | #2f3b49 | #080a0d | 1.74 | ≤ 3:1 | pass |
+| notify on surface-1 (unread mark) | #2ea8ff | #0d1116 | 7.36 | 4.5:1 | pass |
+| notify-idle on surface-1 (at most: must stay quiet) | #2f3b49 | #0d1116 | 1.66 | ≤ 3:1 | pass |
+| notify vs notify-idle (the two states never blur) | #2ea8ff | #2f3b49 | 4.43 | 3:1 | pass |
 | on-media on scrim-media (dark stop, over #ffffff) | #ffffff | rgba(8,10,13,.92) | 16.72 | 4.5:1 | pass |
 | syn-fg on syn-bg | #dbe6f0 | #06080b | 15.84 | 4.5:1 | pass |
 | syn-comment on syn-bg | #7d91a2 | #06080b | 6.15 | 3.5:1 | pass |
@@ -1313,6 +1353,11 @@ tool's docstring. Every theme must pass every row of its contrast profile.
 | unselected-border on surface-2 (off control outline) | #79899a | #ffffff | 3.58 | 3:1 | pass |
 | unselected-fg on surface-2 (off switch knob) | #576876 | #ffffff | 5.76 | 3:1 | pass |
 | text-secondary vs text-disabled (enabled vs disabled) | #506270 | #74828e | 1.60 | 1.5:1 | pass |
+| notify on surface-0 (unread mark) | #0d69b4 | #f2f5f9 | 5.19 | 4.5:1 | pass |
+| notify-idle on surface-0 (at most: must stay quiet) | #c3cedb | #f2f5f9 | 1.46 | ≤ 3:1 | pass |
+| notify on surface-1 (unread mark) | #0d69b4 | #f8fafc | 5.43 | 4.5:1 | pass |
+| notify-idle on surface-1 (at most: must stay quiet) | #c3cedb | #f8fafc | 1.52 | ≤ 3:1 | pass |
+| notify vs notify-idle (the two states never blur) | #0d69b4 | #c3cedb | 3.56 | 3:1 | pass |
 | on-media on scrim-media (dark stop, over #ffffff) | #ffffff | rgba(10,20,30,.88) | 13.39 | 4.5:1 | pass |
 | syn-fg on syn-bg | #dbe6f0 | #101820 | 14.14 | 4.5:1 | pass |
 | syn-comment on syn-bg | #8298a8 | #101820 | 5.97 | 3.5:1 | pass |
@@ -1465,6 +1510,11 @@ tool's docstring. Every theme must pass every row of its contrast profile.
 | unselected-border on surface-2 (off control outline) | #c80000 | #1d0000 | 3.28 | 3:1 | pass |
 | unselected-fg on surface-2 (off switch knob) | #f01c00 | #1d0000 | 4.63 | 3:1 | pass |
 | text-secondary vs text-disabled (enabled vs disabled) | #ff3000 | #960a00 | 2.42 | 1.5:1 | pass |
+| notify on surface-0 (unread mark) | #c88400 | #000000 | 6.76 | 4.5:1 | pass |
+| notify-idle on surface-0 (at most: must stay quiet) | #5c0000 | #000000 | 1.46 | ≤ 3:1 | pass |
+| notify on surface-1 (unread mark) | #c88400 | #140000 | 6.56 | 4.5:1 | pass |
+| notify-idle on surface-1 (at most: must stay quiet) | #5c0000 | #140000 | 1.41 | ≤ 3:1 | pass |
+| notify vs notify-idle (the two states never blur) | #c88400 | #5c0000 | 4.64 | 3:1 | pass |
 | on-media on scrim-media (dark stop, over #ffffff) | #ff5800 | rgba(0,0,0,.92) | 5.83 | 4.5:1 | pass |
 | syn-fg on syn-bg | #ff5800 | #0c0000 | 6.55 | 4.5:1 | pass |
 | syn-comment on syn-bg | #e01400 | #0c0000 | 4.20 | 3.5:1 | pass |
@@ -1563,19 +1613,19 @@ tool's docstring. Every theme must pass every row of its contrast profile.
 
 pass: no token carries any blue.
 
-Tokens that light the green channel (103), the theme's non-red elements: `--accent-2`, `--accent-2-subtle`, `--accent-hover`, `--bubble-assistant-text`, `--bubble-user-text`, `--cat-10`, `--cat-11`, `--cat-12`, `--cat-2`, `--cat-3`, `--cat-4`, `--cat-5`, `--cat-6`, `--cat-7`, `--cat-8`, `--code-header-bg`, `--code-stroke`, `--cta-hover`, `--danger`, `--danger-border`, `--danger-hover`, `--danger-subtle`, `--danger-text`, `--diff-add-bg`, `--diff-add-text`, `--diff-remove-text`, `--div-2`, `--div-4`, `--focus-ring`, `--heartbeat-hover`, `--heartbeat-text`, `--highlight`, `--highlight-subtle`, `--idle`, `--idle-border`, `--idle-hover`, `--idle-subtle`, `--idle-text`, `--info`, `--info-border`, `--info-hover`, `--info-subtle`, `--info-text`, `--live`, `--live-border`, `--live-hover`, `--live-subtle`, `--live-text`, `--mark-bg`, `--md-bold`, `--md-bolditalic`, `--md-bolditalic-glow`, `--md-italic`, `--offline-text`, `--on-media`, `--on-media-muted`, `--on-offline`, `--quote-bar`, `--rp-action`, `--rp-critical`, `--rp-critical-glow`, `--rp-ooc`, `--rp-shout`, `--rp-shout-glow`, `--rp-speech`, `--rp-thought`, `--rp-whisper`, `--selection-text`, `--seq-1`, `--seq-2`, `--seq-3`, `--seq-4`, `--success`, `--success-border`, `--success-hover`, `--success-subtle`, `--success-text`, `--syn-addition`, `--syn-attr`, `--syn-builtin`, `--syn-comment`, `--syn-fg`, `--syn-function`, `--syn-keyword`, `--syn-literal`, `--syn-number`, `--syn-operator`, `--syn-string`, `--syn-tag`, `--syn-title`, `--syn-type`, `--syn-variable`, `--text-disabled`, `--text-link`, `--text-link-hover`, `--text-primary`, `--text-secondary`, `--text-tertiary`, `--warning`, `--warning-border`, `--warning-hover`, `--warning-subtle`, `--warning-text`
+Tokens that light the green channel (105), the theme's non-red elements: `--accent-2`, `--accent-2-subtle`, `--accent-hover`, `--bubble-assistant-text`, `--bubble-user-text`, `--cat-10`, `--cat-11`, `--cat-12`, `--cat-2`, `--cat-3`, `--cat-4`, `--cat-5`, `--cat-6`, `--cat-7`, `--cat-8`, `--code-header-bg`, `--code-stroke`, `--cta-gradient`, `--cta-hover`, `--danger`, `--danger-border`, `--danger-hover`, `--danger-subtle`, `--danger-text`, `--diff-add-bg`, `--diff-add-text`, `--diff-remove-text`, `--div-2`, `--div-4`, `--focus-ring`, `--heartbeat-hover`, `--heartbeat-text`, `--highlight`, `--highlight-subtle`, `--idle`, `--idle-border`, `--idle-hover`, `--idle-subtle`, `--idle-text`, `--info`, `--info-border`, `--info-hover`, `--info-subtle`, `--info-text`, `--live`, `--live-border`, `--live-hover`, `--live-subtle`, `--live-text`, `--mark-bg`, `--md-bold`, `--md-bolditalic`, `--md-bolditalic-glow`, `--md-italic`, `--notify`, `--offline-text`, `--on-media`, `--on-media-muted`, `--on-offline`, `--quote-bar`, `--rp-action`, `--rp-critical`, `--rp-critical-glow`, `--rp-ooc`, `--rp-shout`, `--rp-shout-glow`, `--rp-speech`, `--rp-thought`, `--rp-whisper`, `--selection-text`, `--seq-1`, `--seq-2`, `--seq-3`, `--seq-4`, `--success`, `--success-border`, `--success-hover`, `--success-subtle`, `--success-text`, `--syn-addition`, `--syn-attr`, `--syn-builtin`, `--syn-comment`, `--syn-fg`, `--syn-function`, `--syn-keyword`, `--syn-literal`, `--syn-number`, `--syn-operator`, `--syn-string`, `--syn-tag`, `--syn-title`, `--syn-type`, `--syn-variable`, `--text-disabled`, `--text-link`, `--text-link-hover`, `--text-primary`, `--text-secondary`, `--text-tertiary`, `--warning`, `--warning-border`, `--warning-hover`, `--warning-subtle`, `--warning-text`
 
 ## Summary
 
 | Theme | Set | Profile | Checks | Failures |
 |---|---|---|---|---|
-| purple | core | standard | 147 | 0 |
-| midnight-gold | core | standard | 147 | 0 |
-| glacier | core | standard | 147 | 0 |
-| forest | core | standard | 147 | 0 |
-| paper | core | standard | 147 | 0 |
-| daylight | core | standard | 147 | 0 |
-| electric-yellow | opt-in | standard | 147 | 0 |
-| laserlloyd | opt-in | standard | 147 | 0 |
-| laserlloyd-light | opt-in | standard | 147 | 0 |
-| night-red | opt-in | night | 171 | 0 |
+| purple | core | standard | 152 | 0 |
+| midnight-gold | core | standard | 152 | 0 |
+| glacier | core | standard | 152 | 0 |
+| forest | core | standard | 152 | 0 |
+| paper | core | standard | 152 | 0 |
+| daylight | core | standard | 152 | 0 |
+| electric-yellow | opt-in | standard | 152 | 0 |
+| laserlloyd | opt-in | standard | 152 | 0 |
+| laserlloyd-light | opt-in | standard | 152 | 0 |
+| night-red | opt-in | night | 176 | 0 |

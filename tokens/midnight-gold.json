@@ -1,5 +1,5 @@
 {
-  "$description": "Midnight Gold: ThemeForge 1.0.0 design tokens in the W3C DTCG format (Format Module 2025.10), generated from src/css. The CSS custom property for a token is --<token name>.",
+  "$description": "Midnight Gold: ThemeForge 1.1.0 design tokens in the W3C DTCG format (Format Module 2025.10), generated from src/css. The CSS custom property for a token is --<token name>.",
   "$extensions": {
     "com.laserlloyd.themeforge": {
       "theme": {
@@ -13,6 +13,7 @@
       },
       "css": {
         "--accent-rgb": "122,92,18",
+        "--cta-gradient": "linear-gradient(135deg, #8d721b, #916d15, #7a5c12)",
         "--scrim-media": "linear-gradient(to top, rgba(0,0,0,.90), rgba(0,0,0,0))",
         "--media-filter": "none",
         "--ls-tight": "-0.02em",
@@ -1339,6 +1340,34 @@
       }
     }
   },
+  "notification": {
+    "notify": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          1.0,
+          0.7922,
+          0.1569
+        ],
+        "alpha": 1.0,
+        "hex": "#ffca28"
+      }
+    },
+    "notify-idle": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.2784,
+          0.2549,
+          0.2
+        ],
+        "alpha": 1.0,
+        "hex": "#474133"
+      }
+    }
+  },
   "overlays": {
     "scrim": {
       "$type": "color",
@@ -2331,8 +2360,6 @@
         "JetBrains Mono",
         "Fira Code",
         "ui-monospace",
-        "SFMono-Regular",
-        "Menlo",
         "monospace"
       ]
     },

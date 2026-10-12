@@ -51,7 +51,7 @@ Build with tokens (`var(--surface-2)`, `var(--text-secondary)`) and classes
 Works in current Chrome, Edge, Firefox and Safari (2024 or newer).
 
 Prefer not to install anything? For a prototype, load the files from jsDelivr:
-`https://cdn.jsdelivr.net/gh/LaserLloyd/ThemeForge@v1.0.0/ui-theme/ui-theme.js` (and the
+`https://cdn.jsdelivr.net/gh/LaserLloyd/ThemeForge@v1.1.0/ui-theme/ui-theme.js` (and the
 same path for each CSS file).
 
 ## Themes

@@ -400,6 +400,37 @@
           [cs24('probe24', 'color'), cs24('probeDanger', 'color')]);
   }
 
+  // 41. data-contrast-profile follows the theme's contrast profile.
+  preset({ t41: null });
+  const f41 = await frame({ attrs: { 'data-themes': 'purple,glacier,night-red', 'data-default': 'purple', 'data-storage-key': 't41' } });
+  const w41 = f41.contentWindow;
+  check('contrast profile: purple is standard', [html(f41).hasAttribute('data-palette'), html(f41).getAttribute('data-contrast-profile')], [false, 'standard']);
+  w41.UITheme.set('night-red');
+  check('contrast profile: night-red is night', [html(f41).getAttribute('data-palette'), html(f41).getAttribute('data-contrast-profile')], ['night-red', 'night']);
+  w41.UITheme.set('glacier');
+  check('contrast profile: glacier back to standard', html(f41).getAttribute('data-contrast-profile'), 'standard');
+  w41.UITheme.set('purple');
+  check('contrast profile: purple after night-red', [html(f41).hasAttribute('data-palette'), html(f41).getAttribute('data-contrast-profile')], [false, 'standard']);
+  check('theme() carries contrastProfile', [w41.UITheme.theme('night-red').contrastProfile, w41.UITheme.theme('glacier').contrastProfile], ['night', 'standard']);
+
+  // 42. --cta-gradient and the unread pair resolve in every loaded theme.
+  preset({ t42: 'glacier' });
+  const f42 = await frame({ attrs: { 'data-themes': 'purple,midnight-gold,glacier,forest,paper,daylight,electric-yellow,laserlloyd,laserlloyd-light,night-red',
+                                     'data-default': 'glacier', 'data-storage-key': 't42' }, css: true });
+  await tick(50);
+  const w42 = f42.contentWindow;
+  const grad = () => w42.UITheme.token('--cta-gradient');
+  check('--cta-gradient on glacier', /^linear-gradient\(135deg, (#387d94|rgb\(56, 125, 148\))/.test(grad()), true);
+  w42.UITheme.set('paper');
+  check('--cta-gradient on paper is 180deg', /^linear-gradient\(180deg/.test(grad()), true);
+  w42.UITheme.set('purple');
+  check('--cta-gradient on purple', /^linear-gradient\(135deg/.test(grad()), true);
+  for (const t of w42.UITheme.list()) {
+    w42.UITheme.set(t.slug);
+    const pair = w42.UITheme.tokens(['--notify', '--notify-idle']);
+    check(`${t.slug}: unread pair resolves`, [/^#[0-9a-f]{6}$/i.test(pair['--notify']), /^#[0-9a-f]{6}$/i.test(pair['--notify-idle']), pair['--notify'] !== pair['--notify-idle']], [true, true, true]);
+  }
+
   // Report.
   const list = document.getElementById('results');
   for (const r of results) {

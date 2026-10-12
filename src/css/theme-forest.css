@@ -54,6 +54,8 @@
   --accent:          #396237;
   --accent-hover:    #447341;
   --accent-pressed:  #2e502f;
+  --cta-gradient:    linear-gradient(135deg, #9c6b30, var(--accent-hover), var(--accent));  /* D */
+  --notify: #ff9d4d; --notify-idle: #3c4536;  /* D — unread indicator, solved as a pair */
   --accent-subtle:   rgba(57,98,55,.26);
   --accent-muted:    rgba(57,98,55,.42);
   --accent-glow:     rgba(181,213,155,.28);

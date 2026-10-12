@@ -66,6 +66,12 @@
   --highlight:         #fcd34d;
   --highlight-subtle:  rgba(252,211,77,.12);
   --on-highlight:      #251a00;
+  /* --cta-gradient: the gradient fill for a primary call to action, from the
+     hover step to the resting step. A background image only; its label still
+     uses --on-cta. Core themes carry the gradient DisPatch shipped with
+     (Purple's from its purple palette); opt-in themes derive theirs from
+     --cta-hover and --cta. */
+  --cta-gradient:      linear-gradient(135deg, var(--accent-hover), var(--accent));
 
   /* ---- Lines ---- */
   --border-subtle:      #21213b;
@@ -146,6 +152,18 @@
   --on-idle:      #251a00;
   --on-offline:   #ffffff;
   --on-heartbeat: #2a0c1c;
+
+  /* ---- Notification ----
+     The unread indicator. --notify is the one token whose job is to be
+     noticed; --notify-idle marks the same spot when nothing is waiting.
+     Solved as a pair against the rail and sidebar grounds (--surface-0 and
+     --surface-1), and tools/check_contrast.py checks all three rules:
+       --notify        >= 4.5:1  (impossible to miss)
+       --notify-idle   <= 3:1    (present, unremarkable)
+       --notify vs --notify-idle >= 3:1 (the two states never blur)
+     Pair it with a size change too; colour alone is not enough (WCAG 1.4.1). */
+  --notify:      #a78bfa;
+  --notify-idle: #38385c;
 
   /* ---- Overlays ---- */
   --scrim:         rgba(6,6,14,.66);
@@ -247,7 +265,7 @@
   /* ---- Type families ---- */
   --font-sans:    'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-serif:   var(--font-sans);
-  --font-mono:    'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-mono:    'JetBrains Mono', 'Fira Code', ui-monospace, monospace;  /* no SFMono-Regular/Menlo: ui-monospace covers Apple, and Linux fontconfig maps both names to a proportional sans */
   --font-display: var(--font-sans);
 
   /* ---- Elevation ---- */

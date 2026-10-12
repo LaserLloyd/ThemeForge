@@ -1,5 +1,5 @@
 {
-  "$description": "Night Red: ThemeForge 1.0.0 design tokens in the W3C DTCG format (Format Module 2025.10), generated from src/css. The CSS custom property for a token is --<token name>.",
+  "$description": "Night Red: ThemeForge 1.1.0 design tokens in the W3C DTCG format (Format Module 2025.10), generated from src/css. The CSS custom property for a token is --<token name>.",
   "$extensions": {
     "com.laserlloyd.themeforge": {
       "theme": {
@@ -13,6 +13,7 @@
       },
       "css": {
         "--accent-rgb": "255,0,0",
+        "--cta-gradient": "linear-gradient(135deg, #ff2a00, #ff0000)",
         "--scrim-media": "linear-gradient(to top, rgba(0,0,0,.92), rgba(0,0,0,0))",
         "--media-filter": "grayscale(1) sepia(1) saturate(9) hue-rotate(-38deg) brightness(.72)",
         "--ls-tight": "-0.02em",
@@ -1339,6 +1340,34 @@
       }
     }
   },
+  "notification": {
+    "notify": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.7843,
+          0.5176,
+          0.0
+        ],
+        "alpha": 1.0,
+        "hex": "#c88400"
+      }
+    },
+    "notify-idle": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.3608,
+          0.0,
+          0.0
+        ],
+        "alpha": 1.0,
+        "hex": "#5c0000"
+      }
+    }
+  },
   "overlays": {
     "scrim": {
       "$type": "color",
@@ -2331,8 +2360,6 @@
         "JetBrains Mono",
         "Fira Code",
         "ui-monospace",
-        "SFMono-Regular",
-        "Menlo",
         "monospace"
       ]
     },

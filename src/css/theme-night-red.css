@@ -101,6 +101,8 @@
   --accent:          #ff0000;
   --accent-hover:    #ff2a00;
   --accent-pressed:  #ec0000;
+  --cta-gradient:    linear-gradient(135deg, var(--cta-hover), var(--cta));  /* D */
+  --notify: #c88400; --notify-idle: #5c0000;  /* D — notify = amber (the highlight accent, not red: red is body text); idle a red-only step, zero blue */
   --accent-subtle:   rgba(255,0,0,.12);
   --accent-muted:    rgba(255,0,0,.22);
   --accent-glow:     rgba(255,0,0,.40);

@@ -1,5 +1,5 @@
 {
-  "$description": "LaserLloyd: ThemeForge 1.0.0 design tokens in the W3C DTCG format (Format Module 2025.10), generated from src/css. The CSS custom property for a token is --<token name>.",
+  "$description": "LaserLloyd: ThemeForge 1.1.0 design tokens in the W3C DTCG format (Format Module 2025.10), generated from src/css. The CSS custom property for a token is --<token name>.",
   "$extensions": {
     "com.laserlloyd.themeforge": {
       "theme": {
@@ -13,6 +13,7 @@
       },
       "css": {
         "--accent-rgb": "46,168,255",
+        "--cta-gradient": "linear-gradient(135deg, #ffce6e, #ffc24d)",
         "--scrim-media": "linear-gradient(to top, rgba(8,10,13,.92), rgba(8,10,13,0))",
         "--media-filter": "none",
         "--ls-tight": "-0.02em",
@@ -1343,6 +1344,34 @@
       }
     }
   },
+  "notification": {
+    "notify": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.1804,
+          0.6588,
+          1.0
+        ],
+        "alpha": 1.0,
+        "hex": "#2ea8ff"
+      }
+    },
+    "notify-idle": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.1843,
+          0.2314,
+          0.2863
+        ],
+        "alpha": 1.0,
+        "hex": "#2f3b49"
+      }
+    }
+  },
   "overlays": {
     "scrim": {
       "$type": "color",
@@ -2333,9 +2362,7 @@
       "$type": "fontFamily",
       "$value": [
         "ui-monospace",
-        "SFMono-Regular",
         "Cascadia Code",
-        "Menlo",
         "Consolas",
         "monospace"
       ]

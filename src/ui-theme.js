@@ -31,6 +31,9 @@
      - validates the slug against the enabled list, falling back to the default;
      - sets <html data-palette>, or removes it for Purple (the :root base);
      - sets the derived <html data-theme>: amoled | dark | light;
+     - sets <html data-contrast-profile>: standard | night (the theme's
+       contrast profile, so component CSS can adapt to a night theme
+       without naming a slug);
      - updates <meta name="theme-color"> (created if missing) and any
        <meta name="color-scheme"> the page already has.
 
@@ -235,6 +238,7 @@
     if (theme.slug === BASE) root.removeAttribute('data-palette');
     else root.setAttribute('data-palette', theme.slug);
     root.setAttribute('data-theme', DATA_THEME[theme.ground] || 'dark');
+    root.setAttribute('data-contrast-profile', theme.contrastProfile || 'standard');
     if (config.mirrorAttr) root.setAttribute(config.mirrorAttr, theme.slug);
     var themeColor = meta('theme-color', true);
     if (themeColor) themeColor.setAttribute('content', theme.themeColor);
@@ -525,7 +529,8 @@
 
   /* ---- API ----
      UITheme.current()              -> active slug
-     UITheme.theme([slug])          -> metadata copy (active theme by default)
+     UITheme.theme([slug])          -> metadata copy (active theme by default),
+                                       incl. contrastProfile: 'standard' | 'night'
      UITheme.list()                 -> enabled themes, picker order
      UITheme.set(slug)              -> apply + persist; unknown/disabled -> default
      UITheme.reset()                -> forget the choice; back to the default

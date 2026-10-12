@@ -4,6 +4,28 @@ Versions follow [Semantic Versioning](https://semver.org/). A release is a git t
 `ui-theme/VERSION` and `UITheme.version` carry the same number. Token names are the public
 API: removing or renaming one is a major version.
 
+## 1.1.0
+
+Three tokens every theme now defines, and the runtime says which contrast profile is on.
+Nothing is removed or renamed.
+
+- **`--cta-gradient`:** the gradient fill for a primary call to action, from the hover step
+  to the resting step (a background image only; its label still uses `--on-cta`). Core
+  themes carry the gradient DisPatch shipped with; opt-in themes derive theirs.
+- **`--notify` and `--notify-idle`:** the unread indicator, solved as a pair against the
+  rail and sidebar grounds: `--notify` at 4.5:1 or better on `--surface-0` and `--surface-1`,
+  `--notify-idle` at no more than 3:1 there, and the two at least 3:1 apart. The contrast
+  checker enforces all three (the idle rule is its first ceiling).
+- **`<html data-contrast-profile="standard|night">`:** set by the runtime next to
+  `data-theme`, so component CSS can adapt to a night theme without naming a slug;
+  `UITheme.theme()` carries `contrastProfile` and the TypeScript declarations list it.
+- **Mono font stacks:** `SFMono-Regular` and `Menlo` dropped from every `--font-mono`.
+  `ui-monospace` already covers Apple, and on Linux fontconfig maps both names to a
+  proportional sans, so code rendered proportionally there.
+- **`sync_theme.py install`:** writes each copy's `VERSION` last, so a copy that failed
+  partway never reads as current; when every registered app was skipped it says so and
+  exits 1 instead of printing "installed" after writing nothing.
+
 ## 1.0.0
 
 First public release.

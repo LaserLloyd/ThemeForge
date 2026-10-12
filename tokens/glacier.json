@@ -1,5 +1,5 @@
 {
-  "$description": "Glacier: ThemeForge 1.0.0 design tokens in the W3C DTCG format (Format Module 2025.10), generated from src/css. The CSS custom property for a token is --<token name>.",
+  "$description": "Glacier: ThemeForge 1.1.0 design tokens in the W3C DTCG format (Format Module 2025.10), generated from src/css. The CSS custom property for a token is --<token name>.",
   "$extensions": {
     "com.laserlloyd.themeforge": {
       "theme": {
@@ -13,6 +13,7 @@
       },
       "css": {
         "--accent-rgb": "24,94,122",
+        "--cta-gradient": "linear-gradient(135deg, #387d94, #206b88, #185e7a)",
         "--scrim-media": "linear-gradient(to top, rgba(0,0,0,.90), rgba(0,0,0,0))",
         "--media-filter": "none",
         "--ls-tight": "-0.02em",
@@ -1339,6 +1340,34 @@
       }
     }
   },
+  "notification": {
+    "notify": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.498,
+          0.8784,
+          0.949
+        ],
+        "alpha": 1.0,
+        "hex": "#7fe0f2"
+      }
+    },
+    "notify-idle": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.2,
+          0.2588,
+          0.2902
+        ],
+        "alpha": 1.0,
+        "hex": "#33424a"
+      }
+    }
+  },
   "overlays": {
     "scrim": {
       "$type": "color",
@@ -2331,8 +2360,6 @@
         "JetBrains Mono",
         "Fira Code",
         "ui-monospace",
-        "SFMono-Regular",
-        "Menlo",
         "monospace"
       ]
     },

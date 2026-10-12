@@ -131,8 +131,10 @@ def load_registry() -> dict:
 
 
 def runtime_registry(data: dict) -> list[dict]:
-    keys = ("slug", "name", "family", "ground", "colorScheme", "themeColor", "set", "swatch", "fonts")
-    return [{k: t.get(k, []) if k == "fonts" else t[k] for k in keys} for t in data["themes"]]
+    keys = ("slug", "name", "family", "ground", "colorScheme", "themeColor", "set", "swatch", "fonts",
+            "contrastProfile")
+    defaults = {"fonts": [], "contrastProfile": "standard"}
+    return [{k: t.get(k, defaults[k]) if k in defaults else t[k] for k in keys} for t in data["themes"]]
 
 
 def render_runtime(data: dict) -> str:
@@ -407,6 +409,7 @@ GROUP_NOTES = {
     "lines": ("core", "Borders, dividers, the focus ring, glass strokes. `--border-strong` is the edge of a form control (3:1)."),
     "control-states": ("core", "On, checked, pressed and current (`--selected`, with `--on-selected` on it), and the off outline (`--unselected-border`, `--unselected-fg`). Measured at 3:1 or better on every surface in every theme."),
     "status": ("core: success, warning, danger, info. extension: live, idle, offline, heartbeat", "Each status has a fill, a hover, a `-subtle` tint, a `-text` colour and a `-border`, plus an `--on-<status>` label colour for the solid fill. live, idle, offline and heartbeat (scheduled or ambient activity) are presence states for apps that show them."),
+    "notification": ("core", "The unread indicator, solved as a pair: `--notify` is the one colour whose job is to be noticed (4.5:1 on `--surface-0` and `--surface-1`), `--notify-idle` marks the same spot when nothing is waiting (at most 3:1), and the two are at least 3:1 apart. Pair it with a size change; colour alone is not enough."),
     "overlays": ("core", "Scrims behind dialogs and over media, the backdrop blur, and `--media-filter` for images marked `.ui-media`."),
     "chat-and-content": ("extension", "Chat bubbles, the quote bar, `<mark>`, the markdown emphasis colours (`--md-*`), narrative text roles (`--rp-*`: speech, action, thought, whisper, out-of-character, shout, critical) for chat, fiction and transcript views, and diff colours."),
     "syntax": ("extension", "Code colours on `--syn-bg`, which is dark in every theme; the names follow highlight.js, which the base layer maps."),
@@ -463,6 +466,8 @@ def tokens_doc(data: dict) -> str:
         "| `--on-selected` on `--selected` | 4.5:1 |",
         "| `--selected`, `--unselected-border`, `--unselected-fg` on the surfaces | 3:1 |",
         "| `--border-strong`, `--control-track`, `--focus-ring` on the surfaces | 3:1 |",
+        "| `--notify` on `--surface-0` and `--surface-1`; `--notify` vs `--notify-idle` | 4.5:1; 3:1 |",
+        "| `--notify-idle` on `--surface-0` and `--surface-1` | at most 3:1 |",
         "| syntax colours on `--syn-bg` (comments 3.5:1) | 4.5:1 |",
         "| `--cat-1` ... `--cat-12` on `--surface-0` | 3:1 |",
         "",
@@ -648,7 +653,11 @@ def app_names(registry: Path, names: list[str], dest: str | None) -> list[str]:
 
 
 def write_all(root: Path, files: dict[str, str], quiet: bool = False) -> None:
-    for rel, text in files.items():
+    """Write every file, VERSION last: a copy's VERSION line is what `check`
+    and update.py trust, so a copy that failed partway must never carry the
+    new version over old files."""
+    for rel in sorted(files, key=lambda r: (r == "VERSION", r)):
+        text = files[rel]
         path = root / rel
         path.parent.mkdir(parents=True, exist_ok=True)
         with open(path, "w", encoding="utf-8", newline="\n") as fh:
@@ -755,7 +764,8 @@ def cmd_install(args) -> int:
     registry = registry_dir(args)
     if registry is None:
         raise SyncError(f"install needs --to DIR, or an app registry (--apps DIR or {APPS_ENV})")
-    skipped = []
+    skipped: list[str] = []
+    installed: list[str] = []
     for name in app_names(registry, args.names, args.dest):
         m = load_manifest(registry, name)
         target = repo_root(registry, m, args.dest) / m["bundle_dir"]
@@ -766,7 +776,13 @@ def cmd_install(args) -> int:
         require_bundle_folder(target)
         print(f"{name} -> {target}")
         mirror(target, app_copy(registry, m, expected), args.quiet)
-    print(f"installed {expected['VERSION'].strip()}" + (f"; skipped {', '.join(skipped)}" if skipped else ""))
+        installed.append(name)
+    if not installed:
+        # Every app was skipped: "installed" here would be a success report for a run that wrote nothing.
+        print(f"installed {expected['VERSION'].strip()} into 0 apps (every app skipped)")
+        return 1
+    print(f"installed {expected['VERSION'].strip()} into {len(installed)} app(s): {', '.join(installed)}"
+          + (f"; skipped {', '.join(skipped)}" if skipped else ""))
     return 1 if skipped else 0
 
 

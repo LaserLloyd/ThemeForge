@@ -21,6 +21,9 @@ What it checks, per theme:
     -subtle fill;
   - labels on fills: on-accent, on-cta and every on-<status> on its fill;
   - control boundaries (border-strong, control-track, focus-ring) at 3:1;
+  - the unread indicator: --notify at 4.5:1 and --notify-idle at no more
+    than 3:1 (a ceiling) on --surface-0 and --surface-1, and the two at
+    least 3:1 apart;
   - control states: on-selected on --selected, --selected against the
     surfaces, the off state (--unselected-border, --unselected-fg) against
     the surfaces, and a visible step from enabled (text-secondary) to
@@ -535,9 +538,9 @@ def build_checks(props: dict[str, str]) -> list[dict]:
     """Every (label, fg, bg, floor, mode) row for one theme's merged props."""
     checks: list[dict] = []
 
-    def add(label, fg, bg, floor, mode="normal", base=None, fixed=False):
+    def add(label, fg, bg, floor, mode="normal", base=None, fixed=False, ceiling=False):
         checks.append({"label": label, "fg": fg, "bg": bg, "floor": floor, "mode": mode, "base": base,
-                       "fixed": fixed})
+                       "fixed": fixed, "ceiling": ceiling})
 
     add("text-primary on surface-0", "text-primary", "surface-0", 7)
     add("text-primary on surface-2", "text-primary", "surface-2", 7)
@@ -574,6 +577,14 @@ def build_checks(props: dict[str, str]) -> list[dict]:
         add(f"unselected-fg on {g} (off switch knob)", "unselected-fg", g, 3)
     add("text-secondary vs text-disabled (enabled vs disabled)", "text-secondary", "text-disabled", 1.5,
         fixed=True)
+
+    # The unread indicator: --notify must be impossible to miss, --notify-idle
+    # must not compete, and the two states must never blur. Measured on the
+    # rail and sidebar grounds. The idle row is a ceiling, not a floor.
+    for g in ("surface-0", "surface-1"):
+        add(f"notify on {g} (unread mark)", "notify", g, 4.5, fixed=True)
+        add(f"notify-idle on {g} (at most: must stay quiet)", "notify-idle", g, 3, fixed=True, ceiling=True)
+    add("notify vs notify-idle (the two states never blur)", "notify", "notify-idle", 3, fixed=True)
 
     add("on-media on scrim-media (dark stop, over #ffffff)", "on-media", "scrim-media", 4.5, mode="media")
 
@@ -807,6 +818,16 @@ def run_check(check: dict, props: dict[str, str], surface0: RGBA) -> dict:
     return _row(label, fg_name, bg_name, fg_raw, bg_raw, ratio, floor)
 
 
+def evaluate(check: dict, props: dict[str, str], surface0: RGBA) -> dict:
+    """run_check, then apply a ceiling check's rule: the ratio must stay AT OR
+    BELOW the limit (the unread indicator's idle mark must not compete)."""
+    row = run_check(check, props, surface0)
+    if check.get("ceiling") and row["ratio"] is not None:
+        row["pass"] = row["ratio"] <= check["floor"] + 1e-9
+        row["ceiling"] = True
+    return row
+
+
 def _fmt_raw(raw: str | None) -> str:
     return raw if raw is not None else "?"
 
@@ -871,7 +892,10 @@ def render_theme_section(theme: dict, rows: list[dict]) -> tuple[str, int]:
     failures = 0
     for r in rows:
         is_de = r.get("unit") == "dE00"
-        floor_s = f"dE00 {r['floor']:g}" if is_de else f"{r['floor']:g}:1"
+        if is_de:
+            floor_s = f"dE00 {r['floor']:g}"
+        else:
+            floor_s = f"\u2264 {r['floor']:g}:1" if r.get("ceiling") else f"{r['floor']:g}:1"
         if r["error"]:
             result = f"ERROR ({r['error']})"
             ratio_s = "n/a"
@@ -923,7 +947,7 @@ def build_report(slugs: list[str] | None) -> tuple[str, list[dict]]:
         if CONTRAST_PROFILES[profile].get("extra"):
             checks += [{"label": label, "fg": fg, "bg": bg, "floor": floor, "mode": mode, "base": None}
                        for label, fg, bg, floor, mode in NIGHT_EXTRA]
-        rows = [run_check(c, props, surface0) for c in checks]
+        rows = [evaluate(c, props, surface0) for c in checks]
         section, failures = render_theme_section(theme, rows)
         out_lines.append(section)
         if CONTRAST_PROFILES[profile].get("extra"):

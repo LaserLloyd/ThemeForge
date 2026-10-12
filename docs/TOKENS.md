@@ -1,6 +1,6 @@
 # Tokens
 
-Generated from `src/css/theme-base.css` by `tools/sync_theme.py build` (ThemeForge 1.0.0).
+Generated from `src/css/theme-base.css` by `tools/sync_theme.py build` (ThemeForge 1.1.0).
 Every theme resolves every token below: a theme sets the colours, and the rest are
 shared or derived. The values shown are Purple's (the `:root` base).
 `tokens/<theme>.json` holds each theme's resolved values in the W3C design tokens format.
@@ -23,6 +23,8 @@ by Night Red, lowers the text floors as noted in [THEMES.md](THEMES.md)):
 | `--on-selected` on `--selected` | 4.5:1 |
 | `--selected`, `--unselected-border`, `--unselected-fg` on the surfaces | 3:1 |
 | `--border-strong`, `--control-track`, `--focus-ring` on the surfaces | 3:1 |
+| `--notify` on `--surface-0` and `--surface-1`; `--notify` vs `--notify-idle` | 4.5:1; 3:1 |
+| `--notify-idle` on `--surface-0` and `--surface-1` | at most 3:1 |
 | syntax colours on `--syn-bg` (comments 3.5:1) | 4.5:1 |
 | `--cat-1` ... `--cat-12` on `--surface-0` | 3:1 |
 
@@ -97,6 +99,7 @@ by Night Red, lowers the text floors as noted in [THEMES.md](THEMES.md)):
 | `--highlight` | `#fcd34d` |
 | `--highlight-subtle` | `rgba(252,211,77,.12)` |
 | `--on-highlight` | `#251a00` |
+| `--cta-gradient` | `linear-gradient(135deg, var(--accent-hover), var(--accent))` |
 
 ## Lines
 
@@ -176,6 +179,15 @@ by Night Red, lowers the text floors as noted in [THEMES.md](THEMES.md)):
 | `--on-idle` | `#251a00` |
 | `--on-offline` | `#ffffff` |
 | `--on-heartbeat` | `#2a0c1c` |
+
+## Notification
+
+*core.* The unread indicator, solved as a pair: `--notify` is the one colour whose job is to be noticed (4.5:1 on `--surface-0` and `--surface-1`), `--notify-idle` marks the same spot when nothing is waiting (at most 3:1), and the two are at least 3:1 apart. Pair it with a size change; colour alone is not enough.
+
+| Token | Purple value |
+|---|---|
+| `--notify` | `#a78bfa` |
+| `--notify-idle` | `#38385c` |
 
 ## Overlays
 
@@ -306,7 +318,7 @@ by Night Red, lowers the text floors as noted in [THEMES.md](THEMES.md)):
 |---|---|
 | `--font-sans` | `'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif` |
 | `--font-serif` | `var(--font-sans)` |
-| `--font-mono` | `'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace` |
+| `--font-mono` | `'JetBrains Mono', 'Fira Code', ui-monospace, monospace` |
 | `--font-display` | `var(--font-sans)` |
 
 ## Elevation
