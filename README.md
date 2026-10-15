@@ -1,9 +1,10 @@
 # ThemeForge
 
-A drop-in theme for web apps, made to be added by an AI coding agent in one step: ten colour
-themes with a picker, design tokens, a base element layer, text standards and ready-made
-component classes. Plain CSS and a small script in one folder, `ui-theme/`. No build step,
-no dependencies, any framework.
+ThemeForge is a drop-in CSS theme system for web apps that an AI coding agent installs in
+one step: ten colour themes (dark, OLED black and light, with automatic dark mode from the
+OS setting), a theme picker, design tokens, a base element layer, text standards and
+ready-made component classes, MIT licensed. Plain CSS and a small script in one folder,
+`ui-theme/`. No build step, no dependencies, any framework.
 
 ![On, off, selected and disabled controls in all ten themes](docs/images/gallery.png)
 
@@ -105,6 +106,21 @@ states read by shape as well as colour in every theme. More in
 
 Open [`specimen/index.html`](specimen/index.html) through any local web server
 (`python3 -m http.server`, then `/specimen/`) to see every component in every theme.
+
+## Used by
+
+- [StudioForge](https://github.com/LaserLloyd/StudioForge): a GPU LLM server over llama.cpp
+  with an OpenAI-compatible API and a web dashboard
+- [ClawForge](https://github.com/LaserLloyd/ClawForge): an image-generation gateway that puts
+  a local ComfyUI behind an MCP server and a web GUI
+- [DisPatch](https://github.com/LaserLloyd/DisPatch_Chat): self-hosted chat for a household
+  and its AI agents
+
+## Read more
+
+- [ThemeForge: a drop-in CSS theme system an AI agent installs in one step](https://www.laserlloyd.com/projects/themeforge-a-drop-in-css-theme-system-an-ai-agent-installs-in-one-step/),
+  the article on how it was built and why
+- [laserlloyd.com](https://www.laserlloyd.com/): the other projects
 
 ## License
 
