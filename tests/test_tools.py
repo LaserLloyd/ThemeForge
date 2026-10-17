@@ -138,6 +138,36 @@ class BuildTests(unittest.TestCase):
         self.assertIn("--accent-rgb", doc["$extensions"]["com.laserlloyd.themeforge"]["css"])
 
 
+class DocGateTests(unittest.TestCase):
+    """The docs gate allows sibling LaserLloyd links in a "Used by" section only."""
+
+    def test_used_by_may_link_sibling_repositories(self):
+        text = ("## Used by\n\n- [A](https://github.com/LaserLloyd/StudioForge): a\n"
+                "- [B](https://github.com/LaserLloyd/DisPatch_Chat): b\n\n## Read more\n")
+        self.assertEqual(sync.repo_link_problems(text, "README.md"), [])
+
+    def test_sibling_links_elsewhere_are_still_rejected(self):
+        text = "## Install\n\nSee https://github.com/LaserLloyd/StudioForge for more.\n"
+        self.assertEqual(len(sync.repo_link_problems(text, "README.md")), 1)
+
+    def test_used_by_section_ends_at_the_next_heading(self):
+        text = ("## Used by\n\n- https://github.com/LaserLloyd/StudioForge\n\n"
+                "## License\n\nhttps://github.com/LaserLloyd/ClawForge\n")
+        problems = sync.repo_link_problems(text, "README.md")
+        self.assertEqual(len(problems), 1)
+        self.assertIn("ClawForge", problems[0])
+
+    def test_used_by_may_not_link_the_archived_repository(self):
+        text = "## Used by\n\n- https://github.com/LaserLloyd/UnifyingTheme\n"
+        self.assertIn("archived", sync.repo_link_problems(text, "README.md")[0])
+
+    def test_own_repository_is_always_fine(self):
+        self.assertEqual(sync.repo_link_problems("https://github.com/LaserLloyd/ThemeForge/releases\n", "x.md"), [])
+
+    def test_the_readme_passes_the_gate(self):
+        self.assertEqual([p for p in sync.doc_consistency(sync.load_registry()) if "links" in p], [])
+
+
 class RegistryTests(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()

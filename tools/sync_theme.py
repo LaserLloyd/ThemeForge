@@ -548,7 +548,25 @@ def doc_files(data: dict) -> dict[str, str]:
 INSTALL_BLOCK = re.compile(r"<!-- install:start -->.*?<!-- install:end -->", re.S)
 MD_LINK = re.compile(r"\]\(([^)\s]+)\)")
 PINNED = re.compile(r"ThemeForge@v(\d+\.\d+\.\d+)|/ThemeForge/v(\d+\.\d+\.\d+)/|ui-theme#v(\d+\.\d+\.\d+)")
+USED_BY = re.compile(r"^#{2,3}\s+Used by\s*$.*?(?=^#{1,3}\s|\Z)", re.S | re.M)
+#: Repositories that are never a valid link target, even in a "Used by" list.
+DEAD_SLUGS = {"laserlloyd/unifyingtheme"}
 REPO_SLUG = re.compile(r"github(?:usercontent)?\.com/([A-Za-z0-9-]+/[A-Za-z0-9._-]+?)(?=[/@#)\s'\"]|\.git|$)")
+
+
+def repo_link_problems(text: str, rel: str) -> list[str]:
+    """Every GitHub link to a LaserLloyd repository must name this one. A
+    "Used by" section is the exception: it names sibling products on purpose,
+    so links there are allowed, except to a repository that no longer exists."""
+    problems = []
+    for slug in REPO_SLUG.findall(USED_BY.sub("", text)):
+        slug = slug.rstrip(".")
+        if slug.lower().startswith("laserlloyd/") and slug != REPO:
+            problems.append(f"{rel}: links {slug}, the repository is {REPO}")
+    for slug in REPO_SLUG.findall("".join(USED_BY.findall(text))):
+        if slug.rstrip(".").lower() in DEAD_SLUGS:
+            problems.append(f"{rel}: 'Used by' links {slug.rstrip('.')}, which is archived")
+    return problems
 
 
 def doc_consistency(data: dict) -> list[str]:
@@ -570,10 +588,7 @@ def doc_consistency(data: dict) -> list[str]:
             pinned = m.group(1) or m.group(2) or m.group(3)
             if pinned != data["version"]:
                 problems.append(f"{rel}: pins v{pinned}, the version is {data['version']}")
-        for slug in REPO_SLUG.findall(text):
-            slug = slug.rstrip(".")
-            if slug.lower().startswith("laserlloyd/") and slug != REPO:
-                problems.append(f"{rel}: links {slug}, the repository is {REPO}")
+        problems += repo_link_problems(text, rel)
     for path in docs + [ROOT / "CHANGELOG.md", ROOT / "CLAUDE.md"]:
         if not path.is_file():
             continue
