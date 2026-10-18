@@ -703,5 +703,14 @@ class ExampleTests(unittest.TestCase):
         self.assertEqual(script.headers.get("cache-control"), "no-cache")
 
 
+class PreviewImageTests(unittest.TestCase):
+    def test_the_preview_redirect_does_not_name_the_container_port(self) -> None:
+        """System test 2026-10-18: `/` redirected to http://127.0.0.1:8080/specimen/ even when the
+        container was published on another host port (8080 is a different service on the rig)."""
+        dockerfile = (ROOT / "Dockerfile").read_text(encoding="utf-8")
+        self.assertIn("absolute_redirect off;", dockerfile)
+        self.assertIn("location = / { return 302 /specimen/; }", dockerfile)
+
+
 if __name__ == "__main__":
     unittest.main()
