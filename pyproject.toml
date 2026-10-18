@@ -3,6 +3,9 @@ requires = ["hatchling>=1.27"]
 build-backend = "hatchling.build"
 
 [project]
+# NOTE (2026-10-18): "forgeui" on PyPI belongs to an unrelated project, so this cannot be published
+# under this name. Rename the distribution before a PyPI release (the import name may stay); until
+# then the docs install from the git tag.
 name = "forgeui"
 dynamic = ["version"]
 description = "ForgeUI: design tokens, themes, components and a vendoring tool for web UIs (the ThemeForge bundle as a pure-data wheel, standard library only)"
