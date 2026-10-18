@@ -27,3 +27,5 @@ desktop.ini
 dist/
 build/
 *.egg-info/
+/examples/static-html/ui-theme/
+/examples/fastapi-jinja/static/ui-theme/

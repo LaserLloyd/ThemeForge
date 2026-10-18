@@ -542,5 +542,23 @@ class CliTests(Base):
         self.assertEqual(Path(proc.stdout.strip()), BUNDLE)
 
 
+class ExamplesSelfTest(unittest.TestCase):
+    """The examples' forgeui.json manifests vendor, check and refuse hand edits (tools/selftest_forgeui.py)."""
+
+    def test_examples_vendor_and_check(self):
+        import subprocess
+        proc = subprocess.run([sys.executable, str(ROOT / "tools" / "selftest_forgeui.py")], cwd=ROOT,
+                              capture_output=True, text=True, timeout=300)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertIn("fastapi-jinja: ok", proc.stdout)
+        self.assertIn("static-html: ok", proc.stdout)
+
+    def test_every_example_manifest_accepts_this_release(self):
+        have = forgeui.bundle_version()
+        for path in sorted((ROOT / "examples").glob("*/forgeui.json")):
+            wanted = json.loads(path.read_text(encoding="utf-8"))["version"]
+            self.assertTrue(vendor.parse_constraint(wanted)(have), f"{path.parent.name} wants {wanted}, bundle is {have}")
+
+
 if __name__ == "__main__":
     unittest.main()

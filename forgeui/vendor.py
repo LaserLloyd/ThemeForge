@@ -155,10 +155,11 @@ def init_manifest(path: Path, dest: str, force: bool = False) -> None:
     if path.exists() and not force:
         raise VendorError(f"{path} already exists (use --force to overwrite)")
     _safe_rel(dest, "dest")
-    data = {"dest": dest, "version": "1.2", "adapters": [], "extra_files": {},
-            "settings": {"themes": ["purple", "midnight-gold", "glacier", "forest", "paper", "daylight"],
-                         "default": "auto", "storage_key": "myapp.theme"}}
-    path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8", newline="\n")
+    from . import bundle_version, core_themes
+    data = {"dest": dest, "version": ".".join(bundle_version().split(".")[:2]), "adapters": [], "extra_files": {},
+            "settings": {"themes": core_themes(), "default": "auto", "storage_key": "myapp.theme"}}
+    with open(path, "w", encoding="utf-8", newline="\n") as fh:  # (Path.write_text has no newline= before 3.10)
+        fh.write(json.dumps(data, indent=2) + "\n")
 
 
 # ---------------------------------------------------------------- versions
