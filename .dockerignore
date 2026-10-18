@@ -1,0 +1,4 @@
+# Allow-list: the image needs only the two folders the specimen page loads.
+*
+!specimen
+!ui-theme
