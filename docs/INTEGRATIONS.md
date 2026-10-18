@@ -79,6 +79,23 @@ Flask templates take `filename=`:
 (and the same for the other files, in the order above). A complete FastAPI app is in
 [`examples/fastapi-jinja/`](../examples/fastapi-jinja/).
 
+With the `forgeui` package (`pip install forgeui`) the mount and the head block are one line
+each, and the folder served is the wheel's, so there is nothing to copy:
+
+```python
+import forgeui
+from fastapi import FastAPI
+
+app = FastAPI()
+forgeui.mount(app, "/theme")                      # serves the bundle, Cache-Control: no-cache
+HEAD = forgeui.head_html(themes=["slate", "high-contrast", "high-contrast-light"], default="slate",
+                         storage_key="myapp.theme", prefix="/theme", components=True)
+# put HEAD in the base template's <head>; the tags carry ?v=<hash> so an update shows at once
+```
+
+Use `python -m forgeui vendor` instead when the app must hold its own copy (an offline PWA that
+precaches the files, a Docker build without pip at run time).
+
 ## Django
 
 `static/ui-theme/` in an app or `STATICFILES_DIRS`, then in `base.html`:
@@ -176,6 +193,18 @@ ui.add_head_html('''
 <link rel="stylesheet" href="/static/ui-theme/ui-theme.css">
 <link rel="stylesheet" href="/static/ui-theme/adapters/quasar.css">
 ''', shared=True)
+```
+
+With the `forgeui` package the same block is generated, and the folder is mounted from the wheel:
+
+```python
+import forgeui
+from nicegui import app, ui
+
+forgeui.mount(app, "/theme")
+ui.add_head_html(forgeui.head_html(themes=["purple", "slate", "paper"], default="slate",
+                                   storage_key="myapp.theme", prefix="/theme", adapters=["quasar"]),
+                 shared=True)
 ```
 
 The adapter maps the tokens onto Quasar's components (cards, fields, tabs, toggles, checkboxes,

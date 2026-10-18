@@ -302,6 +302,17 @@ class RegistryTests(unittest.TestCase):
         self.assertEqual(code, 1)
         self.assertIn("stale", out)
 
+    def test_install_is_deprecated_but_still_works(self):
+        code, out = quiet(sync.main, ["install", "--apps", str(self.registry), "--quiet"])
+        self.assertEqual(code, 0, out)
+        self.assertIn("deprecated", out)
+        self.assertIn("python -m forgeui vendor", out)
+        target = self.base / "deprecated" / "ui-theme"
+        code, out = quiet(sync.main, ["install", "--to", str(target), "--quiet"])
+        self.assertEqual(code, 0, out)
+        self.assertIn("deprecated", out)
+        self.assertEqual(sync.folder_drift(target, sync.bundle_files(sync.load_registry())), [])
+
     def test_install_to_folder(self):
         target = self.base / "plain" / "ui-theme"
         code, out = quiet(sync.main, ["install", "--to", str(target), "--quiet"])

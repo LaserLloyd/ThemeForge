@@ -4,7 +4,9 @@ ThemeForge is a drop-in CSS theme system for web apps that an AI coding agent in
 one step: thirteen colour themes (dark, OLED black, light, a neutral default and a high-contrast
 pair, with automatic dark mode from the OS setting), a theme picker, design tokens, a base element layer, text standards and
 ready-made component classes, MIT licensed. Plain CSS and a small script in one folder,
-`ui-theme/`. No build step, no dependencies, any framework.
+`ui-theme/`. No build step, no dependencies, any framework. The package is called **ForgeUI**
+(`pip install forgeui`); the repository, the `ui-theme/` folder and every token and class keep
+the ThemeForge names, so nothing an app depends on changes with the name.
 
 ![On, off, selected and disabled controls in every theme](docs/images/gallery.png)
 
@@ -51,6 +53,26 @@ Build with tokens (`var(--surface-2)`, `var(--text-secondary)`) and classes
 
 Works in current Chrome, Edge, Firefox and Safari (2024 or newer).
 
+### With pip (ForgeUI)
+
+For Python apps (FastAPI, NiceGUI, Flask, Django) the folder is also a wheel, and a manifest in
+your repository says which copy you hold, so the copy can be checked in CI:
+
+```
+pip install forgeui
+python -m forgeui init --dest static/ui-theme   # writes forgeui.json: your themes, default, storage key
+python -m forgeui vendor                        # copies the folder, verified against its checksums
+python -m forgeui vendor --check                # exit 1 when the copy drifted (CI, a unit test)
+```
+
+```python
+import forgeui
+forgeui.mount(app, "/static/ui-theme")          # FastAPI or NiceGUI: serves the folder, no-cache
+head = forgeui.head_html_from_manifest("forgeui.json", prefix="/static/ui-theme")   # the <head> tags
+```
+
+How the manifest, versions and overlays work: [`docs/THEME_SYSTEM.md`](docs/THEME_SYSTEM.md).
+
 Prefer not to install anything? For a prototype, load the files from jsDelivr:
 `https://cdn.jsdelivr.net/gh/LaserLloyd/ThemeForge@v1.2.0/ui-theme/ui-theme.js` (and the
 same path for each CSS file).
@@ -65,12 +87,15 @@ same path for each CSS file).
 | ![](docs/images/swatch-forest.svg) | Forest | OLED | Pale sage and lichen with bark browns on true black. |
 | ![](docs/images/swatch-paper.svg) | Paper | light | Warm parchment, ink-brown text, a serif for prose. |
 | ![](docs/images/swatch-daylight.svg) | Daylight | light | Clean white with a blue accent. |
+| ![](docs/images/swatch-slate.svg) | Slate | dark | The neutral professional default: grey-blue, steel accent, dense but calm. |
+| ![](docs/images/swatch-high-contrast.svg) | High Contrast | dark | White on black, yellow actions, 7:1 text, solid colours. |
+| ![](docs/images/swatch-high-contrast-light.svg) | High Contrast Light | light | Black on white, blue actions, 7:1 text, solid colours. |
 | ![](docs/images/swatch-electric-yellow.svg) | Electric Yellow | dark, opt-in | Acid yellow on graphite. |
 | ![](docs/images/swatch-laserlloyd.svg) | LaserLloyd | dark, opt-in | Laser blue on graphite; pairs with LaserLloyd Light. |
 | ![](docs/images/swatch-laserlloyd-light.svg) | LaserLloyd Light | light, opt-in | The light partner of LaserLloyd. |
 | ![](docs/images/swatch-night-red.svg) | Night Red | OLED, opt-in | Low blue light: ember text on black, zero blue in any colour. |
 
-The first six are the core set an app offers by default; the opt-in four appear only when an
+The first nine are the core set an app offers by default; the opt-in four appear only when an
 app lists them. Every theme passes a contrast audit
 ([`docs/contrast-report.md`](docs/contrast-report.md)): body text at 7:1, secondary text at
 4.5:1 on every surface, control edges and on/off states at 3:1. On, selected and disabled
@@ -86,8 +111,9 @@ states read by shape as well as colour in every theme. More in
 | `ui-components.css` | buttons, fields, checkboxes, radios, switches, cards, badges, callouts, tabs, segmented controls, tables, dialogs, menus, tooltips, toasts, progress, code blocks, an app shell |
 | `ui-theme.css` | the tokens of all thirteen themes (about 20 KB gzipped) |
 | `ui-components.js` | optional: themed `confirm()`, `alert()`, `prompt()` and toasts, copy-to-clipboard, inline validation, settings rows, translatable words (`locales/`) |
+| `locales/` | the words `ui-components.js` shows, in English and Japanese |
 | `adapters/` | NiceGUI/Quasar, Tailwind CSS v4 and v3 |
-| `update.py` | installs and updates the folder, checking every file |
+| `update.py` | installs and updates the folder, checking every file (apps without pip); `python -m forgeui vendor` does the same from a manifest |
 | `ui-theme.d.ts` | TypeScript declarations for `window.UITheme` and `window.UIComponents` |
 | `themes.json`, `VERSION`, `files.json`, `README.md` | the theme list, version, checksums, and usage notes |
 

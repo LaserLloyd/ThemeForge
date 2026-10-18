@@ -108,4 +108,6 @@ python ui-theme/update.py            # latest release
 python ui-theme/update.py --check    # is there one?
 ```
 
-It replaces only the files it owns and refuses if one was edited by hand.
+It replaces only the files it owns and refuses if one was edited by hand. A Python repository can
+use `pip install forgeui` and `python -m forgeui vendor` instead (a `forgeui.json` says where the
+copy lives; `--check` verifies it in CI).

@@ -1,11 +1,11 @@
 {
   "name": "ThemeForge",
   "version": "1.2.0",
-  "hash": "6125e9793359",
+  "hash": "b49ce5e6ed37",
   "repo": "LaserLloyd/ThemeForge",
   "files": {
-    "README.md": "ba5cdd4a7cdb9585e32ec4abf4298db3f8e7878385583a4fdb5cbae3ab3f91de",
-    "VERSION": "f64ac1256198d7487e11fc996cb2551c1cce081071417f0ad7d062e8ce7383f8",
+    "README.md": "5bb495b6b0019e6c4c5860e8a66602ccf5bcc3f835decc760340a5b1fe73781b",
+    "VERSION": "9e8b98dc9e4d4d8df3a2a1a57e685b3b92b4cdb0fc85c71a00c7a96db14b12a1",
     "adapters/quasar.css": "cc9de8a7f3ad7b344c374ab9b830083ec91ee63cd580058f36bc5c4456b828d0",
     "adapters/quasar.js": "77b95e5eabfbac49bee57586553e6fa1cab8381cdb84051be6bbcb49f2da84d1",
     "adapters/tailwind-v3.preset.js": "6f8e2d4a399edb87bb85355d7805436ed442198ff6977bed6a87fb5d883bc46c",

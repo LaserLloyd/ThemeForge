@@ -4,11 +4,12 @@ You are an AI coding agent and someone asked you to theme a web app, or to give 
 picker, dark mode or a consistent look. This file is everything you need: follow it top to
 bottom. It takes about five minutes.
 
-**Names.** Repository `LaserLloyd/ThemeForge` ("ThemeForge"). What you copy into the app
-is one folder, `ui-theme/`. The script defines `window.UITheme`. Every component class starts
-with `ui-` (the base layer also keeps a few unprefixed helpers for older apps, listed in
-`docs/COMPONENTS.md`). There is no npm or pip package and no build step: plain CSS files and
-two small scripts.
+**Names.** Repository `LaserLloyd/ThemeForge`; the package and product are **ForgeUI** (a Python
+wheel, `forgeui`, that carries the same folder). What you copy into the app is one folder,
+`ui-theme/`. The script defines `window.UITheme`. Every component class starts with `ui-` (the
+base layer also keeps a few unprefixed helpers for older apps, listed in `docs/COMPONENTS.md`).
+There is no npm package and no build step: plain CSS files and two small scripts. The rules
+and the versioning policy are in `docs/THEME_SYSTEM.md`.
 
 **What you get.** Thirteen colour themes (including a neutral default, Slate, and a high-contrast pair) and a picker; about 250 design tokens (colours, type,
 spacing, radii, shadows, motion); an element base layer (body text, links, focus ring,
@@ -51,6 +52,11 @@ its `ui-theme/` folder.
 
 Other ways, if Python is not available:
 
+- **pip (Python apps):** `pip install forgeui`, then `python -m forgeui init --dest static/ui-theme`,
+  edit the `forgeui.json` it writes (themes, default, storage key), and `python -m forgeui vendor`.
+  Commit the folder and the manifest; `python -m forgeui vendor --check` in CI keeps the copy honest.
+  `forgeui.mount(app, "/static/ui-theme")` and `forgeui.head_html_from_manifest()` serve the folder
+  and write the head block for FastAPI and NiceGUI. Details: `docs/THEME_SYSTEM.md`.
 - **git:** `git clone --depth 1 https://github.com/LaserLloyd/ThemeForge.git ut-tmp`, copy
   `ut-tmp/ui-theme` into the app, delete `ut-tmp`.
 - **Node:** `npx degit LaserLloyd/ThemeForge/ui-theme#v1.2.0 static/ui-theme`.
@@ -207,6 +213,13 @@ UIComponents.toast('Saved', { kind: 'success' });   // info | success | warning 
 const name = await UIComponents.prompt({ title: 'Rename', value: oldName });  // null if cancelled
 ```
 
+Also in `ui-components.js`: `UIComponents.copy(button)` and the `.ui-copy` field (copy to clipboard,
+with a fallback for plain `http://` pages), `UIComponents.validate(input, 'message')` (inline
+error: `aria-invalid`, `aria-describedby`, announced; `null` clears it), `.ui-setting` rows with a
+reset-to-default button, `.ui-progress-row` with a cancel slot, and `.ui-empty__actions`. Every word
+it shows comes from a string table you can translate (`UIComponents.setStrings`, `loadLocale('ja')`,
+`data-locale="auto"`); see `docs/COMPONENTS.md`.
+
 ## 6. Rules
 
 Do:
@@ -280,7 +293,8 @@ update it with `python3 static/ui-theme/update.py`.
 ## 10. Updating later
 
 `python3 static/ui-theme/update.py` installs the latest release (`--check` only reports;
-`--ref v1.2.0` pins a version). It replaces only the files it owns, leaves the app's own
+`--ref v1.2.0` pins a version); an app with a `forgeui.json` raises its `forgeui` pin and runs
+`python -m forgeui vendor` instead. It replaces only the files it owns, leaves the app's own
 files in the folder alone, and refuses to overwrite a file that was edited by hand (move the
 edit into the app's CSS). Read `CHANGELOG.md` in this repository for what changed, then repeat
 step 8. More in `docs/UPDATING.md`.
@@ -316,6 +330,6 @@ step 8. More in `docs/UPDATING.md`.
 - Also built in: printing switches to a light theme and hides navigation and toasts; when the
   system asks for more contrast (`prefers-contrast: more`) lines get stronger and the quietest
   text tier steps up; reduced motion stops loops and shortens animations.
-- Docs: `docs/TOKENS.md` (every token), `docs/COMPONENTS.md`, `docs/TEXT.md` (text tiers and
+- Docs: `docs/THEME_SYSTEM.md` (the index, contract rules, versioning, vendoring), `docs/TOKENS.md` (every token), `docs/COMPONENTS.md`, `docs/TEXT.md` (text tiers and
   markdown), `docs/THEMES.md` (the themes, and making your own), `docs/INTEGRATIONS.md`,
   `docs/UPDATING.md`.
