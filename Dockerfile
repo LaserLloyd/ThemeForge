@@ -56,9 +56,6 @@ server {
     add_header X-Content-Type-Options "nosniff" always;
     add_header Referrer-Policy "no-referrer" always;
 
-    # Relative redirects: the container's port (8080) differs from the published one.
-    absolute_redirect off;
-
     location = / { return 302 /specimen/; }
     location = /healthz { access_log off; default_type text/plain; return 200 "ok\n"; }
     location / { try_files $uri $uri/ =404; }
