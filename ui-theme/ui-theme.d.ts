@@ -17,7 +17,7 @@ declare global {
     set: 'core' | 'opt-in';
     swatch: string;
     fonts: string[];
-    contrastProfile: 'standard' | 'night';
+    contrastProfile: 'standard' | 'high' | 'night';
   }
 
   interface UIThemeChange {

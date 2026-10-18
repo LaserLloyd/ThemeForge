@@ -10,7 +10,7 @@ with `ui-` (the base layer also keeps a few unprefixed helpers for older apps, l
 `docs/COMPONENTS.md`). There is no npm or pip package and no build step: plain CSS files and
 two small scripts.
 
-**What you get.** Ten colour themes and a picker; about 250 design tokens (colours, type,
+**What you get.** Thirteen colour themes (including a neutral default, Slate, and a high-contrast pair) and a picker; about 250 design tokens (colours, type,
 spacing, radii, shadows, motion); an element base layer (body text, links, focus ring,
 scrollbars); text tiers and a markdown style; component classes (buttons, form fields,
 switches, cards, badges, callouts, tabs, tables, dialogs, menus, toasts, an app shell);
@@ -27,7 +27,7 @@ component states and menus degrade.
 | Question | Default answer |
 |---|---|
 | Where does the folder go? | The app's static folder, served as-is: `static/ui-theme/` (Flask, FastAPI, Django), `public/ui-theme/` (Vite, Next.js, Create React App), `app/static/ui-theme/`, or next to `index.html` for a plain site. |
-| Which themes? | The six core themes: `purple,midnight-gold,glacier,forest,paper,daylight`. Add an opt-in theme (`night-red`, `electric-yellow`, `laserlloyd`, `laserlloyd-light`) only if the user asked for it. |
+| Which themes? | `purple,midnight-gold,glacier,forest,paper,daylight` plus the high-contrast pair `high-contrast,high-contrast-light`, so people who need more contrast can find it (`slate` is the neutral choice for a tool with no brand). Add an opt-in theme (`night-red`, `electric-yellow`, `laserlloyd`, `laserlloyd-light`) only if the user asked for it. |
 | Default theme? | `auto`: follow the visitor's OS light/dark setting until they pick (`data-default-dark="midnight-gold"`, `data-default-light="daylight"`). |
 | Storage key? | `<appname>.theme`, e.g. `notes.theme`. |
 

@@ -946,6 +946,525 @@ tool's docstring. Every theme must pass every row of its contrast profile.
 | canvas-outline on canvas-mask (graphic, over surface-0) | #14181f | rgba(20,25,40,.55) | 4.52 | 3:1 | pass |
 | bubble-user-bg vs bubble-assistant-bg | #c0ccef | #ffffff | 1.60 | 1.3:1 | pass |
 
+## slate — core · ground dark
+
+| Pair | fg | bg | Ratio | Floor | Result |
+|---|---|---|---|---|---|
+| text-primary on surface-0 | #e4e9ef | #0f1318 | 15.27 | 7:1 | pass |
+| text-primary on surface-2 | #e4e9ef | #1a2027 | 13.44 | 7:1 | pass |
+| text-secondary on surface-2 — the contract's 6:1 promise | #a9b4c0 | #1a2027 | 7.80 | 6:1 | pass |
+| text-primary on surface-1 | #e4e9ef | #141920 | 14.46 | 7:1 | pass |
+| text-primary on surface-3 | #e4e9ef | #212831 | 12.18 | 7:1 | pass |
+| text-primary on surface-4 | #e4e9ef | #29313b | 10.77 | 7:1 | pass |
+| text-primary on surface-sunken | #e4e9ef | #0c1014 | 15.64 | 7:1 | pass |
+| text-primary on glass-3 | #e4e9ef | rgba(15,19,24,.94) | 15.27 | 7:1 | pass |
+| text-secondary on surface-0 | #a9b4c0 | #0f1318 | 8.86 | 4.5:1 | pass |
+| text-secondary on surface-1 | #a9b4c0 | #141920 | 8.39 | 4.5:1 | pass |
+| text-secondary on surface-3 | #a9b4c0 | #212831 | 7.06 | 4.5:1 | pass |
+| text-secondary on surface-4 | #a9b4c0 | #29313b | 6.25 | 4.5:1 | pass |
+| text-secondary on surface-sunken | #a9b4c0 | #0c1014 | 9.07 | 4.5:1 | pass |
+| text-secondary on glass-3 | #a9b4c0 | rgba(15,19,24,.94) | 8.86 | 4.5:1 | pass |
+| text-tertiary on surface-0 | #93a0ae | #0f1318 | 6.99 | 4.5:1 | pass |
+| text-tertiary on surface-1 | #93a0ae | #141920 | 6.62 | 4.5:1 | pass |
+| text-tertiary on surface-2 | #93a0ae | #1a2027 | 6.16 | 4.5:1 | pass |
+| text-tertiary on surface-3 | #93a0ae | #212831 | 5.58 | 4.5:1 | pass |
+| text-tertiary on surface-4 | #93a0ae | #29313b | 4.94 | 4.5:1 | pass |
+| text-tertiary on surface-sunken | #93a0ae | #0c1014 | 7.16 | 4.5:1 | pass |
+| text-tertiary on glass-3 | #93a0ae | rgba(15,19,24,.94) | 6.99 | 4.5:1 | pass |
+| text-disabled on surface-0 | #76838f | #0f1318 | 4.80 | 3:1 | pass |
+| text-disabled on surface-1 | #76838f | #141920 | 4.55 | 3:1 | pass |
+| text-disabled on surface-2 | #76838f | #1a2027 | 4.23 | 3:1 | pass |
+| text-disabled on surface-3 | #76838f | #212831 | 3.83 | 3:1 | pass |
+| text-disabled on surface-4 | #76838f | #29313b | 3.39 | 3:1 | pass |
+| text-disabled on surface-sunken | #76838f | #0c1014 | 4.92 | 3:1 | pass |
+| text-disabled on glass-3 | #76838f | rgba(15,19,24,.94) | 4.80 | 3:1 | pass |
+| text-link on surface-0 | #86b8ee | #0f1318 | 8.97 | 4.5:1 | pass |
+| text-link on surface-1 | #86b8ee | #141920 | 8.49 | 4.5:1 | pass |
+| text-link on surface-2 | #86b8ee | #1a2027 | 7.90 | 4.5:1 | pass |
+| text-link on surface-3 | #86b8ee | #212831 | 7.15 | 4.5:1 | pass |
+| text-link on surface-4 | #86b8ee | #29313b | 6.33 | 4.5:1 | pass |
+| text-link on surface-sunken | #86b8ee | #0c1014 | 9.19 | 4.5:1 | pass |
+| text-link on glass-3 | #86b8ee | rgba(15,19,24,.94) | 8.97 | 4.5:1 | pass |
+| success-text on surface-3 (zebra row, tab bar) | #5fcf9f | #212831 | 7.73 | 4.5:1 | pass |
+| warning-text on surface-3 (zebra row, tab bar) | #e6b85c | #212831 | 8.05 | 4.5:1 | pass |
+| danger-text on surface-3 (zebra row, tab bar) | #ee8a83 | #212831 | 6.09 | 4.5:1 | pass |
+| info-text on surface-3 (zebra row, tab bar) | #7ab9ee | #212831 | 7.08 | 4.5:1 | pass |
+| live-text on surface-3 (zebra row, tab bar) | #6dd592 | #212831 | 8.20 | 4.5:1 | pass |
+| idle-text on surface-3 (zebra row, tab bar) | #e6b85c | #212831 | 8.05 | 4.5:1 | pass |
+| offline-text on surface-3 (zebra row, tab bar) | #9aa6b4 | #212831 | 6.01 | 4.5:1 | pass |
+| heartbeat-text on surface-3 (zebra row, tab bar) | #e598c6 | #212831 | 6.82 | 4.5:1 | pass |
+| on-accent on accent | #ffffff | #2f6db3 | 5.30 | 4.5:1 | pass |
+| on-accent on accent-hover | #ffffff | #3676be | 4.68 | 4.5:1 | pass |
+| on-accent on accent-pressed | #ffffff | #285f9f | 6.51 | 4.5:1 | pass |
+| on-cta on cta | #ffffff | #2f6db3 | 5.30 | 4.5:1 | pass |
+| success-text on surface-2 | #5fcf9f | #1a2027 | 8.53 | 4.5:1 | pass |
+| on-success on success | #04200f | #3fb985 | 6.97 | 4.5:1 | pass |
+| warning-text on surface-2 | #e6b85c | #1a2027 | 8.89 | 4.5:1 | pass |
+| on-warning on warning | #231a02 | #d9a43f | 7.65 | 4.5:1 | pass |
+| danger-text on surface-2 | #ee8a83 | #1a2027 | 6.72 | 4.5:1 | pass |
+| on-danger on danger | #260808 | #e0645c | 5.49 | 4.5:1 | pass |
+| info-text on surface-2 | #7ab9ee | #1a2027 | 7.81 | 4.5:1 | pass |
+| on-info on info | #041022 | #5aa6e6 | 7.29 | 4.5:1 | pass |
+| live-text on surface-2 | #6dd592 | #1a2027 | 9.05 | 4.5:1 | pass |
+| on-live on live | #052210 | #52c77a | 7.89 | 4.5:1 | pass |
+| idle-text on surface-2 | #e6b85c | #1a2027 | 8.89 | 4.5:1 | pass |
+| on-idle on idle | #231a02 | #d9a43f | 7.65 | 4.5:1 | pass |
+| offline-text on surface-2 | #9aa6b4 | #1a2027 | 6.63 | 4.5:1 | pass |
+| on-offline on offline | #ffffff | #6b7685 | 4.61 | 4.5:1 | pass |
+| heartbeat-text on surface-2 | #e598c6 | #1a2027 | 7.53 | 4.5:1 | pass |
+| on-heartbeat on heartbeat | #2a0c1c | #d77ab4 | 6.28 | 4.5:1 | pass |
+| success-text on success-subtle (over surface-2) | #5fcf9f | rgba(63,185,133,.13) | 6.83 | 4.5:1 | pass |
+| warning-text on warning-subtle (over surface-2) | #e6b85c | rgba(217,164,63,.13) | 7.05 | 4.5:1 | pass |
+| danger-text on danger-subtle (over surface-2) | #ee8a83 | rgba(224,100,92,.13) | 5.72 | 4.5:1 | pass |
+| info-text on info-subtle (over surface-2) | #7ab9ee | rgba(90,166,230,.13) | 6.32 | 4.5:1 | pass |
+| live-text on live-subtle (over surface-2) | #6dd592 | rgba(82,199,122,.14) | 6.97 | 4.5:1 | pass |
+| idle-text on idle-subtle (over surface-2) | #e6b85c | rgba(217,164,63,.13) | 7.05 | 4.5:1 | pass |
+| offline-text on offline-subtle (over surface-2) | #9aa6b4 | rgba(107,118,133,.17) | 5.47 | 4.5:1 | pass |
+| heartbeat-text on heartbeat-subtle (over surface-2) | #e598c6 | rgba(215,122,180,.13) | 6.18 | 4.5:1 | pass |
+| focus-ring on surface-0 | #86b8ee | #0f1318 | 8.97 | 3:1 | pass |
+| focus-ring on surface-2 | #86b8ee | #1a2027 | 7.90 | 3:1 | pass |
+| border-strong on surface-2 | #6d7c8c | #1a2027 | 3.84 | 3:1 | pass |
+| border-strong on surface-0 | #6d7c8c | #0f1318 | 4.36 | 3:1 | pass |
+| control-track on surface-2 | #5f6c7b | #1a2027 | 3.06 | 3:1 | pass |
+| control-track on surface-0 | #5f6c7b | #0f1318 | 3.48 | 3:1 | pass |
+| on-selected on selected (tick, knob, pressed label) | #0f1318 | #86b8ee | 8.97 | 4.5:1 | pass |
+| selected on surface-0 (on/checked/current indicator) | #86b8ee | #0f1318 | 8.97 | 3:1 | pass |
+| selected on surface-1 (on/checked/current indicator) | #86b8ee | #141920 | 8.49 | 3:1 | pass |
+| selected on surface-2 (on/checked/current indicator) | #86b8ee | #1a2027 | 7.90 | 3:1 | pass |
+| selected on surface-sunken (on/checked/current indicator) | #86b8ee | #0c1014 | 9.19 | 3:1 | pass |
+| unselected-border on surface-0 (off control outline) | #6d7c8c | #0f1318 | 4.36 | 3:1 | pass |
+| unselected-fg on surface-0 (off switch knob) | #93a0ae | #0f1318 | 6.99 | 3:1 | pass |
+| unselected-border on surface-1 (off control outline) | #6d7c8c | #141920 | 4.13 | 3:1 | pass |
+| unselected-fg on surface-1 (off switch knob) | #93a0ae | #141920 | 6.62 | 3:1 | pass |
+| unselected-border on surface-2 (off control outline) | #6d7c8c | #1a2027 | 3.84 | 3:1 | pass |
+| unselected-fg on surface-2 (off switch knob) | #93a0ae | #1a2027 | 6.16 | 3:1 | pass |
+| text-secondary vs text-disabled (enabled vs disabled) | #a9b4c0 | #76838f | 1.84 | 1.5:1 | pass |
+| notify on surface-0 (unread mark) | #86b8ee | #0f1318 | 8.97 | 4.5:1 | pass |
+| notify-idle on surface-0 (at most: must stay quiet) | #2c3642 | #0f1318 | 1.52 | ≤ 3:1 | pass |
+| notify on surface-1 (unread mark) | #86b8ee | #141920 | 8.49 | 4.5:1 | pass |
+| notify-idle on surface-1 (at most: must stay quiet) | #2c3642 | #141920 | 1.44 | ≤ 3:1 | pass |
+| notify vs notify-idle (the two states never blur) | #86b8ee | #2c3642 | 5.90 | 3:1 | pass |
+| on-media on scrim-media (dark stop, over #ffffff) | #ffffff | rgba(6,9,13,.88) | 15.01 | 4.5:1 | pass |
+| syn-fg on syn-bg | #dde4ec | #0a0e12 | 15.11 | 4.5:1 | pass |
+| syn-comment on syn-bg | #7f8b99 | #0a0e12 | 5.58 | 3.5:1 | pass |
+| syn-keyword on syn-bg | #a9b8f2 | #0a0e12 | 9.98 | 4.5:1 | pass |
+| syn-string on syn-bg | #86d9b4 | #0a0e12 | 11.62 | 4.5:1 | pass |
+| syn-number on syn-bg | #f0c070 | #0a0e12 | 11.51 | 4.5:1 | pass |
+| syn-function on syn-bg | #86bff0 | #0a0e12 | 9.89 | 4.5:1 | pass |
+| syn-title on syn-bg | #86bff0 | #0a0e12 | 9.89 | 4.5:1 | pass |
+| syn-type on syn-bg | #6fd0c6 | #0a0e12 | 10.62 | 4.5:1 | pass |
+| syn-variable on syn-bg | #e8a8c8 | #0a0e12 | 10.02 | 4.5:1 | pass |
+| syn-attr on syn-bg | #f0d08a | #0a0e12 | 13.00 | 4.5:1 | pass |
+| syn-tag on syn-bg | #a9b8f2 | #0a0e12 | 9.98 | 4.5:1 | pass |
+| syn-builtin on syn-bg | #6fd0c6 | #0a0e12 | 10.62 | 4.5:1 | pass |
+| syn-literal on syn-bg | #f0c070 | #0a0e12 | 11.51 | 4.5:1 | pass |
+| syn-meta on syn-bg | #98a4b2 | #0a0e12 | 7.64 | 4.5:1 | pass |
+| syn-operator on syn-bg | #c6d0de | #0a0e12 | 12.43 | 4.5:1 | pass |
+| syn-punctuation on syn-bg | #b2bccb | #0a0e12 | 10.10 | 4.5:1 | pass |
+| syn-deletion on syn-bg | #f0a09a | #0a0e12 | 9.41 | 4.5:1 | pass |
+| syn-addition on syn-bg | #84dcb4 | #0a0e12 | 11.87 | 4.5:1 | pass |
+| syn-fg on code-bg — markdown code blocks | #dde4ec | #0a0e12 | 15.11 | 4.5:1 | pass |
+| syn-fg on code-header-bg — code bar buttons | #dde4ec | rgba(24.7700,28.9800,33.2600,1.0000) | 13.23 | 4.5:1 | pass |
+| syn-comment on code-header-bg — code bar label | #7f8b99 | rgba(24.7700,28.9800,33.2600,1.0000) | 4.89 | 3.5:1 | pass |
+| cat-1 on surface-0 | #6fa8e8 | #0f1318 | 7.49 | 3:1 | pass |
+| cat-2 on surface-0 | #5fcf9f | #0f1318 | 9.69 | 3:1 | pass |
+| cat-3 on surface-0 | #e6b85c | #0f1318 | 10.10 | 3:1 | pass |
+| cat-4 on surface-0 | #ee8a83 | #0f1318 | 7.63 | 3:1 | pass |
+| cat-5 on surface-0 | #b79ae8 | #0f1318 | 7.81 | 3:1 | pass |
+| cat-6 on surface-0 | #6fc9c0 | #0f1318 | 9.58 | 3:1 | pass |
+| cat-7 on surface-0 | #e598c6 | #0f1318 | 8.55 | 3:1 | pass |
+| cat-8 on surface-0 | #9bb3c9 | #0f1318 | 8.60 | 3:1 | pass |
+| cat-9 on surface-0 | #c4d36b | #0f1318 | 11.43 | 3:1 | pass |
+| cat-10 on surface-0 | #f0a36b | #0f1318 | 9.01 | 3:1 | pass |
+| cat-11 on surface-0 | #8e9be8 | #0f1318 | 7.10 | 3:1 | pass |
+| cat-12 on surface-0 | #aab4c0 | #0f1318 | 8.87 | 3:1 | pass |
+| md-bold on surface-2 | #ffffff | #1a2027 | 16.41 | 7:1 | pass |
+| bubble-user-text on bubble-user-bg | #e4e9ef | #243a57 | 9.46 | 4.5:1 | pass |
+| bubble-assistant-text on bubble-assistant-bg | #e4e9ef | #1a2027 | 13.44 | 4.5:1 | pass |
+| text-primary on success-subtle (status callout body, over surface-2) | #e4e9ef | rgba(63,185,133,.13) | 10.77 | 4.5:1 | pass |
+| text-primary on warning-subtle (status callout body, over surface-2) | #e4e9ef | rgba(217,164,63,.13) | 10.66 | 4.5:1 | pass |
+| text-primary on danger-subtle (status callout body, over surface-2) | #e4e9ef | rgba(224,100,92,.13) | 11.45 | 4.5:1 | pass |
+| text-primary on info-subtle (status callout body, over surface-2) | #e4e9ef | rgba(90,166,230,.13) | 10.88 | 4.5:1 | pass |
+| rp-speech on surface-2 (narrative text role) | #e4e9ef | #1a2027 | 13.44 | 4.5:1 | pass |
+| rp-action on surface-2 (narrative text role) | #a9b4c0 | #1a2027 | 7.80 | 4.5:1 | pass |
+| rp-thought on surface-2 (narrative text role) | #a6e0da | #1a2027 | 11.17 | 4.5:1 | pass |
+| rp-whisper on surface-2 (narrative text role) | #93a0ae | #1a2027 | 6.16 | 4.5:1 | pass |
+| rp-ooc on surface-2 (narrative text role) | #93a0ae | #1a2027 | 6.16 | 4.5:1 | pass |
+| rp-shout on surface-2 (narrative text role) | #f0a36b | #1a2027 | 7.94 | 4.5:1 | pass |
+| rp-critical on surface-2 (narrative text role) | #ee8a96 | #1a2027 | 6.81 | 4.5:1 | pass |
+| diff-add-text on diff-add-bg (over surface-2) | #84dcb4 | rgba(63,185,133,.14) | 7.96 | 4.5:1 | pass |
+| diff-remove-text on diff-remove-bg (over surface-2) | #f0a09a | rgba(224,100,92,.14) | 6.68 | 4.5:1 | pass |
+| chart-axis on surface-0 (graphic) | #6b7886 | #0f1318 | 4.13 | 3:1 | pass |
+| seq-5 vs seq-1 (ramp ends apart) | #86b8ee | rgba(47.6000,62.4000,78.8000,1.0000) | 5.23 | 3:1 | pass |
+| seq-5 on surface-2 (graphic) | #86b8ee | #1a2027 | 7.90 | 3:1 | pass |
+| div-1 on surface-2 (graphic) | #ee8a83 | #1a2027 | 6.72 | 3:1 | pass |
+| div-5 on surface-2 (graphic) | #5fcf9f | #1a2027 | 8.53 | 3:1 | pass |
+| canvas-handle on canvas-mask (graphic, over surface-0) | #86b8ee | rgba(5,8,12,.70) | 9.48 | 3:1 | pass |
+| canvas-outline on canvas-mask (graphic, over surface-0) | #e4e9ef | rgba(5,8,12,.70) | 16.14 | 3:1 | pass |
+| bubble-user-bg vs bubble-assistant-bg | #243a57 | #1a2027 | 1.42 | 1.3:1 | pass |
+
+## high-contrast — core · ground dark · contrast profile high
+
+| Pair | fg | bg | Ratio | Floor | Result |
+|---|---|---|---|---|---|
+| text-primary on surface-0 | #ffffff | #000000 | 21.00 | 7:1 | pass |
+| text-primary on surface-2 | #ffffff | #171717 | 17.93 | 7:1 | pass |
+| text-secondary on surface-2 (high profile) | #e0e0e0 | #171717 | 13.58 | 7:1 | pass |
+| text-primary on surface-1 | #ffffff | #0d0d0d | 19.44 | 7:1 | pass |
+| text-primary on surface-3 | #ffffff | #222222 | 15.91 | 7:1 | pass |
+| text-primary on surface-4 | #ffffff | #2e2e2e | 13.58 | 7:1 | pass |
+| text-primary on surface-sunken | #ffffff | #000000 | 21.00 | 7:1 | pass |
+| text-primary on glass-3 | #ffffff | #0d0d0d | 19.44 | 7:1 | pass |
+| text-secondary on surface-0 (high profile) | #e0e0e0 | #000000 | 15.91 | 7:1 | pass |
+| text-secondary on surface-1 (high profile) | #e0e0e0 | #0d0d0d | 14.72 | 7:1 | pass |
+| text-secondary on surface-3 (high profile) | #e0e0e0 | #222222 | 12.05 | 7:1 | pass |
+| text-secondary on surface-4 (high profile) | #e0e0e0 | #2e2e2e | 10.29 | 7:1 | pass |
+| text-secondary on surface-sunken (high profile) | #e0e0e0 | #000000 | 15.91 | 7:1 | pass |
+| text-secondary on glass-3 (high profile) | #e0e0e0 | #0d0d0d | 14.72 | 7:1 | pass |
+| text-tertiary on surface-0 (high profile) | #cfcfcf | #000000 | 13.48 | 7:1 | pass |
+| text-tertiary on surface-1 (high profile) | #cfcfcf | #0d0d0d | 12.48 | 7:1 | pass |
+| text-tertiary on surface-2 (high profile) | #cfcfcf | #171717 | 11.51 | 7:1 | pass |
+| text-tertiary on surface-3 (high profile) | #cfcfcf | #222222 | 10.21 | 7:1 | pass |
+| text-tertiary on surface-4 (high profile) | #cfcfcf | #2e2e2e | 8.72 | 7:1 | pass |
+| text-tertiary on surface-sunken (high profile) | #cfcfcf | #000000 | 13.48 | 7:1 | pass |
+| text-tertiary on glass-3 (high profile) | #cfcfcf | #0d0d0d | 12.48 | 7:1 | pass |
+| text-disabled on surface-0 (high profile) | #9e9e9e | #000000 | 7.84 | 4.5:1 | pass |
+| text-disabled on surface-1 (high profile) | #9e9e9e | #0d0d0d | 7.25 | 4.5:1 | pass |
+| text-disabled on surface-2 (high profile) | #9e9e9e | #171717 | 6.69 | 4.5:1 | pass |
+| text-disabled on surface-3 (high profile) | #9e9e9e | #222222 | 5.94 | 4.5:1 | pass |
+| text-disabled on surface-4 (high profile) | #9e9e9e | #2e2e2e | 5.07 | 4.5:1 | pass |
+| text-disabled on surface-sunken (high profile) | #9e9e9e | #000000 | 7.84 | 4.5:1 | pass |
+| text-disabled on glass-3 (high profile) | #9e9e9e | #0d0d0d | 7.25 | 4.5:1 | pass |
+| text-link on surface-0 (high profile) | #7fd6ff | #000000 | 12.97 | 7:1 | pass |
+| text-link on surface-1 (high profile) | #7fd6ff | #0d0d0d | 12.00 | 7:1 | pass |
+| text-link on surface-2 (high profile) | #7fd6ff | #171717 | 11.07 | 7:1 | pass |
+| text-link on surface-3 (high profile) | #7fd6ff | #222222 | 9.82 | 7:1 | pass |
+| text-link on surface-4 (high profile) | #7fd6ff | #2e2e2e | 8.38 | 7:1 | pass |
+| text-link on surface-sunken (high profile) | #7fd6ff | #000000 | 12.97 | 7:1 | pass |
+| text-link on glass-3 (high profile) | #7fd6ff | #0d0d0d | 12.00 | 7:1 | pass |
+| success-text on surface-3 (high profile) | #6ff2a2 | #222222 | 11.29 | 7:1 | pass |
+| warning-text on surface-3 (high profile) | #ffb84a | #222222 | 9.25 | 7:1 | pass |
+| danger-text on surface-3 (high profile) | #ff9a92 | #222222 | 7.80 | 7:1 | pass |
+| info-text on surface-3 (high profile) | #7fd6ff | #222222 | 9.82 | 7:1 | pass |
+| live-text on surface-3 (high profile) | #a6ff80 | #222222 | 13.06 | 7:1 | pass |
+| idle-text on surface-3 (high profile) | #ffb84a | #222222 | 9.25 | 7:1 | pass |
+| offline-text on surface-3 (high profile) | #cfcfcf | #222222 | 10.21 | 7:1 | pass |
+| heartbeat-text on surface-3 (high profile) | #ff9be3 | #222222 | 8.37 | 7:1 | pass |
+| on-accent on accent (high profile) | #000000 | #ffd400 | 14.67 | 7:1 | pass |
+| on-accent on accent-hover (high profile) | #000000 | #ffe347 | 16.33 | 7:1 | pass |
+| on-accent on accent-pressed (high profile) | #000000 | #e6bd00 | 11.64 | 7:1 | pass |
+| on-cta on cta (high profile) | #000000 | #ffd400 | 14.67 | 7:1 | pass |
+| success-text on surface-2 (high profile) | #6ff2a2 | #171717 | 12.72 | 7:1 | pass |
+| on-success on success (high profile) | #000000 | #3fe07f | 12.18 | 7:1 | pass |
+| warning-text on surface-2 (high profile) | #ffb84a | #171717 | 10.42 | 7:1 | pass |
+| on-warning on warning (high profile) | #000000 | #ffa11a | 10.36 | 7:1 | pass |
+| danger-text on surface-2 (high profile) | #ff9a92 | #171717 | 8.78 | 7:1 | pass |
+| on-danger on danger (high profile) | #000000 | #ff7a70 | 8.27 | 7:1 | pass |
+| info-text on surface-2 (high profile) | #7fd6ff | #171717 | 11.07 | 7:1 | pass |
+| on-info on info (high profile) | #000000 | #5cc8ff | 11.16 | 7:1 | pass |
+| live-text on surface-2 (high profile) | #a6ff80 | #171717 | 14.72 | 7:1 | pass |
+| on-live on live (high profile) | #000000 | #8dff5a | 16.58 | 7:1 | pass |
+| idle-text on surface-2 (high profile) | #ffb84a | #171717 | 10.42 | 7:1 | pass |
+| on-idle on idle (high profile) | #000000 | #ffa11a | 10.36 | 7:1 | pass |
+| offline-text on surface-2 (high profile) | #cfcfcf | #171717 | 11.51 | 7:1 | pass |
+| on-offline on offline (high profile) | #000000 | #b0b0b0 | 9.68 | 7:1 | pass |
+| heartbeat-text on surface-2 (high profile) | #ff9be3 | #171717 | 9.43 | 7:1 | pass |
+| on-heartbeat on heartbeat (high profile) | #000000 | #ff7ad8 | 9.03 | 7:1 | pass |
+| success-text on success-subtle (high profile) | #6ff2a2 | #0a2e1a | 10.50 | 7:1 | pass |
+| warning-text on warning-subtle (high profile) | #ffb84a | #332000 | 9.06 | 7:1 | pass |
+| danger-text on danger-subtle (high profile) | #ff9a92 | #3a0d0a | 8.29 | 7:1 | pass |
+| info-text on info-subtle (high profile) | #7fd6ff | #062a3d | 9.22 | 7:1 | pass |
+| live-text on live-subtle (high profile) | #a6ff80 | #17300a | 11.78 | 7:1 | pass |
+| idle-text on idle-subtle (high profile) | #ffb84a | #332000 | 9.06 | 7:1 | pass |
+| offline-text on offline-subtle (high profile) | #cfcfcf | #2e2e2e | 8.72 | 7:1 | pass |
+| heartbeat-text on heartbeat-subtle (high profile) | #ff9be3 | #3a0f2f | 8.57 | 7:1 | pass |
+| focus-ring on surface-0 (high profile) | #ffd400 | #000000 | 14.67 | 7:1 | pass |
+| focus-ring on surface-2 (high profile) | #ffd400 | #171717 | 12.52 | 7:1 | pass |
+| border-strong on surface-2 (high profile) | #e6e6e6 | #171717 | 14.36 | 4.5:1 | pass |
+| border-strong on surface-0 (high profile) | #e6e6e6 | #000000 | 16.83 | 4.5:1 | pass |
+| control-track on surface-2 (high profile) | #8c8c8c | #171717 | 5.33 | 4.5:1 | pass |
+| control-track on surface-0 (high profile) | #8c8c8c | #000000 | 6.25 | 4.5:1 | pass |
+| on-selected on selected (high profile) | #000000 | #7fd6ff | 12.97 | 7:1 | pass |
+| selected on surface-0 (high profile) | #7fd6ff | #000000 | 12.97 | 4.5:1 | pass |
+| selected on surface-1 (high profile) | #7fd6ff | #0d0d0d | 12.00 | 4.5:1 | pass |
+| selected on surface-2 (high profile) | #7fd6ff | #171717 | 11.07 | 4.5:1 | pass |
+| selected on surface-sunken (high profile) | #7fd6ff | #000000 | 12.97 | 4.5:1 | pass |
+| unselected-border on surface-0 (high profile) | #e6e6e6 | #000000 | 16.83 | 4.5:1 | pass |
+| unselected-fg on surface-0 (high profile) | #cfcfcf | #000000 | 13.48 | 4.5:1 | pass |
+| unselected-border on surface-1 (high profile) | #e6e6e6 | #0d0d0d | 15.57 | 4.5:1 | pass |
+| unselected-fg on surface-1 (high profile) | #cfcfcf | #0d0d0d | 12.48 | 4.5:1 | pass |
+| unselected-border on surface-2 (high profile) | #e6e6e6 | #171717 | 14.36 | 4.5:1 | pass |
+| unselected-fg on surface-2 (high profile) | #cfcfcf | #171717 | 11.51 | 4.5:1 | pass |
+| text-secondary vs text-disabled (enabled vs disabled) | #e0e0e0 | #9e9e9e | 2.03 | 1.5:1 | pass |
+| notify on surface-0 (unread mark) | #ffd400 | #000000 | 14.67 | 4.5:1 | pass |
+| notify-idle on surface-0 (at most: must stay quiet) | #555555 | #000000 | 2.82 | ≤ 3:1 | pass |
+| notify on surface-1 (unread mark) | #ffd400 | #0d0d0d | 13.58 | 4.5:1 | pass |
+| notify-idle on surface-1 (at most: must stay quiet) | #555555 | #0d0d0d | 2.61 | ≤ 3:1 | pass |
+| notify vs notify-idle (the two states never blur) | #ffd400 | #555555 | 5.21 | 3:1 | pass |
+| on-media on scrim-media (high profile) | #ffffff | #000000 | 21.00 | 7:1 | pass |
+| syn-fg on syn-bg | #ffffff | #000000 | 21.00 | 4.5:1 | pass |
+| syn-comment on syn-bg | #b0b0b0 | #000000 | 9.68 | 3.5:1 | pass |
+| syn-keyword on syn-bg | #d4b5ff | #000000 | 11.85 | 4.5:1 | pass |
+| syn-string on syn-bg | #7fffb0 | #000000 | 16.83 | 4.5:1 | pass |
+| syn-number on syn-bg | #ffc66b | #000000 | 13.54 | 4.5:1 | pass |
+| syn-function on syn-bg | #7fd6ff | #000000 | 12.97 | 4.5:1 | pass |
+| syn-title on syn-bg | #7fd6ff | #000000 | 12.97 | 4.5:1 | pass |
+| syn-type on syn-bg | #5ff0e0 | #000000 | 15.03 | 4.5:1 | pass |
+| syn-variable on syn-bg | #ffa8d8 | #000000 | 11.84 | 4.5:1 | pass |
+| syn-attr on syn-bg | #ffd98a | #000000 | 15.54 | 4.5:1 | pass |
+| syn-tag on syn-bg | #d4b5ff | #000000 | 11.85 | 4.5:1 | pass |
+| syn-builtin on syn-bg | #5ff0e0 | #000000 | 15.03 | 4.5:1 | pass |
+| syn-literal on syn-bg | #ffc66b | #000000 | 13.54 | 4.5:1 | pass |
+| syn-meta on syn-bg | #cfcfcf | #000000 | 13.48 | 4.5:1 | pass |
+| syn-operator on syn-bg | #e8e8e8 | #000000 | 17.14 | 4.5:1 | pass |
+| syn-punctuation on syn-bg | #d0d0d0 | #000000 | 13.62 | 4.5:1 | pass |
+| syn-deletion on syn-bg | #ff9a92 | #000000 | 10.29 | 4.5:1 | pass |
+| syn-addition on syn-bg | #7fffb0 | #000000 | 16.83 | 4.5:1 | pass |
+| syn-fg on code-bg — markdown code blocks | #ffffff | #000000 | 21.00 | 4.5:1 | pass |
+| syn-fg on code-header-bg — code bar buttons | #ffffff | rgba(17.8500,17.8500,17.8500,1.0000) | 18.76 | 4.5:1 | pass |
+| syn-comment on code-header-bg — code bar label | #b0b0b0 | rgba(17.8500,17.8500,17.8500,1.0000) | 8.65 | 3.5:1 | pass |
+| cat-1 on surface-0 (high profile) | #ffd400 | #000000 | 14.67 | 4.5:1 | pass |
+| cat-2 on surface-0 (high profile) | #5cc8ff | #000000 | 11.16 | 4.5:1 | pass |
+| cat-3 on surface-0 (high profile) | #ff7a70 | #000000 | 8.27 | 4.5:1 | pass |
+| cat-4 on surface-0 (high profile) | #6ff2a2 | #000000 | 14.90 | 4.5:1 | pass |
+| cat-5 on surface-0 (high profile) | #d4b5ff | #000000 | 11.85 | 4.5:1 | pass |
+| cat-6 on surface-0 (high profile) | #ffa11a | #000000 | 10.36 | 4.5:1 | pass |
+| cat-7 on surface-0 (high profile) | #ff7ad8 | #000000 | 9.03 | 4.5:1 | pass |
+| cat-8 on surface-0 (high profile) | #5ff0e0 | #000000 | 15.03 | 4.5:1 | pass |
+| cat-9 on surface-0 (high profile) | #b8e04a | #000000 | 13.80 | 4.5:1 | pass |
+| cat-10 on surface-0 (high profile) | #9ab0ff | #000000 | 10.03 | 4.5:1 | pass |
+| cat-11 on surface-0 (high profile) | #ffd0a0 | #000000 | 14.78 | 4.5:1 | pass |
+| cat-12 on surface-0 (high profile) | #c0c0c0 | #000000 | 11.54 | 4.5:1 | pass |
+| md-bold on surface-2 | #ffffff | #171717 | 17.93 | 7:1 | pass |
+| bubble-user-text on bubble-user-bg (high profile) | #ffffff | #0b3d91 | 10.04 | 7:1 | pass |
+| bubble-assistant-text on bubble-assistant-bg (high profile) | #ffffff | #171717 | 17.93 | 7:1 | pass |
+| text-primary on success-subtle (status callout body, over surface-2) | #ffffff | #0a2e1a | 14.80 | 4.5:1 | pass |
+| text-primary on warning-subtle (status callout body, over surface-2) | #ffffff | #332000 | 15.59 | 4.5:1 | pass |
+| text-primary on danger-subtle (status callout body, over surface-2) | #ffffff | #3a0d0a | 16.91 | 4.5:1 | pass |
+| text-primary on info-subtle (status callout body, over surface-2) | #ffffff | #062a3d | 14.93 | 4.5:1 | pass |
+| rp-speech on surface-2 (high profile) | #ffffff | #171717 | 17.93 | 7:1 | pass |
+| rp-action on surface-2 (high profile) | #e0e0e0 | #171717 | 13.58 | 7:1 | pass |
+| rp-thought on surface-2 (high profile) | #b8f0ff | #171717 | 14.47 | 7:1 | pass |
+| rp-whisper on surface-2 (high profile) | #cfcfcf | #171717 | 11.51 | 7:1 | pass |
+| rp-ooc on surface-2 (high profile) | #cfcfcf | #171717 | 11.51 | 7:1 | pass |
+| rp-shout on surface-2 (high profile) | #ffb27a | #171717 | 10.16 | 7:1 | pass |
+| rp-critical on surface-2 (high profile) | #ff9aa8 | #171717 | 8.91 | 7:1 | pass |
+| diff-add-text on diff-add-bg (high profile) | #8affb4 | #0a2e1a | 12.01 | 7:1 | pass |
+| diff-remove-text on diff-remove-bg (high profile) | #ffa8a0 | #3a0d0a | 9.15 | 7:1 | pass |
+| chart-axis on surface-0 (high profile) | #b0b0b0 | #000000 | 9.68 | 4.5:1 | pass |
+| seq-5 vs seq-1 (ramp ends apart) | #7fd6ff | rgba(43.8000,61.2000,69.4000,1.0000) | 6.95 | 3:1 | pass |
+| seq-5 on surface-2 (graphic) | #7fd6ff | #171717 | 11.07 | 3:1 | pass |
+| div-1 on surface-2 (graphic) | #ff9a92 | #171717 | 8.78 | 3:1 | pass |
+| div-5 on surface-2 (graphic) | #6ff2a2 | #171717 | 12.72 | 3:1 | pass |
+| canvas-handle on canvas-mask (graphic, over surface-0) | #ffd400 | rgba(0,0,0,.72) | 14.67 | 3:1 | pass |
+| canvas-outline on canvas-mask (graphic, over surface-0) | #ffffff | rgba(0,0,0,.72) | 21.00 | 3:1 | pass |
+| bubble-user-bg vs bubble-assistant-bg | #0b3d91 | #171717 | 1.78 | 1.3:1 | pass |
+| border on surface-0 | #b3b3b3 | #000000 | 10.02 | 3:1 | pass |
+| border on surface-2 | #b3b3b3 | #171717 | 8.55 | 3:1 | pass |
+| border-subtle on surface-0 | #8a8a8a | #000000 | 6.08 | 3:1 | pass |
+| border-subtle on surface-2 | #8a8a8a | #171717 | 5.19 | 3:1 | pass |
+| divider on surface-2 | #8a8a8a | #171717 | 5.19 | 3:1 | pass |
+| glass-stroke on surface-0 | #8a8a8a | #000000 | 6.08 | 3:1 | pass |
+| glass-stroke-strong on surface-0 | #e6e6e6 | #000000 | 16.83 | 4.5:1 | pass |
+| scrollbar-thumb on surface-0 | #8a8a8a | #000000 | 6.08 | 3:1 | pass |
+| text-link-hover on surface-0 | #b8ebff | #000000 | 16.37 | 7:1 | pass |
+| text-link-hover on surface-2 | #b8ebff | #171717 | 13.97 | 7:1 | pass |
+| text-link-hover on surface-4 | #b8ebff | #2e2e2e | 10.58 | 7:1 | pass |
+| md-italic on surface-2 | #ffe347 | #171717 | 13.94 | 7:1 | pass |
+| md-bolditalic on surface-2 | #fff3b0 | #171717 | 15.96 | 7:1 | pass |
+| highlight on surface-2 | #ffe347 | #171717 | 13.94 | 7:1 | pass |
+| accent-2 on surface-2 | #5ef0ff | #171717 | 13.13 | 7:1 | pass |
+| quote-bar on surface-2 (graphic) | #ffd400 | #171717 | 12.52 | 4.5:1 | pass |
+| accent vs danger (Save vs Delete) | #ffd400 | #ff7a70 | dE00 45.0 | dE00 20 | pass |
+| danger vs warning | #ff7a70 | #ffa11a | dE00 28.7 | dE00 15 | pass |
+| warning vs info | #ffa11a | #5cc8ff | dE00 53.3 | dE00 15 | pass |
+| info vs success | #5cc8ff | #3fe07f | dE00 44.3 | dE00 15 | pass |
+
+### Opacity audit (high profile)
+
+pass: no colour token is translucent (exempt: `canvas-guide`, `canvas-mask`, `scrim-media`).
+
+## high-contrast-light — core · ground light · contrast profile high
+
+| Pair | fg | bg | Ratio | Floor | Result |
+|---|---|---|---|---|---|
+| text-primary on surface-0 | #000000 | #ffffff | 21.00 | 7:1 | pass |
+| text-primary on surface-2 | #000000 | #ffffff | 21.00 | 7:1 | pass |
+| text-secondary on surface-2 (high profile) | #1a1a1a | #ffffff | 17.40 | 7:1 | pass |
+| text-primary on surface-1 | #000000 | #f2f2f2 | 18.76 | 7:1 | pass |
+| text-primary on surface-3 | #000000 | #ebebeb | 17.62 | 7:1 | pass |
+| text-primary on surface-4 | #000000 | #dedede | 15.61 | 7:1 | pass |
+| text-primary on surface-sunken | #000000 | #f2f2f2 | 18.76 | 7:1 | pass |
+| text-primary on glass-3 | #000000 | #f2f2f2 | 18.76 | 7:1 | pass |
+| text-secondary on surface-0 (high profile) | #1a1a1a | #ffffff | 17.40 | 7:1 | pass |
+| text-secondary on surface-1 (high profile) | #1a1a1a | #f2f2f2 | 15.55 | 7:1 | pass |
+| text-secondary on surface-3 (high profile) | #1a1a1a | #ebebeb | 14.60 | 7:1 | pass |
+| text-secondary on surface-4 (high profile) | #1a1a1a | #dedede | 12.94 | 7:1 | pass |
+| text-secondary on surface-sunken (high profile) | #1a1a1a | #f2f2f2 | 15.55 | 7:1 | pass |
+| text-secondary on glass-3 (high profile) | #1a1a1a | #f2f2f2 | 15.55 | 7:1 | pass |
+| text-tertiary on surface-0 (high profile) | #2e2e2e | #ffffff | 13.58 | 7:1 | pass |
+| text-tertiary on surface-1 (high profile) | #2e2e2e | #f2f2f2 | 12.13 | 7:1 | pass |
+| text-tertiary on surface-2 (high profile) | #2e2e2e | #ffffff | 13.58 | 7:1 | pass |
+| text-tertiary on surface-3 (high profile) | #2e2e2e | #ebebeb | 11.39 | 7:1 | pass |
+| text-tertiary on surface-4 (high profile) | #2e2e2e | #dedede | 10.09 | 7:1 | pass |
+| text-tertiary on surface-sunken (high profile) | #2e2e2e | #f2f2f2 | 12.13 | 7:1 | pass |
+| text-tertiary on glass-3 (high profile) | #2e2e2e | #f2f2f2 | 12.13 | 7:1 | pass |
+| text-disabled on surface-0 (high profile) | #595959 | #ffffff | 7.00 | 4.5:1 | pass |
+| text-disabled on surface-1 (high profile) | #595959 | #f2f2f2 | 6.26 | 4.5:1 | pass |
+| text-disabled on surface-2 (high profile) | #595959 | #ffffff | 7.00 | 4.5:1 | pass |
+| text-disabled on surface-3 (high profile) | #595959 | #ebebeb | 5.88 | 4.5:1 | pass |
+| text-disabled on surface-4 (high profile) | #595959 | #dedede | 5.21 | 4.5:1 | pass |
+| text-disabled on surface-sunken (high profile) | #595959 | #f2f2f2 | 6.26 | 4.5:1 | pass |
+| text-disabled on glass-3 (high profile) | #595959 | #f2f2f2 | 6.26 | 4.5:1 | pass |
+| text-link on surface-0 (high profile) | #002f9e | #ffffff | 11.05 | 7:1 | pass |
+| text-link on surface-1 (high profile) | #002f9e | #f2f2f2 | 9.87 | 7:1 | pass |
+| text-link on surface-2 (high profile) | #002f9e | #ffffff | 11.05 | 7:1 | pass |
+| text-link on surface-3 (high profile) | #002f9e | #ebebeb | 9.27 | 7:1 | pass |
+| text-link on surface-4 (high profile) | #002f9e | #dedede | 8.21 | 7:1 | pass |
+| text-link on surface-sunken (high profile) | #002f9e | #f2f2f2 | 9.87 | 7:1 | pass |
+| text-link on glass-3 (high profile) | #002f9e | #f2f2f2 | 9.87 | 7:1 | pass |
+| success-text on surface-3 (high profile) | #004d20 | #ebebeb | 8.46 | 7:1 | pass |
+| warning-text on surface-3 (high profile) | #6b3f00 | #ebebeb | 7.54 | 7:1 | pass |
+| danger-text on surface-3 (high profile) | #8f0016 | #ebebeb | 8.08 | 7:1 | pass |
+| info-text on surface-3 (high profile) | #004a82 | #ebebeb | 7.65 | 7:1 | pass |
+| live-text on surface-3 (high profile) | #245000 | #ebebeb | 7.93 | 7:1 | pass |
+| idle-text on surface-3 (high profile) | #6b3f00 | #ebebeb | 7.54 | 7:1 | pass |
+| offline-text on surface-3 (high profile) | #404040 | #ebebeb | 8.70 | 7:1 | pass |
+| heartbeat-text on surface-3 (high profile) | #800059 | #ebebeb | 8.54 | 7:1 | pass |
+| on-accent on accent (high profile) | #ffffff | #1a47c8 | 7.56 | 7:1 | pass |
+| on-accent on accent-hover (high profile) | #ffffff | #12369c | 10.33 | 7:1 | pass |
+| on-accent on accent-pressed (high profile) | #ffffff | #0b2778 | 13.33 | 7:1 | pass |
+| on-cta on cta (high profile) | #ffffff | #1a47c8 | 7.56 | 7:1 | pass |
+| success-text on surface-2 (high profile) | #004d20 | #ffffff | 10.08 | 7:1 | pass |
+| on-success on success (high profile) | #ffffff | #005c27 | 8.20 | 7:1 | pass |
+| warning-text on surface-2 (high profile) | #6b3f00 | #ffffff | 8.99 | 7:1 | pass |
+| on-warning on warning (high profile) | #ffffff | #7a4a00 | 7.48 | 7:1 | pass |
+| danger-text on surface-2 (high profile) | #8f0016 | #ffffff | 9.64 | 7:1 | pass |
+| on-danger on danger (high profile) | #ffffff | #a8001c | 7.83 | 7:1 | pass |
+| info-text on surface-2 (high profile) | #004a82 | #ffffff | 9.12 | 7:1 | pass |
+| on-info on info (high profile) | #ffffff | #00508f | 8.25 | 7:1 | pass |
+| live-text on surface-2 (high profile) | #245000 | #ffffff | 9.45 | 7:1 | pass |
+| on-live on live (high profile) | #ffffff | #2a5c00 | 7.99 | 7:1 | pass |
+| idle-text on surface-2 (high profile) | #6b3f00 | #ffffff | 8.99 | 7:1 | pass |
+| on-idle on idle (high profile) | #ffffff | #7a4a00 | 7.48 | 7:1 | pass |
+| offline-text on surface-2 (high profile) | #404040 | #ffffff | 10.37 | 7:1 | pass |
+| on-offline on offline (high profile) | #ffffff | #4d4d4d | 8.45 | 7:1 | pass |
+| heartbeat-text on surface-2 (high profile) | #800059 | #ffffff | 10.18 | 7:1 | pass |
+| on-heartbeat on heartbeat (high profile) | #ffffff | #8f0066 | 8.90 | 7:1 | pass |
+| success-text on success-subtle (high profile) | #004d20 | #dcf5e5 | 8.76 | 7:1 | pass |
+| warning-text on warning-subtle (high profile) | #6b3f00 | #fbebcc | 7.64 | 7:1 | pass |
+| danger-text on danger-subtle (high profile) | #8f0016 | #fbdada | 7.41 | 7:1 | pass |
+| info-text on info-subtle (high profile) | #004a82 | #d6e9f8 | 7.33 | 7:1 | pass |
+| live-text on live-subtle (high profile) | #245000 | #e4f2d6 | 8.09 | 7:1 | pass |
+| idle-text on idle-subtle (high profile) | #6b3f00 | #fbebcc | 7.64 | 7:1 | pass |
+| offline-text on offline-subtle (high profile) | #404040 | #e6e6e6 | 8.31 | 7:1 | pass |
+| heartbeat-text on heartbeat-subtle (high profile) | #800059 | #f7d9ee | 7.81 | 7:1 | pass |
+| focus-ring on surface-0 (high profile) | #002f9e | #ffffff | 11.05 | 7:1 | pass |
+| focus-ring on surface-2 (high profile) | #002f9e | #ffffff | 11.05 | 7:1 | pass |
+| border-strong on surface-2 (high profile) | #000000 | #ffffff | 21.00 | 4.5:1 | pass |
+| border-strong on surface-0 (high profile) | #000000 | #ffffff | 21.00 | 4.5:1 | pass |
+| control-track on surface-2 (high profile) | #6b6b6b | #ffffff | 5.33 | 4.5:1 | pass |
+| control-track on surface-0 (high profile) | #6b6b6b | #ffffff | 5.33 | 4.5:1 | pass |
+| on-selected on selected (high profile) | #ffffff | #002f9e | 11.05 | 7:1 | pass |
+| selected on surface-0 (high profile) | #002f9e | #ffffff | 11.05 | 4.5:1 | pass |
+| selected on surface-1 (high profile) | #002f9e | #f2f2f2 | 9.87 | 4.5:1 | pass |
+| selected on surface-2 (high profile) | #002f9e | #ffffff | 11.05 | 4.5:1 | pass |
+| selected on surface-sunken (high profile) | #002f9e | #f2f2f2 | 9.87 | 4.5:1 | pass |
+| unselected-border on surface-0 (high profile) | #000000 | #ffffff | 21.00 | 4.5:1 | pass |
+| unselected-fg on surface-0 (high profile) | #2e2e2e | #ffffff | 13.58 | 4.5:1 | pass |
+| unselected-border on surface-1 (high profile) | #000000 | #f2f2f2 | 18.76 | 4.5:1 | pass |
+| unselected-fg on surface-1 (high profile) | #2e2e2e | #f2f2f2 | 12.13 | 4.5:1 | pass |
+| unselected-border on surface-2 (high profile) | #000000 | #ffffff | 21.00 | 4.5:1 | pass |
+| unselected-fg on surface-2 (high profile) | #2e2e2e | #ffffff | 13.58 | 4.5:1 | pass |
+| text-secondary vs text-disabled (enabled vs disabled) | #1a1a1a | #595959 | 2.48 | 1.5:1 | pass |
+| notify on surface-0 (unread mark) | #002f9e | #ffffff | 11.05 | 4.5:1 | pass |
+| notify-idle on surface-0 (at most: must stay quiet) | #b0b0b0 | #ffffff | 2.17 | ≤ 3:1 | pass |
+| notify on surface-1 (unread mark) | #002f9e | #f2f2f2 | 9.87 | 4.5:1 | pass |
+| notify-idle on surface-1 (at most: must stay quiet) | #b0b0b0 | #f2f2f2 | 1.94 | ≤ 3:1 | pass |
+| notify vs notify-idle (the two states never blur) | #002f9e | #b0b0b0 | 5.10 | 3:1 | pass |
+| on-media on scrim-media (high profile) | #ffffff | #000000 | 21.00 | 7:1 | pass |
+| syn-fg on syn-bg | #ffffff | #000000 | 21.00 | 4.5:1 | pass |
+| syn-comment on syn-bg | #b0b0b0 | #000000 | 9.68 | 3.5:1 | pass |
+| syn-keyword on syn-bg | #d4b5ff | #000000 | 11.85 | 4.5:1 | pass |
+| syn-string on syn-bg | #7fffb0 | #000000 | 16.83 | 4.5:1 | pass |
+| syn-number on syn-bg | #ffc66b | #000000 | 13.54 | 4.5:1 | pass |
+| syn-function on syn-bg | #7fd6ff | #000000 | 12.97 | 4.5:1 | pass |
+| syn-title on syn-bg | #7fd6ff | #000000 | 12.97 | 4.5:1 | pass |
+| syn-type on syn-bg | #5ff0e0 | #000000 | 15.03 | 4.5:1 | pass |
+| syn-variable on syn-bg | #ffa8d8 | #000000 | 11.84 | 4.5:1 | pass |
+| syn-attr on syn-bg | #ffd98a | #000000 | 15.54 | 4.5:1 | pass |
+| syn-tag on syn-bg | #d4b5ff | #000000 | 11.85 | 4.5:1 | pass |
+| syn-builtin on syn-bg | #5ff0e0 | #000000 | 15.03 | 4.5:1 | pass |
+| syn-literal on syn-bg | #ffc66b | #000000 | 13.54 | 4.5:1 | pass |
+| syn-meta on syn-bg | #cfcfcf | #000000 | 13.48 | 4.5:1 | pass |
+| syn-operator on syn-bg | #e8e8e8 | #000000 | 17.14 | 4.5:1 | pass |
+| syn-punctuation on syn-bg | #d0d0d0 | #000000 | 13.62 | 4.5:1 | pass |
+| syn-deletion on syn-bg | #ff9a92 | #000000 | 10.29 | 4.5:1 | pass |
+| syn-addition on syn-bg | #7fffb0 | #000000 | 16.83 | 4.5:1 | pass |
+| syn-fg on code-bg — markdown code blocks | #ffffff | #000000 | 21.00 | 4.5:1 | pass |
+| syn-fg on code-header-bg — code bar buttons | #ffffff | rgba(17.8500,17.8500,17.8500,1.0000) | 18.76 | 4.5:1 | pass |
+| syn-comment on code-header-bg — code bar label | #b0b0b0 | rgba(17.8500,17.8500,17.8500,1.0000) | 8.65 | 3.5:1 | pass |
+| cat-1 on surface-0 (high profile) | #1a47c8 | #ffffff | 7.56 | 4.5:1 | pass |
+| cat-2 on surface-0 (high profile) | #006b75 | #ffffff | 6.25 | 4.5:1 | pass |
+| cat-3 on surface-0 (high profile) | #7a4a00 | #ffffff | 7.48 | 4.5:1 | pass |
+| cat-4 on surface-0 (high profile) | #a8001c | #ffffff | 7.83 | 4.5:1 | pass |
+| cat-5 on surface-0 (high profile) | #5b2d9e | #ffffff | 9.08 | 4.5:1 | pass |
+| cat-6 on surface-0 (high profile) | #005c27 | #ffffff | 8.20 | 4.5:1 | pass |
+| cat-7 on surface-0 (high profile) | #8f0066 | #ffffff | 8.90 | 4.5:1 | pass |
+| cat-8 on surface-0 (high profile) | #00508f | #ffffff | 8.25 | 4.5:1 | pass |
+| cat-9 on surface-0 (high profile) | #4d5a00 | #ffffff | 7.56 | 4.5:1 | pass |
+| cat-10 on surface-0 (high profile) | #00608f | #ffffff | 6.84 | 4.5:1 | pass |
+| cat-11 on surface-0 (high profile) | #7a2e00 | #ffffff | 9.47 | 4.5:1 | pass |
+| cat-12 on surface-0 (high profile) | #4b4b4b | #ffffff | 8.72 | 4.5:1 | pass |
+| md-bold on surface-2 | #000000 | #ffffff | 21.00 | 7:1 | pass |
+| bubble-user-text on bubble-user-bg (high profile) | #000000 | #cfdcff | 15.33 | 7:1 | pass |
+| bubble-assistant-text on bubble-assistant-bg (high profile) | #000000 | #ffffff | 21.00 | 7:1 | pass |
+| text-primary on success-subtle (status callout body, over surface-2) | #000000 | #dcf5e5 | 18.24 | 4.5:1 | pass |
+| text-primary on warning-subtle (status callout body, over surface-2) | #000000 | #fbebcc | 17.86 | 4.5:1 | pass |
+| text-primary on danger-subtle (status callout body, over surface-2) | #000000 | #fbdada | 16.14 | 4.5:1 | pass |
+| text-primary on info-subtle (status callout body, over surface-2) | #000000 | #d6e9f8 | 16.87 | 4.5:1 | pass |
+| rp-speech on surface-2 (high profile) | #000000 | #ffffff | 21.00 | 7:1 | pass |
+| rp-action on surface-2 (high profile) | #1a1a1a | #ffffff | 17.40 | 7:1 | pass |
+| rp-thought on surface-2 (high profile) | #00424d | #ffffff | 11.13 | 7:1 | pass |
+| rp-whisper on surface-2 (high profile) | #2e2e2e | #ffffff | 13.58 | 7:1 | pass |
+| rp-ooc on surface-2 (high profile) | #2e2e2e | #ffffff | 13.58 | 7:1 | pass |
+| rp-shout on surface-2 (high profile) | #7a2e00 | #ffffff | 9.47 | 7:1 | pass |
+| rp-critical on surface-2 (high profile) | #8f0016 | #ffffff | 9.64 | 7:1 | pass |
+| diff-add-text on diff-add-bg (high profile) | #004d20 | #dcf5e5 | 8.76 | 7:1 | pass |
+| diff-remove-text on diff-remove-bg (high profile) | #8f0016 | #fbdada | 7.41 | 7:1 | pass |
+| chart-axis on surface-0 (high profile) | #4d4d4d | #ffffff | 8.45 | 4.5:1 | pass |
+| seq-5 vs seq-1 (ramp ends apart) | #002f9e | rgba(204.0000,213.4000,235.6000,1.0000) | 7.54 | 3:1 | pass |
+| seq-5 on surface-2 (graphic) | #002f9e | #ffffff | 11.05 | 3:1 | pass |
+| div-1 on surface-2 (graphic) | #8f0016 | #ffffff | 9.64 | 3:1 | pass |
+| div-5 on surface-2 (graphic) | #004d20 | #ffffff | 10.08 | 3:1 | pass |
+| canvas-handle on canvas-mask (graphic, over surface-0) | #ffffff | rgba(0,0,0,.60) | 5.74 | 3:1 | pass |
+| canvas-outline on canvas-mask (graphic, over surface-0) | #000000 | rgba(0,0,0,.60) | 3.66 | 3:1 | pass |
+| bubble-user-bg vs bubble-assistant-bg | #cfdcff | #ffffff | 1.37 | 1.3:1 | pass |
+| border on surface-0 | #4d4d4d | #ffffff | 8.45 | 3:1 | pass |
+| border on surface-2 | #4d4d4d | #ffffff | 8.45 | 3:1 | pass |
+| border-subtle on surface-0 | #767676 | #ffffff | 4.54 | 3:1 | pass |
+| border-subtle on surface-2 | #767676 | #ffffff | 4.54 | 3:1 | pass |
+| divider on surface-2 | #767676 | #ffffff | 4.54 | 3:1 | pass |
+| glass-stroke on surface-0 | #767676 | #ffffff | 4.54 | 3:1 | pass |
+| glass-stroke-strong on surface-0 | #000000 | #ffffff | 21.00 | 4.5:1 | pass |
+| scrollbar-thumb on surface-0 | #767676 | #ffffff | 4.54 | 3:1 | pass |
+| text-link-hover on surface-0 | #001f6b | #ffffff | 14.91 | 7:1 | pass |
+| text-link-hover on surface-2 | #001f6b | #ffffff | 14.91 | 7:1 | pass |
+| text-link-hover on surface-4 | #001f6b | #dedede | 11.08 | 7:1 | pass |
+| md-italic on surface-2 | #5c3a00 | #ffffff | 10.19 | 7:1 | pass |
+| md-bolditalic on surface-2 | #4a2e00 | #ffffff | 12.49 | 7:1 | pass |
+| highlight on surface-2 | #7a4a00 | #ffffff | 7.48 | 7:1 | pass |
+| accent-2 on surface-2 | #005f68 | #ffffff | 7.40 | 7:1 | pass |
+| quote-bar on surface-2 (graphic) | #1a47c8 | #ffffff | 7.56 | 4.5:1 | pass |
+| accent vs danger (Save vs Delete) | #1a47c8 | #a8001c | dE00 41.9 | dE00 20 | pass |
+| danger vs warning | #a8001c | #7a4a00 | dE00 25.7 | dE00 15 | pass |
+| warning vs info | #7a4a00 | #00508f | dE00 44.8 | dE00 15 | pass |
+| info vs success | #00508f | #005c27 | dE00 42.6 | dE00 15 | pass |
+
+### Opacity audit (high profile)
+
+pass: no colour token is translucent (exempt: `canvas-guide`, `canvas-mask`, `scrim-media`).
+
 ## electric-yellow — opt-in · ground dark
 
 | Pair | fg | bg | Ratio | Floor | Result |
@@ -1625,6 +2144,9 @@ Tokens that light the green channel (105), the theme's non-red elements: `--acce
 | forest | core | standard | 152 | 0 |
 | paper | core | standard | 152 | 0 |
 | daylight | core | standard | 152 | 0 |
+| slate | core | standard | 152 | 0 |
+| high-contrast | core | high | 173 | 0 |
+| high-contrast-light | core | high | 173 | 0 |
 | electric-yellow | opt-in | standard | 152 | 0 |
 | laserlloyd | opt-in | standard | 152 | 0 |
 | laserlloyd-light | opt-in | standard | 152 | 0 |

@@ -91,9 +91,10 @@ class BuildTests(unittest.TestCase):
     def test_runtime_registry_carries_the_contrast_profile(self):
         js = self.bundle["ui-theme.js"]
         self.assertIn('"contrastProfile": "night"', js)
-        self.assertEqual(js.count('"contrastProfile": "standard"'), len(self.data["themes"]) - 1)
+        self.assertEqual(js.count('"contrastProfile": "high"'), 2)
+        self.assertEqual(js.count('"contrastProfile": "standard"'), len(self.data["themes"]) - 3)
         self.assertIn("data-contrast-profile", js)
-        self.assertIn("contrastProfile: 'standard' | 'night'", self.bundle["ui-theme.d.ts"])
+        self.assertIn("contrastProfile: 'standard' | 'high' | 'night'", self.bundle["ui-theme.d.ts"])
 
     def test_no_apple_only_mono_names(self):
         """SFMono-Regular and Menlo resolve to a proportional sans on Linux; ui-monospace covers Apple."""
@@ -360,6 +361,71 @@ class ContrastTests(unittest.TestCase):
                 self.assertIsNotNone(contrast.parse_color(contrast.resolve(name, props)), f"{theme['slug']} {name}")
             self.assertNotEqual(contrast.resolve("--notify", props), contrast.resolve("--notify-idle", props), theme["slug"])
             self.assertTrue(contrast.resolve("--cta-gradient", props).startswith("linear-gradient("), theme["slug"])
+
+
+class HighContrastTests(unittest.TestCase):
+    """The dedicated high-contrast pair, Slate, and the audit that keeps them honest."""
+
+    def setUp(self):
+        self.registry = {t["slug"]: t for t in sync.load_registry()["themes"]}
+        self.base = contrast.load_base_props((ROOT / "src" / "css" / "theme-base.css").read_text(encoding="utf-8"))
+
+    def props(self, slug):
+        return contrast.merged_props(self.registry[slug], self.base)
+
+    def test_pair_slate_and_sets(self):
+        dark, light = self.registry["high-contrast"], self.registry["high-contrast-light"]
+        self.assertEqual((dark["family"], light["family"]), ("high-contrast", "high-contrast"))
+        self.assertEqual((dark["ground"], light["ground"]), ("dark", "light"))
+        self.assertEqual((dark["contrastProfile"], light["contrastProfile"]), ("high", "high"))
+        self.assertEqual((self.registry["slate"]["set"], dark["set"], light["set"]), ("core", "core", "core"))
+        self.assertNotIn("contrastProfile", self.registry["slate"])
+
+    def test_text_is_seven_to_one_everywhere(self):
+        for slug in ("high-contrast", "high-contrast-light"):
+            checks = contrast.apply_profile(contrast.build_checks(self.props(slug)), "high")
+            for c in checks:
+                if c["fg"] in ("text-tertiary", "text-link", "text-secondary") or c["fg"].endswith("-text"):
+                    if c.get("fixed") or c["fg"] == "text-disabled":
+                        continue
+                    self.assertGreaterEqual(c["floor"], 7, f"{slug}: {c['label']}")
+
+    def test_no_translucent_colour_token(self):
+        for slug in ("high-contrast", "high-contrast-light"):
+            self.assertEqual(contrast.translucency_audit(self.props(slug)), [], slug)
+
+    def test_the_audit_catches_a_translucent_token(self):
+        props = dict(self.props("high-contrast"))
+        props["--surface-2"] = "rgba(23,23,23,.9)"
+        props["--shadow-2"] = "0 4px 12px rgba(0,0,0,.4)"
+        names = [n for n, _v in contrast.translucency_audit(props)]
+        self.assertIn("--surface-2", names)
+        self.assertIn("--shadow-2", names)
+        # transparent, alpha 1 and the exempt dimming overlays pass
+        props = dict(self.props("high-contrast"))
+        props["--accent-glow"] = "transparent"
+        props["--scrim-media"] = "linear-gradient(to top, rgba(0,0,0,.9), rgba(0,0,0,0))"
+        self.assertEqual(contrast.translucency_audit(props), [])
+
+    def test_a_weak_high_contrast_theme_fails(self):
+        props = dict(self.props("high-contrast"))
+        props["--text-tertiary"] = "#6a6a6a"
+        surface0 = contrast.parse_color(contrast.resolve("--surface-0", props))
+        checks = contrast.apply_profile(contrast.build_checks(props), "high")
+        rows = [contrast.evaluate(c, props, surface0) for c in checks]
+        self.assertTrue([r for r in rows if r["fg_token"] == "text-tertiary" and not r["pass"]])
+
+    def test_report_runs_the_opacity_audit(self):
+        report, summary = contrast.build_report(["high-contrast-light"])
+        self.assertIn("Opacity audit (high profile)", report)
+        self.assertEqual(summary[0]["failures"], 0)
+
+    def test_slate_is_denser_than_purple(self):
+        slate = self.props("slate")
+        self.assertEqual((slate["--control-h-md"], slate["--radius-sm"]), ("32px", "4px"))
+        self.assertEqual((self.base["--control-h-md"], self.base["--radius-sm"]), ("36px", "6px"))
+        own = contrast.load_theme_own_props((ROOT / "src" / "css" / "theme-slate.css").read_text(encoding="utf-8"), "slate")
+        self.assertFalse([k for k in own if k.startswith("--z-")], "layers are never overridden by a theme")
 
 
 class LintTests(unittest.TestCase):

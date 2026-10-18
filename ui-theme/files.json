@@ -1,24 +1,24 @@
 {
   "name": "ThemeForge",
   "version": "1.2.0",
-  "hash": "6693342a0b95",
+  "hash": "6125e9793359",
   "repo": "LaserLloyd/ThemeForge",
   "files": {
-    "README.md": "4ddc489521ab26e2b51fe4a8ac2d7fb8b59c40fe61ccbab419571421fe51daf0",
-    "VERSION": "02ffd8904930d5c4c966ab85c173822464e1e04c2b08f23d0fd49831e3f67771",
+    "README.md": "ba5cdd4a7cdb9585e32ec4abf4298db3f8e7878385583a4fdb5cbae3ab3f91de",
+    "VERSION": "f64ac1256198d7487e11fc996cb2551c1cce081071417f0ad7d062e8ce7383f8",
     "adapters/quasar.css": "cc9de8a7f3ad7b344c374ab9b830083ec91ee63cd580058f36bc5c4456b828d0",
     "adapters/quasar.js": "77b95e5eabfbac49bee57586553e6fa1cab8381cdb84051be6bbcb49f2da84d1",
     "adapters/tailwind-v3.preset.js": "6f8e2d4a399edb87bb85355d7805436ed442198ff6977bed6a87fb5d883bc46c",
     "adapters/tailwind.css": "b7b4f595c40a73319b8d9276d5357e1629b90b03172dde9b70ba298fa44cece1",
     "locales/en.json": "878e9746f4ecdabd7e49188882a57d1929a424e9190617d39143b797d35be11e",
     "locales/ja.json": "ceaae4a407a4976561c52a3f9ffb791916c54ed1acc7c68b402467998dd06e26",
-    "themes.json": "b9f6ba1163635e0ec7ddf658644fda6e37f8fd31fab9de67442281281740544b",
+    "themes.json": "1a97548f39b8bdc82fde7279d8019993977431af9bf22dacc5afedadd9f02bf1",
     "ui-components.css": "0e32239bbd9134d1f3afa941ff7ac3e6a72342a337ff8a1f0ad1d0329d09a46b",
     "ui-components.js": "c60c77f04e40e34cb91f88527ed82f1138c467cef111d95ce011fbb1e3e6568c",
     "ui-theme-base.css": "9bd4ebb1e1e970b9678243bc5ad872d61b05a47d5274567347e22b5d8d285f36",
-    "ui-theme.css": "924e73acc24275d38ae2af15f794a5dde14dadc5e1f5f07c12e9a651aa471e28",
-    "ui-theme.d.ts": "7c07c000f3cf410207c23a6186b52609001ee05452a6f31efad99a18ef01a087",
-    "ui-theme.js": "04914566fccb4358cd898394ca2f00763b935fcaacaf7e3860e7730e3170c45d",
+    "ui-theme.css": "5fdf4891f7f59b27395d0e409e7834781cf3cf61bbbfb49c3ee868074cee689f",
+    "ui-theme.d.ts": "7e7b6be2ee7626a52cf85cb2136115a3cc2c59466c07a5c529883ba7207d59ee",
+    "ui-theme.js": "36dcd1503c4442a8780e6390752db598a086eb4694f22e85bccf2d1010a8eb20",
     "update.py": "e44ece9810c55b339628d3c0b57760ea78f050b9a90a0cd072c428e29983b922"
   }
 }

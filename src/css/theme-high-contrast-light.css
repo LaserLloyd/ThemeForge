@@ -1,0 +1,165 @@
+/* theme-high-contrast-light.css — CORE
+   Ground: light · family: high-contrast · color-scheme: light
+   theme-color: #ffffff
+   The light partner of High Contrast. Contrast profile: high (tools/check_contrast.py): 7:1 for
+   every text colour, 4.5:1 for edges, the focus ring, state indicators and chart colours, 3:1
+   for every line, and no translucent colour token. Status fills are dark, with white labels
+   (a light fill cannot give a label 7:1 and stay a recognisable colour), and every edge is
+   near-black or a mid grey that clears 4.5:1 on white.
+   (D) = derived from this theme's own palette. */
+
+[data-palette="high-contrast-light"] {
+  color-scheme: light;
+
+  --surface-void:    #d9d9d9;
+  --surface-0:       #ffffff;
+  --surface-1:       #f2f2f2;
+  --surface-2:       #ffffff;
+  --surface-3:       #ebebeb;
+  --surface-4:       #dedede;
+  --surface-sunken:  #f2f2f2;
+  --surface-overlay: #ffffff;
+  --glass-1:         #ffffff;  /* D — solid: no translucent panes */
+  --glass-2:         #ffffff;  /* D */
+  --glass-3:         #f2f2f2;  /* D */
+  --glass-highlight: transparent;
+  --code-bg:         #000000;  /* D — code blocks stay dark in every theme */
+
+  --text-primary:    #000000;
+  --text-secondary:  #1a1a1a;
+  --text-tertiary:   #2e2e2e;
+  --text-disabled:   #595959;
+  --text-inverse:    #ffffff;
+  --text-link:       #002f9e;
+  --text-link-hover: #001f6b;
+  --on-accent:       #ffffff;
+  --on-danger:       #ffffff;
+  --on-success:      #ffffff;
+  --on-warning:      #ffffff;
+  --on-media:        #ffffff;
+  --on-media-muted:  #e6e6e6;
+
+  --accent:          #1a47c8;
+  --accent-hover:    #12369c;  /* darker, not lighter: the white label keeps 7:1 */
+  --accent-pressed:  #0b2778;
+  --cta-gradient:    linear-gradient(180deg, var(--accent-hover), var(--accent));
+  --notify: #002f9e; --notify-idle: #b0b0b0;  /* unread pair: idle under 3:1, 9:1 apart */
+  --accent-subtle:   #d6e0fa;  /* D — solid tint */
+  --accent-muted:    #b5c6f5;  /* D */
+  --accent-glow:     transparent;
+  --accent-rgb:      26,71,200;
+  --accent-2:        #005f68;
+  --accent-2-subtle: #d0eef0;  /* D */
+
+  --cta:              #1a47c8;  /* D — aliases accent */
+  --cta-hover:        #12369c;  /* D */
+  --cta-pressed:      #0b2778;  /* D */
+  --on-cta:           #ffffff;  /* D */
+  --cta-shadow:       0 0 0 0 transparent;
+  --cta-shadow-hover: 0 0 0 0 transparent;
+  --highlight:        #7a4a00;
+  --highlight-subtle: #f5e6c8;  /* D */
+  --on-highlight:     #ffffff;  /* D */
+
+  --border-subtle:       #767676;  /* D — every line is visible: 3:1 or better */
+  --border:              #4d4d4d;
+  --border-strong:       #000000;
+  --divider:             #767676;  /* D */
+  --focus-ring:          #002f9e;
+  --focus-ring-width:    3px;
+  --glass-stroke:        #767676;  /* D */
+  --glass-stroke-strong: #000000;  /* D */
+
+  --success: #005c27; --success-hover: #004a1f;
+  --success-subtle: #dcf5e5; --success-text: #004d20;
+  --success-border: #004d20;
+  --warning: #7a4a00; --warning-hover: #653b00;
+  --warning-subtle: #fbebcc; --warning-text: #6b3f00;
+  --warning-border: #6b3f00;
+  --danger: #a8001c; --danger-hover: #8f0016;
+  --danger-subtle: #fbdada; --danger-text: #8f0016;
+  --danger-border: #8f0016;
+  --info: #00508f; --info-hover: #004075;
+  --info-subtle: #d6e9f8; --info-text: #004a82;
+  --info-border: #004a82;
+  --live: #2a5c00; --live-hover: #224c00;
+  --live-subtle: #e4f2d6; --live-text: #245000;
+  --live-border: #245000;
+  --idle: #7a4a00; --idle-hover: #653b00;
+  --idle-subtle: #fbebcc; --idle-text: #6b3f00;
+  --idle-border: #6b3f00;
+  --offline: #4d4d4d; --offline-hover: #3d3d3d;
+  --offline-subtle: #e6e6e6; --offline-text: #404040;
+  --offline-border: #4d4d4d;
+  --heartbeat: #8f0066; --heartbeat-hover: #780054;
+  --heartbeat-subtle: #f7d9ee; --heartbeat-text: #800059;
+  --heartbeat-border: #800059;
+  --on-info: #ffffff; --on-live: #ffffff; --on-idle: #ffffff;  /* D */
+  --on-offline: #ffffff; --on-heartbeat: #ffffff;              /* D */
+
+  --scrim:        #000000;  /* D — a solid backdrop: the page behind a dialog is not shown */
+  --scrim-strong: #000000;  /* D */
+  --scrim-light:  #000000;  /* D */
+  --scrim-media:  linear-gradient(to top, #000000, rgba(0,0,0,0)); /* D — dims a picture under its caption */
+  --backdrop-blur: 0px;
+
+  --bubble-user-bg:        #cfdcff;
+  --bubble-user-text:      #000000;  /* D */
+  --bubble-user-border:    #002f9e;  /* D */
+  --bubble-assistant-bg:   #ffffff;
+  --bubble-assistant-text: #000000;  /* D */
+  --quote-bar:             #1a47c8;
+  --mark-bg:               #ffe680;
+  --md-bold:               #000000;
+  --md-italic:             #5c3a00;
+  --md-bolditalic:         #4a2e00;  /* D */
+  --md-bolditalic-glow:    transparent;
+  --rp-speech:  #000000;  /* D */
+  --rp-action:  #1a1a1a;  /* D */
+  --rp-thought: #00424d;  /* D */
+  --rp-whisper: #2e2e2e;  /* D */
+  --rp-ooc:     #2e2e2e;  /* D */
+  --rp-shout:   #7a2e00;  /* D */
+  --rp-shout-glow: transparent;
+  --rp-critical: #8f0016;  /* D */
+  --rp-critical-glow: transparent;
+  --diff-add-bg: #dcf5e5; --diff-add-text: #004d20;      /* D */
+  --diff-remove-bg: #fbdada; --diff-remove-text: #8f0016; /* D */
+
+  /* Syntax — D, 7:1 on the dark --code-bg */
+  --syn-fg: #ffffff;      --syn-bg: #000000;
+  --syn-comment: #b0b0b0; --syn-keyword: #d4b5ff; --syn-string: #7fffb0;
+  --syn-number: #ffc66b;  --syn-function: #7fd6ff; --syn-title: #7fd6ff;
+  --syn-type: #5ff0e0;    --syn-variable: #ffa8d8; --syn-attr: #ffd98a;
+  --syn-tag: #d4b5ff;     --syn-builtin: #5ff0e0;  --syn-literal: #ffc66b;
+  --syn-meta: #cfcfcf;    --syn-operator: #e8e8e8; --syn-punctuation: #d0d0d0;
+  --syn-deletion: #ff9a92; --syn-addition: #7fffb0;
+  --code-stroke: #767676;  /* a visible edge round the slab */
+
+  /* Categorical — D, 4.5:1 or better on white */
+  --cat-1: #1a47c8; --cat-2: #006b75; --cat-3: #7a4a00; --cat-4: #a8001c;
+  --cat-5: #5b2d9e; --cat-6: #005c27; --cat-7: #8f0066; --cat-8: #00508f;
+  --cat-9: #4d5a00; --cat-10: #00608f; --cat-11: #7a2e00; --cat-12: #4b4b4b;
+  --chart-grid: #bdbdbd;  /* D */
+  --chart-axis: #4d4d4d;  /* D */
+
+  --canvas-mask:    rgba(0,0,0,.60);  /* D — dims the picture it covers */
+  --canvas-handle:  #ffffff;          /* light: it sits on the dark mask */
+  --canvas-guide:   rgba(255,255,255,.90);  /* D */
+  --canvas-outline: #000000;
+
+  --shadow-1: 0 0 0 0 transparent;  /* no depth cues: edges carry the structure */
+  --shadow-2: 0 0 0 0 transparent;
+  --shadow-3: 0 0 0 0 transparent;
+  --shadow-4: 0 0 0 0 transparent;
+  --shadow-glow:  0 0 0 0 transparent;
+  --shadow-inset: inset 0 0 0 0 transparent;
+
+  --selection-bg:    #1a47c8;
+  --selection-text:  #ffffff;
+  --scrollbar-track: transparent;
+  --scrollbar-thumb: #767676;  /* D */
+  --scrollbar-hover: #000000;  /* D */
+  /* The empty part of a slider: 5.3:1 on white. */
+  --control-track: #6b6b6b;
+}

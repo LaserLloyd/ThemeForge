@@ -1,0 +1,164 @@
+/* theme-high-contrast.css — CORE
+   Ground: dark · family: high-contrast · color-scheme: dark
+   theme-color: #000000
+   Contrast profile: high (tools/check_contrast.py): 7:1 for every text colour, 4.5:1 for
+   edges, the focus ring, state indicators and chart colours, 3:1 for every line, and no
+   translucent colour token (surfaces, strokes, fills and glows are solid; shadows and glows
+   are zero-size). Separation comes from edges and weight, not from tint or depth.
+   (D) = derived from this theme's own palette. */
+
+[data-palette="high-contrast"] {
+  color-scheme: dark;
+
+  --surface-void:    #000000;
+  --surface-0:       #000000;
+  --surface-1:       #0d0d0d;
+  --surface-2:       #171717;
+  --surface-3:       #222222;
+  --surface-4:       #2e2e2e;
+  --surface-sunken:  #000000;
+  --surface-overlay: #171717;
+  --glass-1:         #171717;  /* D — solid: no translucent panes */
+  --glass-2:         #171717;  /* D */
+  --glass-3:         #0d0d0d;  /* D */
+  --glass-highlight: transparent;
+  --code-bg:         #000000;
+
+  --text-primary:    #ffffff;
+  --text-secondary:  #e0e0e0;
+  --text-tertiary:   #cfcfcf;
+  --text-disabled:   #9e9e9e;
+  --text-inverse:    #000000;
+  --text-link:       #7fd6ff;
+  --text-link-hover: #b8ebff;
+  --on-accent:       #000000;
+  --on-danger:       #000000;
+  --on-success:      #000000;
+  --on-warning:      #000000;
+  --on-media:        #ffffff;
+  --on-media-muted:  #e0e0e0;
+
+  --accent:          #ffd400;
+  --accent-hover:    #ffe347;
+  --accent-pressed:  #e6bd00;
+  --cta-gradient:    linear-gradient(135deg, var(--accent-hover), var(--accent));
+  --notify: #ffd400; --notify-idle: #555555;  /* unread pair: 5.3:1 apart, idle under 3:1 */
+  --accent-subtle:   #332a00;  /* D — solid tint */
+  --accent-muted:    #4d3f00;  /* D */
+  --accent-glow:     transparent;
+  --accent-rgb:      255,212,0;
+  --accent-2:        #5ef0ff;
+  --accent-2-subtle: #00323a;  /* D */
+
+  --cta:              #ffd400;  /* D — aliases accent */
+  --cta-hover:        #ffe347;  /* D */
+  --cta-pressed:      #e6bd00;  /* D */
+  --on-cta:           #000000;  /* D */
+  --cta-shadow:       0 0 0 0 transparent;
+  --cta-shadow-hover: 0 0 0 0 transparent;
+  --highlight:        #ffe347;
+  --highlight-subtle: #332a00;  /* D */
+  --on-highlight:     #000000;  /* D */
+
+  --border-subtle:       #8a8a8a;  /* D — every line is visible: 3:1 or better */
+  --border:              #b3b3b3;
+  --border-strong:       #e6e6e6;
+  --divider:             #8a8a8a;  /* D */
+  --focus-ring:          #ffd400;
+  --focus-ring-width:    3px;
+  --glass-stroke:        #8a8a8a;  /* D */
+  --glass-stroke-strong: #e6e6e6;  /* D */
+
+  --success: #3fe07f; --success-hover: #6bf0a0;
+  --success-subtle: #0a2e1a; --success-text: #6ff2a2;
+  --success-border: #6ff2a2;
+  --warning: #ffa11a; --warning-hover: #ffbc4d;
+  --warning-subtle: #332000; --warning-text: #ffb84a;
+  --warning-border: #ffb84a;
+  --danger: #ff7a70; --danger-hover: #ff9a92;
+  --danger-subtle: #3a0d0a; --danger-text: #ff9a92;
+  --danger-border: #ff9a92;
+  --info: #5cc8ff; --info-hover: #8bdaff;
+  --info-subtle: #062a3d; --info-text: #7fd6ff;
+  --info-border: #7fd6ff;
+  --live: #8dff5a; --live-hover: #aaff85;
+  --live-subtle: #17300a; --live-text: #a6ff80;
+  --live-border: #a6ff80;
+  --idle: #ffa11a; --idle-hover: #ffbc4d;
+  --idle-subtle: #332000; --idle-text: #ffb84a;
+  --idle-border: #ffb84a;
+  --offline: #b0b0b0; --offline-hover: #cfcfcf;
+  --offline-subtle: #2e2e2e; --offline-text: #cfcfcf;
+  --offline-border: #b0b0b0;
+  --heartbeat: #ff7ad8; --heartbeat-hover: #ff9be3;
+  --heartbeat-subtle: #3a0f2f; --heartbeat-text: #ff9be3;
+  --heartbeat-border: #ff9be3;
+  --on-info: #000000; --on-live: #000000; --on-idle: #000000;  /* D */
+  --on-offline: #000000; --on-heartbeat: #000000;              /* D */
+
+  --scrim:        #000000;  /* D — a solid backdrop: the page behind a dialog is not shown */
+  --scrim-strong: #000000;  /* D */
+  --scrim-light:  #000000;  /* D */
+  --scrim-media:  linear-gradient(to top, #000000, rgba(0,0,0,0)); /* D — dims a picture under its caption */
+  --backdrop-blur: 0px;
+
+  --bubble-user-bg:        #0b3d91;
+  --bubble-user-text:      #ffffff;  /* D */
+  --bubble-user-border:    #7fd6ff;  /* D */
+  --bubble-assistant-bg:   #171717;
+  --bubble-assistant-text: #ffffff;  /* D */
+  --quote-bar:             #ffd400;
+  --mark-bg:               #5c4a00;  /* solid: the mark's text stays --text-primary */
+  --md-bold:               #ffffff;
+  --md-italic:             #ffe347;
+  --md-bolditalic:         #fff3b0;  /* D */
+  --md-bolditalic-glow:    transparent;
+  --rp-speech:  #ffffff;  /* D */
+  --rp-action:  #e0e0e0;  /* D */
+  --rp-thought: #b8f0ff;  /* D */
+  --rp-whisper: #cfcfcf;  /* D */
+  --rp-ooc:     #cfcfcf;  /* D */
+  --rp-shout:   #ffb27a;  /* D */
+  --rp-shout-glow: transparent;
+  --rp-critical: #ff9aa8;  /* D */
+  --rp-critical-glow: transparent;
+  --diff-add-bg: #0a2e1a; --diff-add-text: #8affb4;      /* D */
+  --diff-remove-bg: #3a0d0a; --diff-remove-text: #ffa8a0; /* D */
+
+  /* Syntax — D, 7:1 on the black --syn-bg */
+  --syn-fg: #ffffff;      --syn-bg: #000000;
+  --syn-comment: #b0b0b0; --syn-keyword: #d4b5ff; --syn-string: #7fffb0;
+  --syn-number: #ffc66b;  --syn-function: #7fd6ff; --syn-title: #7fd6ff;
+  --syn-type: #5ff0e0;    --syn-variable: #ffa8d8; --syn-attr: #ffd98a;
+  --syn-tag: #d4b5ff;     --syn-builtin: #5ff0e0;  --syn-literal: #ffc66b;
+  --syn-meta: #cfcfcf;    --syn-operator: #e8e8e8; --syn-punctuation: #d0d0d0;
+  --syn-deletion: #ff9a92; --syn-addition: #7fffb0;
+  --code-stroke: #8a8a8a;  /* a visible edge round the slab */
+
+  /* Categorical — D, 4.5:1 or better on black */
+  --cat-1: #ffd400; --cat-2: #5cc8ff; --cat-3: #ff7a70; --cat-4: #6ff2a2;
+  --cat-5: #d4b5ff; --cat-6: #ffa11a; --cat-7: #ff7ad8; --cat-8: #5ff0e0;
+  --cat-9: #b8e04a; --cat-10: #9ab0ff; --cat-11: #ffd0a0; --cat-12: #c0c0c0;
+  --chart-grid: #4d4d4d;  /* D */
+  --chart-axis: #b0b0b0;  /* D */
+
+  --canvas-mask:    rgba(0,0,0,.72);  /* D — dims the picture it covers */
+  --canvas-handle:  #ffd400;
+  --canvas-guide:   rgba(255,212,0,.80);  /* D */
+  --canvas-outline: #ffffff;
+
+  --shadow-1: 0 0 0 0 transparent;  /* no depth cues: edges carry the structure */
+  --shadow-2: 0 0 0 0 transparent;
+  --shadow-3: 0 0 0 0 transparent;
+  --shadow-4: 0 0 0 0 transparent;
+  --shadow-glow:  0 0 0 0 transparent;
+  --shadow-inset: inset 0 0 0 0 transparent;
+
+  --selection-bg:    #ffd400;
+  --selection-text:  #000000;
+  --scrollbar-track: transparent;
+  --scrollbar-thumb: #8a8a8a;  /* D */
+  --scrollbar-hover: #e6e6e6;  /* D */
+  /* The empty part of a slider: 5.3:1 on surface-2, 6.2:1 on surface-0. */
+  --control-track: #8c8c8c;
+}

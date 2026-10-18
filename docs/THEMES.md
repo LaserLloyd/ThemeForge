@@ -1,10 +1,10 @@
 # Themes
 
-Ten themes share one token contract, so any page built from the tokens works in all of them.
+Thirteen themes share one token contract, so any page built from the tokens works in all of them.
 A theme is one CSS block, `[data-palette="<slug>"] { ... }`, that sets the tokens; Purple is
 the base and is the absence of `data-palette`.
 
-![On, off, selected and disabled controls in all ten themes](images/gallery.png)
+![On, off, selected and disabled controls in every theme](images/gallery.png)
 
 | Slug | Name | Ground | Set | |
 |---|---|---|---|---|
@@ -14,6 +14,9 @@ the base and is the absence of `data-palette`.
 | `forest` | Forest | OLED | core | Pale sage and lichen with bark browns on true black. |
 | `paper` | Paper | light | core | Warm parchment, ink-brown text, a serif for prose, red accent. |
 | `daylight` | Daylight | light | core | Clean white with a blue accent. |
+| `slate` | Slate | dark | core | The neutral professional default: grey-blue, steel accent, dense but calm. |
+| `high-contrast` | High Contrast | dark | core | White on black, yellow actions, 7:1 text, solid colours. |
+| `high-contrast-light` | High Contrast Light | light | core | Black on white, blue actions, 7:1 text, solid colours. |
 | `electric-yellow` | Electric Yellow | dark | opt-in | Acid yellow on graphite, tight radii, crisp strokes. |
 | `laserlloyd` | LaserLloyd | dark | opt-in | Laser blue on near-black graphite, from the author's site. |
 | `laserlloyd-light` | LaserLloyd Light | light | opt-in | The light partner of LaserLloyd. |
@@ -29,7 +32,11 @@ the base and is the absence of `data-palette`.
 
 ## Choosing themes for an app
 
-The six core themes are a sensible default: two dark-on-colour, two true-black, two light.
+The nine core themes are a sensible default: two dark-on-colour, two true-black, two light, the
+neutral Slate and the high-contrast pair. An app that wants a short picker lists six
+(`purple,midnight-gold,glacier,forest,paper,daylight`) and adds `high-contrast` and
+`high-contrast-light` so that people who need them can find them; one that wants a single calm
+default starts from `slate`.
 With `data-default="auto"` a visitor whose OS is in light mode starts on the light default and
 everyone else on the dark one, until they pick. Add `night-red` for apps used at night (a
 bedside dashboard, a monitoring screen, an astronomy or music app). The brand themes
@@ -50,6 +57,44 @@ Purple) an accent "on" next to a grey "off" track measured 1.0 to 1.6:1, so the 
 differed mostly by the knob's position. The switch also carries a mark (a ring when off, a bar
 when on) and an optional On/Off label, so its state reads in grayscale and for colour-blind
 users.
+
+## Slate
+
+The professional default: a neutral, cool grey-blue ground with no strong hue, so a page built
+on it looks like a tool and not like a brand. The accent is a steel blue with a white label, links
+and focus are a pale blue of the same family, and the status colours are muted (green, amber,
+red and blue each a step quieter than Purple's). It is dense but calm: radii are 3 to 12px
+instead of 4 to 20, controls are 26, 32 and 40px tall (the others are 28, 36 and 44), and the
+header and bar are a little shorter. Text sizes and the touch target are the shared scale, and
+every control stays above the 24px WCAG 2.5.8 floor. It passes the standard contrast profile
+like any core theme.
+
+## High Contrast
+
+A dedicated high-contrast pair, `high-contrast` (white on black, yellow actions) and
+`high-contrast-light` (black on white, blue actions), for people who need more than
+`prefers-contrast: more`, which only raises lines and the quietest text tier on top of a normal
+theme. Their contrast profile is `high` (`check_contrast.py` enforces it):
+
+- **Text is 7:1 everywhere:** every text tier, links and their hover, status text, labels on
+  fills, syntax colours, the narrative roles and markdown emphasis, on every surface. Only
+  disabled text is lower (4.5:1). Edges, the focus ring and state indicators clear 4.5:1, and
+  every line (borders, dividers, strokes) is at least 3:1.
+- **No translucency:** surfaces, glass panes, strokes, tinted fills and borders, glows and the
+  scrim are solid colours, and shadows and glows are zero-size. The audit fails the theme if any
+  colour token has a partial alpha; the only exceptions are the media scrim and the canvas mask
+  and guide, whose job is to dim a picture. A dialog's backdrop is solid, so the page behind it
+  is not shown.
+- **Structure comes from edges and weight, not from tint or depth:** borders are near-black or
+  near-white, the focus ring is 3px, hover states are as visible as selected ones, and the
+  accent and the status hues are far apart (Save and Delete differ by dE00 45 or more).
+- **On is the link colour, off is an outline,** as in every theme; the light theme's status fills
+  are dark with white labels, because a light fill cannot give a label 7:1.
+
+The pair is one family, so `data-families="true"` and `UITheme.toggleFamily()` switch between
+them, and printing uses the light one. Under Windows high contrast (`forced-colors: active`) the
+browser's own palette replaces every colour, and the component layer hands the native controls
+back (see COMPONENTS.md); these themes are for everyone else who wants the same strength.
 
 ## Night Red
 
@@ -123,7 +168,8 @@ Daylight) and switches back afterwards; `data-print-theme` picks another slug, o
 the screen theme. The component layer hides navigation, toasts and tooltips in print.
 
 When the system asks for more contrast (`prefers-contrast: more`), every theme raises its
-lines and dividers to the control-edge strength and its tertiary text to the secondary tier.
+lines and dividers to the control-edge strength and its tertiary text to the secondary tier;
+the High Contrast pair goes further and is what an app should offer to people who ask for it.
 
 ## Making your own theme
 

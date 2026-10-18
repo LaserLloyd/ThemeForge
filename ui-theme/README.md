@@ -1,6 +1,6 @@
 # ui-theme 1.2.0
 
-A drop-in theme for web apps: ten colour themes, a theme picker, design tokens, a base
+A drop-in theme for web apps: thirteen colour themes, a theme picker, design tokens, a base
 element layer, a text standard and ready-made component classes. Plain CSS and two small
 scripts; no build step, no dependencies. Source and full docs:
 https://github.com/LaserLloyd/ThemeForge
@@ -53,7 +53,7 @@ Settings on the script tag:
 
 | Attribute | Meaning |
 |---|---|
-| `data-themes` | the picker's themes, in order. Core: `purple, midnight-gold, glacier, forest, paper, daylight`. Opt-in (only when wanted): `electric-yellow, laserlloyd, laserlloyd-light, night-red` |
+| `data-themes` | the picker's themes, in order. Core: `purple, midnight-gold, glacier, forest, paper, daylight, slate, high-contrast, high-contrast-light`. Opt-in (only when wanted): `electric-yellow, laserlloyd, laserlloyd-light, night-red` |
 | `data-default` | a theme slug, or `auto` to follow the visitor's OS light/dark setting until they pick |
 | `data-default-dark`, `data-default-light` | the themes `auto` uses (optional) |
 | `data-storage-key` | localStorage key for the choice; use your app's name, e.g. `myapp.theme` |

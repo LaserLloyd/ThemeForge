@@ -375,7 +375,7 @@
 
   // 24. The same state rules in every theme, opt-in ones included.
   preset({ t24: null });
-  const f24 = await frame({ attrs: { 'data-themes': 'purple,midnight-gold,glacier,forest,paper,daylight,electric-yellow,laserlloyd,laserlloyd-light,night-red',
+  const f24 = await frame({ attrs: { 'data-themes': 'purple,midnight-gold,glacier,forest,paper,daylight,slate,high-contrast,high-contrast-light,electric-yellow,laserlloyd,laserlloyd-light,night-red',
                                      'data-default': 'purple', 'data-storage-key': 't24' }, css: true });
   await tick(50);
   const w24 = f24.contentWindow, d24 = f24.contentDocument;
@@ -415,7 +415,7 @@
 
   // 42. --cta-gradient and the unread pair resolve in every loaded theme.
   preset({ t42: 'glacier' });
-  const f42 = await frame({ attrs: { 'data-themes': 'purple,midnight-gold,glacier,forest,paper,daylight,electric-yellow,laserlloyd,laserlloyd-light,night-red',
+  const f42 = await frame({ attrs: { 'data-themes': 'purple,midnight-gold,glacier,forest,paper,daylight,slate,high-contrast,high-contrast-light,electric-yellow,laserlloyd,laserlloyd-light,night-red',
                                      'data-default': 'glacier', 'data-storage-key': 't42' }, css: true });
   await tick(50);
   const w42 = f42.contentWindow;
@@ -430,6 +430,25 @@
     const pair = w42.UITheme.tokens(['--notify', '--notify-idle']);
     check(`${t.slug}: unread pair resolves`, [/^#[0-9a-f]{6}$/i.test(pair['--notify']), /^#[0-9a-f]{6}$/i.test(pair['--notify-idle']), pair['--notify'] !== pair['--notify-idle']], [true, true, true]);
   }
+
+  // 44. The slate and high-contrast themes: grounds, profiles, and what makes them what they are.
+  preset({ t44: null });
+  const f44 = await frame({ attrs: { 'data-themes': 'purple,slate,high-contrast,high-contrast-light', 'data-default': 'slate',
+                                     'data-storage-key': 't44', 'data-families': 'true' }, css: true });
+  await tick(50);
+  const w44 = f44.contentWindow;
+  const tok = (name) => w44.UITheme.token(name);
+  check('slate is the default here and is dark', [w44.UITheme.current(), html(f44).getAttribute('data-theme'), html(f44).getAttribute('data-contrast-profile')], ['slate', 'dark', 'standard']);
+  check('slate: dense controls and tighter radii', [tok('--control-h-md'), tok('--radius-sm')], ['32px', '4px']);
+  w44.UITheme.set('high-contrast');
+  check('high-contrast: dark ground, high profile', [html(f44).getAttribute('data-theme'), html(f44).getAttribute('data-contrast-profile'), metaOf(f44, 'theme-color')], ['dark', 'high', '#000000']);
+  check('high-contrast: white on black, solid, thicker focus ring', [tok('--text-primary'), tok('--surface-0'), tok('--glass-1'), tok('--focus-ring-width')], ['#ffffff', '#000000', '#171717', '3px']);
+  check('high-contrast: no depth cues', [tok('--shadow-3'), tok('--backdrop-blur')], ['0 0 0 0 transparent', '0px']);
+  w44.UITheme.set('high-contrast-light');
+  check('high-contrast-light: light ground, high profile', [html(f44).getAttribute('data-theme'), html(f44).getAttribute('data-contrast-profile'), metaOf(f44, 'theme-color')], ['light', 'high', '#ffffff']);
+  check('high-contrast-light: black on white', [tok('--text-primary'), tok('--surface-0'), tok('--border-strong')], ['#000000', '#ffffff', '#000000']);
+  check('high-contrast pair are one family: toggle switches between them', [w44.UITheme.partner('high-contrast'), w44.UITheme.partner('high-contrast-light')], ['high-contrast-light', 'high-contrast']);
+  check('slate has no family partner', w44.UITheme.partner('slate'), null);
 
   // 43. Component helpers: strings, copy, validation, settings rows, pseudo-locale, RTL.
   const COMP = new URL('../ui-theme/ui-components.js', location.href).href;

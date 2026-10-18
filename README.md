@@ -1,12 +1,12 @@
 # ThemeForge
 
 ThemeForge is a drop-in CSS theme system for web apps that an AI coding agent installs in
-one step: ten colour themes (dark, OLED black and light, with automatic dark mode from the
-OS setting), a theme picker, design tokens, a base element layer, text standards and
+one step: thirteen colour themes (dark, OLED black, light, a neutral default and a high-contrast
+pair, with automatic dark mode from the OS setting), a theme picker, design tokens, a base element layer, text standards and
 ready-made component classes, MIT licensed. Plain CSS and a small script in one folder,
 `ui-theme/`. No build step, no dependencies, any framework.
 
-![On, off, selected and disabled controls in all ten themes](docs/images/gallery.png)
+![On, off, selected and disabled controls in every theme](docs/images/gallery.png)
 
 See every component in every theme in [`specimen/index.html`](specimen/index.html) (serve the
 repository with `python3 -m http.server` and open `/specimen/`).
@@ -84,8 +84,8 @@ states read by shape as well as colour in every theme. More in
 | `ui-theme.js` | the runtime: applies the saved theme before first paint, follows the OS light/dark setting with `data-default="auto"`, fills pickers, syncs tabs, exposes `window.UITheme` |
 | `ui-theme-base.css` | element defaults, focus ring, scrollbars, reduced motion, text tiers, `.ui-markdown`, highlight.js colours |
 | `ui-components.css` | buttons, fields, checkboxes, radios, switches, cards, badges, callouts, tabs, segmented controls, tables, dialogs, menus, tooltips, toasts, progress, code blocks, an app shell |
-| `ui-theme.css` | the tokens of all ten themes (about 20 KB gzipped) |
-| `ui-components.js` | optional themed `confirm()`, `alert()`, `prompt()` and toasts |
+| `ui-theme.css` | the tokens of all thirteen themes (about 20 KB gzipped) |
+| `ui-components.js` | optional: themed `confirm()`, `alert()`, `prompt()` and toasts, copy-to-clipboard, inline validation, settings rows, translatable words (`locales/`) |
 | `adapters/` | NiceGUI/Quasar, Tailwind CSS v4 and v3 |
 | `update.py` | installs and updates the folder, checking every file |
 | `ui-theme.d.ts` | TypeScript declarations for `window.UITheme` and `window.UIComponents` |

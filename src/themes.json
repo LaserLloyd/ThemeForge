@@ -89,6 +89,47 @@
       "css": "theme-daylight.css"
     },
     {
+      "slug": "slate",
+      "name": "Slate",
+      "description": "The neutral professional default: cool grey-blue ground, steel-blue accent, muted status colours and dense-but-calm geometry.",
+      "family": "slate",
+      "ground": "dark",
+      "colorScheme": "dark",
+      "themeColor": "#0f1318",
+      "set": "core",
+      "swatch": "#2f6db3",
+      "fonts": ["Inter", "JetBrains Mono"],
+      "css": "theme-slate.css"
+    },
+    {
+      "slug": "high-contrast",
+      "name": "High Contrast",
+      "description": "White on black with yellow actions: 7:1 text everywhere, solid colours only, strong edges.",
+      "family": "high-contrast",
+      "ground": "dark",
+      "colorScheme": "dark",
+      "themeColor": "#000000",
+      "set": "core",
+      "swatch": "#ffd400",
+      "fonts": ["Inter", "JetBrains Mono"],
+      "css": "theme-high-contrast.css",
+      "contrastProfile": "high"
+    },
+    {
+      "slug": "high-contrast-light",
+      "name": "High Contrast Light",
+      "description": "Black on white with blue actions: 7:1 text everywhere, solid colours only, black edges. The light partner of High Contrast.",
+      "family": "high-contrast",
+      "ground": "light",
+      "colorScheme": "light",
+      "themeColor": "#ffffff",
+      "set": "core",
+      "swatch": "#1a47c8",
+      "fonts": ["Inter", "JetBrains Mono"],
+      "css": "theme-high-contrast-light.css",
+      "contrastProfile": "high"
+    },
+    {
       "slug": "electric-yellow",
       "name": "Electric Yellow",
       "description": "Acid yellow on graphite with tight radii and crisp strokes. Loud on purpose.",
