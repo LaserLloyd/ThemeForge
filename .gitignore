@@ -22,3 +22,8 @@ desktop.ini
 *.log
 *.tmp
 /screenshots/
+
+# Packaging output
+dist/
+build/
+*.egg-info/

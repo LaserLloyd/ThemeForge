@@ -53,9 +53,9 @@ vendored code.
 ## Other ways
 
 - **git:** clone this repository (`--depth 1`), copy `ui-theme/` over the app's copy.
-- **degit:** `npx degit LaserLloyd/ThemeForge/ui-theme#v1.1.2 static/ui-theme --force`.
+- **degit:** `npx degit LaserLloyd/ThemeForge/ui-theme#v1.2.0 static/ui-theme --force`.
 - **CDN:** apps that load the files from jsDelivr update by changing the pinned version in the
-  URL: `https://cdn.jsdelivr.net/gh/LaserLloyd/ThemeForge@v1.1.2/ui-theme/ui-theme.css`.
+  URL: `https://cdn.jsdelivr.net/gh/LaserLloyd/ThemeForge@v1.2.0/ui-theme/ui-theme.css`.
   Never pin `@main`: the CDN caches it for up to 12 hours.
 - **Offline:** copy a release archive (`.tar.gz`) to the machine and run
   `python3 update.py --source <archive> --dest static/ui-theme` with the `update.py` from the

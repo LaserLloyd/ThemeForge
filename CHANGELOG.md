@@ -4,6 +4,24 @@ Versions follow [Semantic Versioning](https://semver.org/). A release is a git t
 `ui-theme/VERSION` and `UITheme.version` carry the same number. Token names are the public
 API: removing or renaming one is a major version.
 
+## 1.2.0
+
+The package is now called **ForgeUI** (the repository stays ThemeForge, and the shipped
+contract is unchanged: the `ui-theme/` folder, `window.UITheme`, every `--token` and every
+`ui-*` class keep their names). Nothing is removed or renamed.
+
+- **`forgeui` Python package** (`pyproject.toml`, a pure-data wheel, standard library only):
+  the `ui-theme/` bundle as package data, plus `forgeui.static_dir()`, `forgeui.head_html()`
+  and `forgeui.mount(app)` for FastAPI and NiceGUI.
+- **`python -m forgeui vendor`**, driven by a `forgeui.json` manifest kept in each app's own
+  repository (`dest`, `version`, `adapters`, `extra_files`, `settings`): verifies `files.json`,
+  refuses to overwrite hand-edited files, writes `VERSION` last, and `--check` exits 1 on drift.
+  Overlays live under app-owned names and are never appended into bundle files.
+  `sync_theme.py install` (and its machine-local app registry) is deprecated and prints a
+  message; it still works.
+- **Docs gate:** `sync_theme.py check` allows sibling `LaserLloyd/*` links in a "Used by"
+  section, which had turned CI red since 1.1.2's README change.
+
 ## 1.1.2
 
 - Forest: `--cta-gradient` starts from a lighter step of its green accent and `--notify` is
