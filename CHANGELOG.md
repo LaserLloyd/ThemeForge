@@ -75,6 +75,8 @@ Nothing is removed or renamed. The index of the rules is the new
 
 **Fixes**
 
+- `python -m forgeui --help` and `--version` answer even when the bundle folder is missing (they
+  say `bundle missing` instead of raising).
 - `sync_theme.py check` (and two unit tests) no longer fail on a clean checkout: sibling
   `LaserLloyd/*` links are allowed in a "Used by" section (a link to the archived UnifyingTheme
   there, or a sibling link anywhere else, is still rejected).

@@ -534,6 +534,19 @@ class CliTests(Base):
         self.assertEqual(code, 0, out)
         self.assertIn('data-storage-key="myapp.theme"', out)
 
+    def test_help_and_version_survive_a_missing_bundle(self):
+        def gone(*_a, **_k):
+            raise FileNotFoundError("no bundle")
+        real = cli.bundle_version
+        cli.bundle_version = gone
+        try:
+            code, out = self.call("--version")
+            help_code, _ = self.call("--help")
+        finally:
+            cli.bundle_version = real
+        self.assertEqual((code, help_code), (0, 0), out)
+        self.assertIn("bundle missing", out)
+
     def test_python_dash_m_runs(self):
         import subprocess
         proc = subprocess.run([sys.executable, "-m", "forgeui", "path"], cwd=ROOT, capture_output=True,
