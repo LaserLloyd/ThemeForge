@@ -92,8 +92,8 @@ declare global {
     validate(field: Element, message: string | null | undefined, options?: { focus?: boolean; announce?: boolean }): HTMLElement | null;
     /** Wire a .ui-setting row: reset-to-default, translated badges, env lock. */
     setting(row: Element, options?: { default?: string | boolean; onReset?: (control: HTMLElement, row: Element) => void }): UISettingController;
-    /** Say something politely to assistive technology. */
-    announce(message: string): void;
+    /** Say something politely to assistive technology; `from` (optional) places the live region inside the modal dialog that holds it. */
+    announce(message: string, from?: Element | null): void;
     /** Wire copy buttons and data-default settings rows under a root (default: the document). */
     init(root?: ParentNode): void;
     /** A word by key; data-ui-str-<key> on the element or an ancestor wins. {placeholders} are filled from vars. */

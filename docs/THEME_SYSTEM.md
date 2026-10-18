@@ -180,7 +180,8 @@ theme choice lives (it replaces the same list copied into Python, HTML and JavaS
 4. Wire the page head: `forgeui.head_html_from_manifest("forgeui.json", prefix="/static/ui-theme")`
    returns the tags in the required order (runtime first and blocking, base and component layers,
    your CSS, then the tokens), or `python -m forgeui head` prints them for a static template. Serve the
-   folder with `Cache-Control: no-cache`; `forgeui.mount(app)` does this for FastAPI and NiceGUI.
+   folder with `Cache-Control: no-cache`; `forgeui.mount(app, "/static/ui-theme", folder="static/ui-theme")` does
+   this for FastAPI and NiceGUI (without `folder` it serves the installed package, which lacks your overlays).
 5. Guard it: run `python -m forgeui vendor --check` in CI and in a unit test. It exits 1 when the
    version, a file or an overlay drifted, or when the settings name a theme the bundle lacks.
 6. Update: raise the pin, `python -m forgeui vendor`, read the diff and the

@@ -57,7 +57,7 @@ Other ways (pip for Python apps; the rest when Python is not available):
   `python -m forgeui init --dest static/ui-theme`,
   edit the `forgeui.json` it writes (themes, default, storage key), and `python -m forgeui vendor`.
   Commit the folder and the manifest; `python -m forgeui vendor --check` in CI keeps the copy honest.
-  `forgeui.mount(app, "/static/ui-theme")` and `forgeui.head_html_from_manifest()` serve the folder
+  `forgeui.mount(app, "/static/ui-theme", folder="static/ui-theme")` and `forgeui.head_html_from_manifest()` serve the folder
   and write the head block for FastAPI and NiceGUI. Details: `docs/THEME_SYSTEM.md`.
 - **git:** `git clone --depth 1 https://github.com/LaserLloyd/ThemeForge.git ut-tmp`, copy
   `ut-tmp/ui-theme` into the app, delete `ut-tmp`.

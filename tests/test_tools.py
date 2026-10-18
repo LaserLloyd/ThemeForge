@@ -12,8 +12,10 @@ import hashlib
 import importlib.util
 import io
 import json
+import os
 import shutil
 import subprocess
+import sys
 import tarfile
 import tempfile
 import unittest
@@ -571,6 +573,30 @@ class UpdateTests(unittest.TestCase):
         self.assertTrue((self.dest / "adapters" / "mine.css").is_file())
         self.assertFalse(old.exists())
 
+    def test_tampered_files_json_cannot_remove_files_outside_the_folder(self):
+        self.run_update()
+        victim = self.base / "app" / "keep.txt"
+        victim.write_text("keep", encoding="utf-8")
+        manifest = json.loads((self.dest / "files.json").read_text(encoding="utf-8"))
+        manifest["files"]["../../keep.txt"] = update.digest(b"keep")
+        manifest["hash"] = "000000000000"
+        (self.dest / "files.json").write_text(json.dumps(manifest), encoding="utf-8")
+        for extra in ((), ("--force",)):
+            code, out = self.run_update(*extra)
+            self.assertEqual(code, 2, out)
+            self.assertIn("unsafe path", out)
+            self.assertTrue(victim.is_file(), extra)
+
+    @unittest.skipIf(sys.platform == "win32", "POSIX permission bits")
+    def test_written_files_are_readable_by_other_users(self):
+        old = os.umask(0o022)
+        try:
+            self.assertEqual(self.run_update()[0], 0)
+        finally:
+            os.umask(old)
+        for rel in ("ui-theme.css", "VERSION", "files.json"):
+            self.assertEqual((self.dest / rel).stat().st_mode & 0o777, 0o644, rel)
+
     def test_copy_without_manifest_is_upgraded(self):
         self.dest.mkdir(parents=True)
         (self.dest / "VERSION").write_text("ThemeForge 0.9.0 abc\n", encoding="utf-8")
@@ -701,6 +727,15 @@ class ExampleTests(unittest.TestCase):
         self.assertLess(page.text.index("app.css"), page.text.index("ui-theme/ui-theme.css"))
         script = client.get("/static/ui-theme/ui-theme.js")
         self.assertEqual(script.headers.get("cache-control"), "no-cache")
+
+
+class PreviewImageTests(unittest.TestCase):
+    def test_the_preview_redirect_does_not_name_the_container_port(self) -> None:
+        """System test 2026-10-18: `/` redirected to http://127.0.0.1:8080/specimen/ even when the
+        container was published on another host port (8080 is a different service on the rig)."""
+        dockerfile = (ROOT / "Dockerfile").read_text(encoding="utf-8")
+        self.assertIn("absolute_redirect off;", dockerfile)
+        self.assertIn("location = / { return 302 /specimen/; }", dockerfile)
 
 
 if __name__ == "__main__":

@@ -194,16 +194,25 @@ def head_html_from_manifest(manifest: "str | Path" = "forgeui.json", **overrides
 
 
 def mount(app: Any, prefix: str = "/theme", *, cache_control: str = "no-cache",
-          name: str = "forgeui") -> str:
+          name: str = "forgeui", folder: "Optional[str | Path]" = None) -> str:
     """Serve the bundle folder at ``prefix`` on a FastAPI/Starlette app or NiceGUI's
     ``app`` and return the prefix. Files are served with ``Cache-Control: no-cache``
     so a new bundle shows on the next load (pair with ``head_html(version_query=True)``).
+
+    ``folder`` serves another copy instead of the installed package's: the one
+    ``python -m forgeui vendor`` wrote (``forgeui.json``'s ``dest``), which also holds the
+    app's overlays. Pair it with :func:`head_html_from_manifest`, which reads that copy.
 
     FastAPI/Starlette is detected by ``app.mount``; NiceGUI by ``app.add_static_files``
     (checked first, since NiceGUI's app is a FastAPI subclass). Neither is imported until
     this function runs, and a missing Starlette is reported as an error you can act on."""
     prefix = "/" + prefix.strip("/")
-    folder = static_dir()
+    if folder is None:
+        folder = static_dir()
+    else:
+        folder = Path(folder).resolve()
+        if not (folder / "files.json").is_file():
+            raise FileNotFoundError(f"{folder} is not a ui-theme bundle (no files.json); run python -m forgeui vendor")
     if hasattr(app, "add_static_files"):  # NiceGUI
         try:
             app.add_static_files(prefix, str(folder), max_cache_age=0)

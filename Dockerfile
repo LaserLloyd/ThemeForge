@@ -46,6 +46,9 @@ server {
     server_name _;
     root /usr/share/nginx/html;
     index index.html;
+    # Redirects stay relative: the container listens on 8080 but is usually published on another
+    # host port, and an absolute Location would send the browser to :8080 (another service).
+    absolute_redirect off;
 
     # The specimen is a development preview: always revalidate (cheap 304s) so
     # an edited theme shows on the next reload.

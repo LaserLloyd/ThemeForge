@@ -1,7 +1,7 @@
 /* GENERATED component helpers: ThemeForge 1.2.0, drop-in bundle (ui-theme/).
    https://github.com/LaserLloyd/ThemeForge . Do not edit this copy: update the whole
    folder (python ui-theme/update.py) and keep app styles in the app.
-   body sha256: 5c931e3de9b5806d */
+   body sha256: 7cb5e63b0d83ee43 */
 /* ============================================================================
    ui-components.js — behaviour for the component layer (optional) · ThemeForge
    ----------------------------------------------------------------------------
@@ -176,18 +176,51 @@
   var live = null;
   var liveTimer = null;
 
-  function announce(message) {
-    if (!message) return;
-    if (!live || !live.isConnected) {
-      live = el('div', 'ui-visually-hidden');
-      live.setAttribute('role', 'status');
-      live.setAttribute('aria-live', 'polite');
-      live.setAttribute('data-ui-live', '');
-      doc.body.appendChild(live);
+  // While a modal <dialog> is open the rest of the page is inert: nothing there can
+  // take focus or a selection, and screen readers skip it. A node these helpers add
+  // goes into the dialog that holds `node`, else the topmost open modal, else <body>.
+  function layer(node) {
+    var d = node && node.closest ? node.closest('dialog[open]') : null;
+    if (d) return d;
+    var open = doc.querySelectorAll('dialog[open]');
+    for (var i = open.length - 1; i >= 0; i--) {
+      var modal = false;
+      try { modal = open[i].matches(':modal'); } catch (e) { modal = false; }
+      if (modal) return open[i];
     }
-    live.textContent = '';
+    return doc.body;
+  }
+
+  function liveNode() {
+    var node = el('div', 'ui-visually-hidden');
+    node.setAttribute('role', 'status');
+    node.setAttribute('aria-live', 'polite');
+    node.setAttribute('data-ui-live', '');
+    return node;
+  }
+
+  // announce(message[, node]): `node` (optional) is where the message comes from, so a
+  // message from inside a modal dialog is spoken from inside it.
+  function announce(message, node) {
+    if (!message) return;
+    var host = layer(node);
+    var region;
+    if (host === doc.body) {
+      if (!live || !live.isConnected) {
+        live = liveNode();
+        doc.body.appendChild(live);
+      }
+      region = live;
+    } else {
+      region = host.querySelector('[data-ui-live]');
+      if (!region) {
+        region = liveNode();
+        host.appendChild(region);
+      }
+    }
+    region.textContent = '';
     global.clearTimeout(liveTimer);
-    liveTimer = global.setTimeout(function () { live.textContent = String(message); }, 30);
+    liveTimer = global.setTimeout(function () { region.textContent = String(message); }, 30);
   }
 
   /* ---- Dialogs ---------------------------------------------------------- */
@@ -247,10 +280,11 @@
         else if (kind === 'prompt') resolve(accepted ? input.value : null);
         else resolve();
       });
-      // Enter in the prompt's field submits as OK.
+      // Enter in the prompt's field submits as OK, except the Enter that commits an IME
+      // composition (Japanese, Chinese, Korean input), which must not close the dialog.
       if (input) {
         input.addEventListener('keydown', function (e) {
-          if (e.key === 'Enter') { e.preventDefault(); dialog.close('ok'); }
+          if (e.key === 'Enter' && !e.isComposing && e.keyCode !== 229) { e.preventDefault(); dialog.close('ok'); }
         });
       }
       doc.body.appendChild(dialog);
@@ -291,7 +325,8 @@
   function copySource(node) {
     var spec = node.getAttribute && node.getAttribute('data-ui-copy');
     if (spec && spec !== 'true' && spec !== '') {
-      var named = doc.querySelector(spec);
+      var named = null;
+      try { named = doc.querySelector(spec); } catch (e) { named = null; }  // not a valid selector
       if (named) return named;
     }
     var field = node.closest && node.closest('.ui-copy');
@@ -309,14 +344,14 @@
 
   // execCommand fallback for pages that are not a secure context (plain http on a
   // LAN address), where navigator.clipboard does not exist.
-  function legacyCopy(text) {
+  function legacyCopy(text, node) {
     var area = el('textarea');
     area.value = text;
     area.setAttribute('readonly', '');
     area.setAttribute('aria-hidden', 'true');
     area.style.cssText = 'position:fixed;top:0;inset-inline-start:0;width:1px;height:1px;padding:0;border:0;opacity:0';
     var previous = doc.activeElement;
-    doc.body.appendChild(area);
+    layer(node).appendChild(area);  // inside an open modal, or it cannot be selected
     var ok = false;
     try {
       area.select();
@@ -330,12 +365,12 @@
     return ok;
   }
 
-  function writeClipboard(text) {
+  function writeClipboard(text, node) {
     var nav = global.navigator;
     if (nav && nav.clipboard && typeof nav.clipboard.writeText === 'function' && global.isSecureContext !== false) {
-      return nav.clipboard.writeText(text).then(function () { return true; }, function () { return legacyCopy(text); });
+      return nav.clipboard.writeText(text).then(function () { return true; }, function () { return legacyCopy(text, node); });
     }
-    return Promise.resolve(legacyCopy(text));
+    return Promise.resolve(legacyCopy(text, node));
   }
 
   function copyFeedback(button, ok) {
@@ -345,7 +380,7 @@
     if (hasText && button.__uiCopyLabel === undefined) button.__uiCopyLabel = button.textContent;
     button.setAttribute('data-copied', ok ? 'true' : 'failed');
     if (hasText) button.textContent = word;
-    announce(word);
+    announce(word, button);
     global.clearTimeout(button.__uiCopyTimer);
     button.__uiCopyTimer = global.setTimeout(function () {
       button.removeAttribute('data-copied');
@@ -362,7 +397,7 @@
     if (!button && target && target.querySelector) button = target.querySelector(COPY_BUTTON);
     var source = typeof target === 'string' ? target : copySource(target);
     var text = textOf(source);
-    return writeClipboard(text).then(function (ok) {
+    return writeClipboard(text, button || (typeof target === 'string' ? null : target)).then(function (ok) {
       copyFeedback(button, ok);
       return ok;
     });
@@ -413,7 +448,7 @@
     control.setAttribute('aria-invalid', 'true');
     if (describedby.indexOf(errId) < 0) describedby.push(errId);
     control.setAttribute('aria-describedby', describedby.join(' '));
-    if (changed && o.announce !== false) announce(message);
+    if (changed && o.announce !== false) announce(message, control);
     if (o.focus && typeof control.focus === 'function') control.focus();
     return err;
   }
@@ -469,9 +504,11 @@
   //   restores the default and fires input and change; empty badges and the reset
   //   button get their words from the string table; a row with data-source="env"
   //   disables its control, because the environment owns that value.
-  // Returns { update(), destroy() }.
+  // Returns { update(), destroy() }. Calling it again for a row (init() wires every row
+  // on load) replaces the earlier wiring instead of adding a second set of handlers.
   function setting(row, opts) {
     var o = opts || {};
+    if (row.__uiSetting && typeof row.__uiSetting.destroy === 'function') row.__uiSetting.destroy();
     var control = row.querySelector('.ui-setting__control input, .ui-setting__control select, .ui-setting__control textarea');
     var reset = row.querySelector('.ui-setting__reset');
 
@@ -509,15 +546,16 @@
     }
     if (reset) reset.addEventListener('click', onReset);
     update();
-    row.__uiSetting = true;
-    return {
+    var controller = {
       update: update,
       destroy: function () {
         if (control) { control.removeEventListener('input', update); control.removeEventListener('change', update); }
         if (reset) reset.removeEventListener('click', onReset);
-        row.__uiSetting = false;
+        if (row.__uiSetting === controller) row.__uiSetting = null;
       }
     };
+    row.__uiSetting = controller;
+    return controller;
   }
 
   /* ---- Page wiring ------------------------------------------------------ */
