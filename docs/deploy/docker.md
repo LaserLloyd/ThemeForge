@@ -47,6 +47,15 @@ capabilities dropped, `no-new-privileges`, bounded logs, memory and CPU
 limits. The build context is an allow-list (`.dockerignore`): only
 `specimen/` and `ui-theme/` enter the image.
 
+## Your data
+
+There is none to lose. The image is stateless and its root filesystem is
+read-only; it declares no volume and no bind mount, so updating, recreating or
+removing it (`down`, `down -v`) cannot touch anything of yours. The themes you
+actually use live in your own apps' `ui-theme/` folders, not here. There is
+therefore nothing to back up, no `PUID`/`PGID` setting, and the unprivileged
+user (UID 101) never writes to a mounted path.
+
 ## Upgrading and removal
 
 ```bash
