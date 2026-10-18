@@ -5,7 +5,7 @@ one step: thirteen colour themes (dark, OLED black, light, a neutral default and
 pair, with automatic dark mode from the OS setting), a theme picker, design tokens, a base element layer, text standards and
 ready-made component classes, MIT licensed. Plain CSS and a small script in one folder,
 `ui-theme/`. No build step, no dependencies, any framework. The package is called **ForgeUI**
-(a `pip`-installable wheel, `forgeui`); the repository, the `ui-theme/` folder and every token and class keep
+(a wheel, `forgeui`, installed from the git release tag); the repository, the `ui-theme/` folder and every token and class keep
 the ThemeForge names, so nothing an app depends on changes with the name.
 
 ![On, off, selected and disabled controls in every theme](docs/images/gallery.png)
@@ -16,7 +16,228 @@ repository with `python3 -m http.server` and open `/specimen/`).
 **Using an AI agent?** Point it at [`AGENTS.md`](AGENTS.md): "Add ThemeForge to this app
 following AGENTS.md in https://github.com/LaserLloyd/ThemeForge".
 
-## Quick start
+## Install
+
+ThemeForge is a package you add to your own web app, not a program you run. Pick your platform below; in each,
+method 1 is the simplest. "Installing" means putting the `ui-theme/` folder into your app, then linking it from your pages.
+
+Ports: none for the package. Only the optional Docker specimen preview listens, on host port 8185 (container port 8080).
+
+### Windows
+
+Run the blocks in PowerShell. After a `winget install`, close and reopen PowerShell so the new program is on `PATH`.
+
+#### 1. One-line installer, `update.py` (simplest)
+
+Choose this when you want the folder in your app and nothing else: it needs Python 3.9 or newer, no git, no pip.
+
+```powershell
+winget install --id Python.Python.3.12 -e --source winget
+# close and reopen PowerShell, then go to your app's root folder:
+cd C:\path\to\your\app
+py -3 -c "import urllib.request as u,sys;sys.argv=['update.py','--dest','static/ui-theme'];exec(u.urlopen('https://raw.githubusercontent.com/LaserLloyd/ThemeForge/main/ui-theme/update.py').read())"
+Get-Content static\ui-theme\VERSION     # prints: ThemeForge <version> <hash>
+```
+
+| Pros | Cons |
+|---|---|
+| One command after Python; works for any framework | No manifest, so no `--check` for CI (use method 2 for that) |
+| Checks every file against `files.json` before writing | Fetches from GitHub on each run; offline needs `--source` |
+| Later updates: `py -3 static\ui-theme\update.py` | Installs the latest release; pin with `--ref vX.Y.Z` |
+
+#### 2. ForgeUI vendoring, `forgeui.json` + `python -m forgeui vendor`
+
+Choose this for a Python app (FastAPI, NiceGUI, Flask, Django) or when CI should fail if the copy drifts. The package installs from the
+git release tag; `pip install forgeui` from PyPI is a different project, so do not use it. It needs git.
+
+```powershell
+winget install --id Git.Git -e --source winget
+winget install --id Python.Python.3.12 -e --source winget
+# close and reopen PowerShell, then:
+cd C:\path\to\your\app
+py -3 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install "forgeui @ git+https://github.com/LaserLloyd/ThemeForge@v1.2.0"
+.\.venv\Scripts\python.exe -m forgeui init --dest static/ui-theme    # writes forgeui.json
+.\.venv\Scripts\python.exe -m forgeui vendor                         # copies the folder, verified
+.\.venv\Scripts\python.exe -m forgeui vendor --check                 # prints ok, exit 0
+```
+
+| Pros | Cons |
+|---|---|
+| `forgeui.json` records version, themes and overlays in your repo | Needs git and a venv |
+| `vendor --check` exits 1 on drift: use it in CI or a unit test | Not on PyPI yet, so the install line is a long git URL |
+| Python helpers: `forgeui.mount(app, ...)`, `head_html_from_manifest(...)` | The tag must exist: if pip reports it cannot find `v1.2.0`, use the `update.py` route until the release is tagged |
+
+#### 3. `uv`, no venv to manage
+
+Choose this when you already use [uv](https://docs.astral.sh/uv/). `uvx` runs `forgeui` from a cached environment, so nothing is installed into your app.
+
+```powershell
+winget install --id Git.Git -e --source winget
+winget install --id astral-sh.uv -e --source winget
+# close and reopen PowerShell, then:
+cd C:\path\to\your\app
+$f = "forgeui @ git+https://github.com/LaserLloyd/ThemeForge@v1.2.0"
+uvx --from $f forgeui init --dest static/ui-theme
+uvx --from $f forgeui vendor
+uvx --from $f forgeui vendor --check
+```
+
+| Pros | Cons |
+|---|---|
+| No venv, no `pip`, no activation step | You need uv, and git for the first fetch |
+| The pinned tag in `$f` is the only version you manage | `forgeui.mount()` in code still needs the package in your app's own environment |
+
+#### 4. Docker Desktop, specimen preview only
+
+Choose this to look at every component in every theme before adopting it. It does not install anything into your app.
+
+```powershell
+winget install --id Git.Git -e --source winget
+winget install --id Docker.DockerDesktop -e --source winget
+# start Docker Desktop once and wait until it says the engine is running, then:
+git clone https://github.com/LaserLloyd/ThemeForge.git
+cd ThemeForge
+docker compose -f deploy/compose/compose.yml up -d
+curl.exe -s http://127.0.0.1:8185/healthz     # prints: ok
+# open http://127.0.0.1:8185/  (redirects to /specimen/)
+```
+
+| Pros | Cons |
+|---|---|
+| Nothing to install into your app; isolated, read-only, non-root container | Docker Desktop is a large install and needs virtualisation enabled |
+| Stateless: `down -v` cannot lose anything | Theme edits need `up -d --build` |
+
+### Linux
+
+Blocks assume Ubuntu or Debian (apt).
+
+#### 1. One-line installer, `update.py` (simplest)
+
+Choose this when you want the folder in your app and nothing else. A bare Ubuntu image has no `python3`, so the first line installs it.
+
+```bash
+sudo apt-get update && sudo apt-get install -y python3 ca-certificates
+cd /path/to/your/app
+python3 -c "import urllib.request as u,sys;sys.argv=['update.py','--dest','static/ui-theme'];exec(u.urlopen('https://raw.githubusercontent.com/LaserLloyd/ThemeForge/main/ui-theme/update.py').read())"
+cat static/ui-theme/VERSION     # prints: ThemeForge <version> <hash>
+```
+
+| Pros | Cons |
+|---|---|
+| One command after Python; works for any framework | No manifest, so no `--check` for CI (use method 2 or 3) |
+| No pip, so PEP 668 ("externally managed environment") never applies | Fetches from GitHub on each run; offline needs `--source` |
+| Later updates: `python3 static/ui-theme/update.py` | Installs the latest release; pin with `--ref vX.Y.Z` |
+
+#### 2. `uv`, no venv to manage
+
+Choose this for a Python app when you want the manifest and drift check without creating a venv.
+
+```bash
+sudo apt-get update && sudo apt-get install -y git curl ca-certificates
+curl -LsSf https://astral.sh/uv/install.sh | sh
+source $HOME/.local/bin/env
+cd /path/to/your/app
+F="forgeui @ git+https://github.com/LaserLloyd/ThemeForge@v1.2.0"
+uvx --from "$F" forgeui init --dest static/ui-theme
+uvx --from "$F" forgeui vendor
+uvx --from "$F" forgeui vendor --check     # prints ok, exit 0
+```
+
+| Pros | Cons |
+|---|---|
+| No venv, no pip, no PEP 668 error | Needs git and uv; uv must be on `PATH` (the `source` line does that for this shell) |
+| `forgeui.json` records version, themes and overlays in your repo | `forgeui.mount()` in code still needs the package in your app's own environment |
+| `vendor --check` exits 1 on drift | Not on PyPI yet, so the install line is a long git URL |
+
+#### 3. `venv` + `pip`
+
+Choose this when you cannot install uv. Ubuntu 24.04 refuses a bare `pip install` (PEP 668), so use a venv.
+
+```bash
+sudo apt-get update && sudo apt-get install -y git python3-venv
+cd /path/to/your/app
+python3 -m venv .venv
+.venv/bin/pip install "forgeui @ git+https://github.com/LaserLloyd/ThemeForge@v1.2.0"
+.venv/bin/python -m forgeui init --dest static/ui-theme
+.venv/bin/python -m forgeui vendor
+.venv/bin/python -m forgeui vendor --check     # prints ok, exit 0
+```
+
+| Pros | Cons |
+|---|---|
+| Only the standard tools; the venv is also where `forgeui.mount()` runs | Most steps of the three; needs git and `python3-venv` |
+| Same manifest and drift check as method 2 | If pip cannot find tag `v1.2.0`, use method 1 until the release is tagged |
+
+#### 4. Docker Compose, specimen preview only
+
+Choose this to look at every component in every theme before adopting it. It does not install anything into your app.
+
+```bash
+sudo apt-get update && sudo apt-get install -y git curl docker.io docker-compose-v2
+sudo usermod -aG docker $USER    # log out and in once, or prefix the docker lines below with sudo
+git clone https://github.com/LaserLloyd/ThemeForge.git
+cd ThemeForge
+docker compose -f deploy/compose/compose.yml up -d
+curl -s http://127.0.0.1:8185/healthz     # prints: ok
+# open http://127.0.0.1:8185/  (redirects to /specimen/)
+```
+
+| Pros | Cons |
+|---|---|
+| Nothing to install into your app; isolated, read-only, non-root container | Needs a Docker engine and about 60 MB of image |
+| Stateless: `down -v` cannot lose anything | Theme edits need `up -d --build` |
+
+### macOS
+
+Use Terminal; the package is plain Python and CSS, so nothing is macOS-specific. Python 3 and git come with the Xcode command line tools.
+
+#### 1. One-line installer, `update.py` (simplest)
+
+```bash
+xcode-select --install     # skip if python3 and git already work; accept the dialog, wait, then continue
+cd /path/to/your/app
+python3 -c "import urllib.request as u,sys;sys.argv=['update.py','--dest','static/ui-theme'];exec(u.urlopen('https://raw.githubusercontent.com/LaserLloyd/ThemeForge/main/ui-theme/update.py').read())"
+cat static/ui-theme/VERSION     # prints: ThemeForge <version> <hash>
+```
+
+| Pros | Cons |
+|---|---|
+| One command after Python; works for any framework | No manifest, so no `--check` for CI |
+| Later updates: `python3 static/ui-theme/update.py` | The Python from the command line tools can be old; it must be 3.9 or newer (`python3 --version`) |
+
+#### 2. `uv`
+
+```bash
+xcode-select --install     # skip if git already works
+curl -LsSf https://astral.sh/uv/install.sh | sh
+source $HOME/.local/bin/env
+cd /path/to/your/app
+F="forgeui @ git+https://github.com/LaserLloyd/ThemeForge@v1.2.0"
+uvx --from "$F" forgeui init --dest static/ui-theme
+uvx --from "$F" forgeui vendor
+uvx --from "$F" forgeui vendor --check     # prints ok, exit 0
+```
+
+| Pros | Cons |
+|---|---|
+| No venv, no pip; manifest and drift check | Needs git and uv |
+
+#### 3. Docker Desktop, specimen preview only
+
+```bash
+brew install --cask docker     # then open Docker Desktop once and wait for "Engine running"
+git clone https://github.com/LaserLloyd/ThemeForge.git
+cd ThemeForge
+docker compose -f deploy/compose/compose.yml up -d
+curl -s http://127.0.0.1:8185/healthz     # prints: ok
+```
+
+| Pros | Cons |
+|---|---|
+| Nothing installed into your app | Docker Desktop is a large install |
+
+### Upgrade and uninstall
 
 <!-- install:start -->
 Run from the app's root folder (Python 3.9 or newer; change `static/ui-theme` to the folder
@@ -34,7 +255,22 @@ then run `python3 update.py --source <archive> --dest static/ui-theme` with the 
 its `ui-theme/` folder.
 <!-- install:end -->
 
-Then, in every page's `<head>`:
+- **`update.py` route:** `python3 static/ui-theme/update.py` updates; `--check` reports only (exit 1 when an update exists);
+  `--ref vX.Y.Z` pins a release. To uninstall, delete the `static/ui-theme` folder and the two lines in your pages.
+- **ForgeUI route:** raise the tag in the install line (for example `@v1.2.0` to a later release), then run `vendor` again;
+  `vendor --check` confirms the copy. A hand-edited bundle file is refused unless you pass `--force`, so keep edits in overlays
+  (`extra_files`). To uninstall, delete the vendored folder and `forgeui.json`, and `.venv` if you made one for this.
+- **Docker preview:** `git pull && docker compose -f deploy/compose/compose.yml up -d --build` updates it;
+  `docker compose -f deploy/compose/compose.yml down` removes it. Nothing is stored, so there is no data to back up.
+
+Preview settings (optional, in `deploy/compose/.env`): `HOST_PORT` (8185), `BIND_ADDR` (127.0.0.1; `0.0.0.0` publishes to your
+network), `IMAGE`, `VERSION`, `MEM_LIMIT` (64m), `CPU_LIMIT` (0.5). More in [docs/deploy/docker.md](docs/deploy/docker.md);
+updating details in [docs/UPDATING.md](docs/UPDATING.md). Without installing anything, a prototype can load the files from
+jsDelivr: `https://cdn.jsdelivr.net/gh/LaserLloyd/ThemeForge@v1.2.0/ui-theme/ui-theme.js` (and the same path for each CSS file).
+
+## Add it to your pages
+
+In every page's `<head>` (change `/static/ui-theme` to the folder you chose):
 
 ```html
 <script src="/static/ui-theme/ui-theme.js"
@@ -50,54 +286,17 @@ Then, in every page's `<head>`:
 and a picker wherever you like: `<select data-ui-theme-picker aria-label="Theme"></select>`.
 Build with tokens (`var(--surface-2)`, `var(--text-secondary)`) and classes
 (`ui-btn ui-btn--primary`, `ui-card`, `ui-switch`). Full guide: [`AGENTS.md`](AGENTS.md).
-
 Works in current Chrome, Edge, Firefox and Safari (2024 or newer).
 
-### With pip (ForgeUI)
-
-For Python apps (FastAPI, NiceGUI, Flask, Django) the folder is also a wheel, and a manifest in
-your repository says which copy you hold, so the copy can be checked in CI:
-
-```
-pip install "forgeui @ git+https://github.com/LaserLloyd/ThemeForge@v1.2.0"   # from the release tag; see the note below
-python -m forgeui init --dest static/ui-theme   # writes forgeui.json: your themes, default, storage key
-python -m forgeui vendor                        # copies the folder, verified against its checksums
-python -m forgeui vendor --check                # exit 1 when the copy drifted (CI, a unit test)
-```
+With the ForgeUI package installed in your app's environment (Python apps), the same tags come from the manifest:
 
 ```python
 import forgeui
-forgeui.mount(app, "/static/ui-theme")          # FastAPI or NiceGUI: serves the folder, no-cache
+forgeui.mount(app, "/static/ui-theme", folder="static/ui-theme")   # FastAPI or NiceGUI: serves your vendored copy (with overlays), no-cache
 head = forgeui.head_html_from_manifest("forgeui.json", prefix="/static/ui-theme")   # the <head> tags
 ```
 
 How the manifest, versions and overlays work: [`docs/THEME_SYSTEM.md`](docs/THEME_SYSTEM.md).
-
-The wheel is **not on PyPI**: the name `forgeui` there belongs to an unrelated project, so a bare
-`pip install forgeui` installs the wrong package. Install from the release tag as above (pip builds
-the wheel from the repository; it needs `git`), or from a wheel you built with `python -m build`.
-
-Prefer not to install anything? For a prototype, load the files from jsDelivr:
-`https://cdn.jsdelivr.net/gh/LaserLloyd/ThemeForge@v1.2.0/ui-theme/ui-theme.js` (and the
-same path for each CSS file).
-
-## Preview in Docker
-
-ThemeForge is a CSS package you copy into your own app (see Quick start). The container only serves the
-specimen page, so you can see every component in every theme without installing anything.
-
-    git clone https://github.com/LaserLloyd/ThemeForge.git && cd ThemeForge    # or: git pull
-    docker compose -f deploy/compose/compose.yml up -d
-    # open http://127.0.0.1:8185/   (redirects to /specimen/)
-
-| Port | What |
-|---|---|
-| 8185 (host) -> 8080 (container) | the specimen preview, published on 127.0.0.1 only by default |
-
-Optional environment: `HOST_PORT` (8185), `BIND_ADDR` (127.0.0.1), `IMAGE`, `VERSION`, `MEM_LIMIT`, `CPU_LIMIT`.
-The image is stateless (nginx-unprivileged, read-only root, no volumes), so there is nothing to back up and
-`docker compose down -v` cannot lose anything. Theme edits need `up -d --build`. To use ThemeForge in an app,
-follow Quick start instead; details are in [docs/deploy/docker.md](docs/deploy/docker.md).
 
 ## Themes
 
