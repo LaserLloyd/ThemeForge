@@ -77,6 +77,24 @@ Prefer not to install anything? For a prototype, load the files from jsDelivr:
 `https://cdn.jsdelivr.net/gh/LaserLloyd/ThemeForge@v1.2.0/ui-theme/ui-theme.js` (and the
 same path for each CSS file).
 
+## Preview in Docker
+
+ThemeForge is a CSS package you copy into your own app (see Quick start). The container only serves the
+specimen page, so you can see every component in every theme without installing anything.
+
+    git clone https://github.com/LaserLloyd/ThemeForge.git && cd ThemeForge    # or: git pull
+    docker compose -f deploy/compose/compose.yml up -d
+    # open http://127.0.0.1:8185/   (redirects to /specimen/)
+
+| Port | What |
+|---|---|
+| 8185 (host) -> 8080 (container) | the specimen preview, published on 127.0.0.1 only by default |
+
+Optional environment: `HOST_PORT` (8185), `BIND_ADDR` (127.0.0.1), `IMAGE`, `VERSION`, `MEM_LIMIT`, `CPU_LIMIT`.
+The image is stateless (nginx-unprivileged, read-only root, no volumes), so there is nothing to back up and
+`docker compose down -v` cannot lose anything. Theme edits need `up -d --build`. To use ThemeForge in an app,
+follow Quick start instead; details are in [docs/deploy/docker.md](docs/deploy/docker.md).
+
 ## Themes
 
 | | Theme | Kind | |
