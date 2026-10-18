@@ -1,0 +1,57 @@
+# ThemeForge - specimen preview (Docker Compose)
+#
+#   docker compose -f deploy/compose/compose.yml up -d
+#   open http://127.0.0.1:8185/            (redirects to /specimen/)
+#
+# ThemeForge is a CSS package you copy into other apps (see the README); this
+# service only serves the specimen page. Settings (all optional):
+#   HOST_PORT   host port            default 8185
+#   BIND_ADDR   host interface       default 127.0.0.1 (this machine only)
+#   IMAGE       image reference      default themeforge-preview:local
+#   VERSION     image version label  default dev
+#   MEM_LIMIT / CPU_LIMIT            default 64m / 0.5
+name: themeforge
+
+services:
+  specimen:
+    image: ${IMAGE:-themeforge-preview:local}
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+      args:
+        VERSION: ${VERSION:-dev}
+    container_name: themeforge-specimen
+    restart: unless-stopped
+    init: true
+
+    ports:
+      - "${BIND_ADDR:-127.0.0.1}:${HOST_PORT:-8185}:8080"
+
+    environment:
+      TZ: ${TZ:-UTC}
+
+    # Static files only: nothing needs to be writable except nginx's /tmp.
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+
+    healthcheck:
+      start_period: 5s
+      interval: 30s
+      timeout: 3s
+      retries: 3
+
+    deploy:
+      resources:
+        limits:
+          memory: ${MEM_LIMIT:-64m}
+          cpus: "${CPU_LIMIT:-0.5}"
+
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
