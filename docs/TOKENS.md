@@ -10,7 +10,9 @@ app prefix (`--myapp-sidebar-w`) or alias a token (`--myapp-brand: var(--accent)
 Core groups are what most apps use; extension groups exist for apps that need them.
 
 Contrast floors every theme meets (`tools/check_contrast.py`; the night profile, used
-by Night Red, lowers the text floors as noted in [THEMES.md](THEMES.md)):
+by Night Red, lowers the text floors, and the high profile, used by the High Contrast pair,
+raises them to 7:1 for every text colour and 4.5:1 for edges and indicators, as noted in
+[THEMES.md](THEMES.md)):
 
 | Pair | Floor |
 |---|---|
