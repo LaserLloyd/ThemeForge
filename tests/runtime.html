@@ -700,8 +700,12 @@
     const row2 = d.getElementById('same');
     const ctl = U.setting(row2, { default: 'zzz', onReset: (c, r) => calls.push([c.id, r.id]) });
     check('setting(row, { default }) overrides data-default', q('same', '.ui-setting__reset').hidden, false);
+    const sameEvents = [];
+    d.getElementById('same-c').addEventListener('input', () => sameEvents.push('input'));
+    d.getElementById('same-c').addEventListener('change', () => sameEvents.push('change'));
     q('same', '.ui-setting__reset').click();
     check('setting: onReset is called with the control and row', [calls, d.getElementById('same-c').value], [[['same-c', 'same']], 'zzz']);
+    check('setting: an explicit call replaces the wiring init() did (one reset, one input, one change)', sameEvents, ['input', 'change']);
     ctl.destroy();
     check('setting: the controller has update and destroy', [typeof ctl.update, typeof ctl.destroy], ['function', 'function']);
   }

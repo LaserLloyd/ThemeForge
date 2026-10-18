@@ -1,7 +1,7 @@
 /* GENERATED component helpers: ThemeForge 1.2.0, drop-in bundle (ui-theme/).
    https://github.com/LaserLloyd/ThemeForge . Do not edit this copy: update the whole
    folder (python ui-theme/update.py) and keep app styles in the app.
-   body sha256: be66c1e90996adce */
+   body sha256: 7cb5e63b0d83ee43 */
 /* ============================================================================
    ui-components.js — behaviour for the component layer (optional) · ThemeForge
    ----------------------------------------------------------------------------
@@ -504,9 +504,11 @@
   //   restores the default and fires input and change; empty badges and the reset
   //   button get their words from the string table; a row with data-source="env"
   //   disables its control, because the environment owns that value.
-  // Returns { update(), destroy() }.
+  // Returns { update(), destroy() }. Calling it again for a row (init() wires every row
+  // on load) replaces the earlier wiring instead of adding a second set of handlers.
   function setting(row, opts) {
     var o = opts || {};
+    if (row.__uiSetting && typeof row.__uiSetting.destroy === 'function') row.__uiSetting.destroy();
     var control = row.querySelector('.ui-setting__control input, .ui-setting__control select, .ui-setting__control textarea');
     var reset = row.querySelector('.ui-setting__reset');
 
@@ -544,15 +546,16 @@
     }
     if (reset) reset.addEventListener('click', onReset);
     update();
-    row.__uiSetting = true;
-    return {
+    var controller = {
       update: update,
       destroy: function () {
         if (control) { control.removeEventListener('input', update); control.removeEventListener('change', update); }
         if (reset) reset.removeEventListener('click', onReset);
-        row.__uiSetting = false;
+        if (row.__uiSetting === controller) row.__uiSetting = null;
       }
     };
+    row.__uiSetting = controller;
+    return controller;
   }
 
   /* ---- Page wiring ------------------------------------------------------ */
