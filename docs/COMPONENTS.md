@@ -153,7 +153,8 @@ The value may be a readonly input (also a password field) or any element
 "Copied" for a moment (`data-copied="true"`, or `"failed"` when the browser refused) and
 announces it. It uses the clipboard API where the page is a secure context and falls back to a
 hidden textarea and `execCommand('copy')` on plain `http://` addresses, where the API does not
-exist. `.ui-codeblock__button` works the same way (see Code block). From script:
+exist (inside an open modal `<dialog>` the textarea and the announcement are placed in the dialog,
+since the page behind it is inert). `.ui-codeblock__button` works the same way (see Code block). From script:
 `await UIComponents.copy(element | string)` resolves `true` on success. A button with
 `data-ui-copy="#other"` copies that element; `data-ui-copy="off"` opts a button out.
 

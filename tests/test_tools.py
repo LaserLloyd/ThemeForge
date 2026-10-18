@@ -12,8 +12,10 @@ import hashlib
 import importlib.util
 import io
 import json
+import os
 import shutil
 import subprocess
+import sys
 import tarfile
 import tempfile
 import unittest
@@ -570,6 +572,30 @@ class UpdateTests(unittest.TestCase):
         self.assertEqual(code, 0, out)
         self.assertTrue((self.dest / "adapters" / "mine.css").is_file())
         self.assertFalse(old.exists())
+
+    def test_tampered_files_json_cannot_remove_files_outside_the_folder(self):
+        self.run_update()
+        victim = self.base / "app" / "keep.txt"
+        victim.write_text("keep", encoding="utf-8")
+        manifest = json.loads((self.dest / "files.json").read_text(encoding="utf-8"))
+        manifest["files"]["../../keep.txt"] = update.digest(b"keep")
+        manifest["hash"] = "000000000000"
+        (self.dest / "files.json").write_text(json.dumps(manifest), encoding="utf-8")
+        for extra in ((), ("--force",)):
+            code, out = self.run_update(*extra)
+            self.assertEqual(code, 2, out)
+            self.assertIn("unsafe path", out)
+            self.assertTrue(victim.is_file(), extra)
+
+    @unittest.skipIf(sys.platform == "win32", "POSIX permission bits")
+    def test_written_files_are_readable_by_other_users(self):
+        old = os.umask(0o022)
+        try:
+            self.assertEqual(self.run_update()[0], 0)
+        finally:
+            os.umask(old)
+        for rel in ("ui-theme.css", "VERSION", "files.json"):
+            self.assertEqual((self.dest / rel).stat().st_mode & 0o777, 0o644, rel)
 
     def test_copy_without_manifest_is_upgraded(self):
         self.dest.mkdir(parents=True)

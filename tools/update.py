@@ -178,7 +178,28 @@ def read_manifest(folder: Path):
         data = json.loads(path.read_text(encoding="utf-8"))
     except ValueError as exc:
         raise UpdateError(f"{path} is not valid JSON: {exc}") from exc
-    return data if isinstance(data.get("files"), dict) else None
+    if not isinstance(data, dict) or not isinstance(data.get("files"), dict):
+        return None
+    for rel in data["files"]:
+        # The installed files.json decides what is removed: an entry such as ../../x
+        # (a tampered copy in a repository) must not reach outside the folder.
+        inside(folder, rel, path)
+    return data
+
+
+def inside(folder: Path, rel: str, what) -> Path:
+    """folder / rel, refused unless it stays inside folder (also after links are followed)."""
+    p = PurePosixPath(rel.replace("\\", "/"))
+    target = folder / rel
+    escapes = not rel or p.is_absolute() or ".." in p.parts or re.match(r"^[A-Za-z]:", rel)
+    if not escapes:
+        try:
+            target.resolve().relative_to(folder.resolve())
+        except ValueError:
+            escapes = True
+    if escapes:
+        raise UpdateError(f"unsafe path in {what}: {rel} (outside {folder}); refusing to touch it")
+    return target
 
 
 def describe(manifest) -> str:
@@ -240,8 +261,15 @@ def local_state(folder: Path, new_files: dict):
 
 def write_file(path: Path, data: bytes) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
+    try:  # keep the file's mode; mkstemp's 0600 would hide a served copy from the web server
+        mode = path.stat().st_mode & 0o777
+    except OSError:
+        umask = os.umask(0)
+        os.umask(umask)
+        mode = 0o666 & ~umask
     fd, tmp = tempfile.mkstemp(prefix=f".{path.name}.", dir=path.parent)
     try:
+        os.chmod(tmp, mode)
         with os.fdopen(fd, "wb") as fh:
             fh.write(data.replace(b"\r\n", b"\n"))
         for attempt in range(5):

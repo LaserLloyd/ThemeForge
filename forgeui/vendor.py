@@ -79,6 +79,18 @@ def _safe_rel(text: str, what: str) -> str:
     return path.as_posix()
 
 
+def _within(folder: Path, rel: str, what: str) -> Path:
+    """``folder / rel`` after checking that it stays inside ``folder`` lexically and
+    after links are followed (a committed symlink must not redirect a write or a delete)."""
+    path = folder / _safe_rel(rel, what)
+    try:
+        path.resolve().relative_to(folder.resolve())
+    except ValueError:
+        msg = f"{what} {rel!r} leads outside {folder} (through a link?); refusing to touch it"
+        raise VendorError(msg) from None
+    return path
+
+
 # ---------------------------------------------------------------- the manifest
 
 
@@ -140,6 +152,12 @@ def load_manifest(path: Path) -> Manifest:
         src = (root / _safe_rel(source, "extra_files source")).resolve()
         if not src.is_file():
             raise VendorError(f"{path.name}: extra_files source {source} not found")
+        try:
+            src.relative_to(root)
+        except ValueError:
+            # A link to a file elsewhere (a key, a .env) would be copied into a served folder.
+            raise VendorError(f"{path.name}: extra_files source {source} resolves outside {root} "
+                              "(a link?); overlays must be files of this repository") from None
         if target in (FILES, VERSION):
             raise VendorError(f"{path.name}: {target} cannot be an overlay")
         extras[target] = src
@@ -335,7 +353,13 @@ def read_installed(dest: Path) -> Optional[dict]:
         data = json.loads(path.read_text(encoding="utf-8"))
     except ValueError as exc:
         raise VendorError(f"{path} is not valid JSON: {exc}") from exc
-    return data if isinstance(data.get("files"), dict) else None
+    if not isinstance(data, dict) or not isinstance(data.get("files"), dict):
+        return None
+    for rel in data["files"]:
+        # This file lives in the consumer's repository and decides what vendor deletes:
+        # a tampered entry such as ../../x must not reach outside the copy.
+        _within(dest, rel, f"{path} entry")
+    return data
 
 
 def listing(dest: Path) -> List[str]:
@@ -380,7 +404,7 @@ def inspect(manifest: Manifest, source: Source, chosen: Dict[str, bytes]) -> Sta
     for rel, data in chosen.items():
         if rel == FILES:
             continue
-        path = dest / rel
+        path = _within(dest, rel, "bundle file")  # checked before anything is written
         if not path.is_file():
             state.missing.append(rel)
             continue
@@ -391,6 +415,10 @@ def inspect(manifest: Manifest, source: Source, chosen: Dict[str, bytes]) -> Sta
             state.edited.append(rel)
         elif rel in old:
             state.stale.append(rel)
+        elif state.installed is not None:
+            # The copy's files.json does not own this path, so it is the app's own file that
+            # happens to share a name with one the new bundle adds: never overwrite it silently.
+            state.edited.append(rel)
         else:  # no files.json to compare with: a copy from before files.json existed
             state.stale.append(rel)
     for rel, expected in old.items():
@@ -399,7 +427,7 @@ def inspect(manifest: Manifest, source: Source, chosen: Dict[str, bytes]) -> Sta
                 state.edited.append(rel)
             state.removable.append(rel)
     for target, src in manifest.extra_files.items():
-        path = dest / target
+        path = _within(dest, target, "extra_files target")
         if target in chosen:
             raise VendorError(f"extra_files target {target} is a file of the bundle; give the overlay an "
                               "app-owned name such as adapters/<app>-extra.css")
@@ -457,14 +485,28 @@ def version_problem(manifest: Manifest, source: Source, override: Optional[str])
 # ---------------------------------------------------------------- writing
 
 
+def _file_mode(path: Path) -> int:
+    """The mode the written file should carry: the existing file's, else what a plain
+    open() would give (0o666 less the umask). mkstemp's 0o600 would make a served copy
+    unreadable to a web server running as another user."""
+    try:
+        return path.stat().st_mode & 0o777
+    except OSError:
+        umask = os.umask(0)
+        os.umask(umask)
+        return 0o666 & ~umask
+
+
 def write_file(path: Path, data: bytes) -> None:
     """Atomic: a temporary file beside the target, then a rename (retried, since a
     file held open on Windows refuses it)."""
     path.parent.mkdir(parents=True, exist_ok=True)
+    mode = _file_mode(path)
     fd, tmp = tempfile.mkstemp(prefix=f".{path.name}.", dir=path.parent)
     try:
         with os.fdopen(fd, "wb") as fh:
             fh.write(data.replace(b"\r\n", b"\n"))
+        os.chmod(tmp, mode)
         for attempt in range(5):
             try:
                 os.replace(tmp, path)
@@ -496,19 +538,19 @@ def apply(manifest: Manifest, source: Source, chosen: Dict[str, bytes], state: S
     for rel in sorted(chosen):
         if rel in (FILES, VERSION):
             continue
-        target = dest / rel
+        target = _within(dest, rel, "bundle file")
         if target.is_file() and digest(target.read_bytes()) == digest(chosen[rel]):
             continue
         write_file(target, chosen[rel])
         changed.append(rel)
     for target, src in sorted(manifest.extra_files.items()):
-        path = dest / target
+        path = _within(dest, target, "extra_files target")
         data = src.read_bytes()
         if not path.is_file() or digest(path.read_bytes()) != digest(data):
             write_file(path, data)
             changed.append(f"{target} (overlay)")
     for rel in sorted(state.removable):
-        (dest / rel).unlink()
+        _within(dest, rel, "removed file").unlink()
         changed.append(f"{rel} (removed)")
     write_file(dest / FILES, dest_manifest_text(source, chosen, manifest.adapters).encode("utf-8"))
     version = dest / VERSION
@@ -573,6 +615,9 @@ def run(manifest_path: Path, *, source: Optional[str] = None, version: Optional[
         return 1
     try:
         changed = apply(manifest, src, chosen, state)
+    except VendorError as exc:
+        out(f"error: {exc}")
+        return 2
     except OSError as exc:
         out(f"error: could not write {manifest.dest}: {exc}. Close anything holding the files and rerun: "
             "it resumes where it stopped.")
