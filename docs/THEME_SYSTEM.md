@@ -137,7 +137,7 @@ One folder is the whole contract, so every route ends in "this folder, byte for 
 
 | Route | For | How |
 |---|---|---|
-| **`forgeui` wheel** (primary) | Python apps (FastAPI, NiceGUI, Flask, Django) and any repo that can run `pip` in dev | `pip install forgeui`; `python -m forgeui vendor` copies the folder into the repo; `forgeui.head_html()` and `forgeui.mount(app)` wire it |
+| **`forgeui` wheel** (primary) | Python apps (FastAPI, NiceGUI, Flask, Django) and any repo that can run `pip` in dev | `pip install` from a release tag (not PyPI; see Procedure); `python -m forgeui vendor` copies the folder into the repo; `forgeui.head_html()` and `forgeui.mount(app)` wire it |
 | **Release zip or tarball** | Offline machines, CI caches | `python -m forgeui vendor --source forgeui-1.2.0.zip` (also takes a wheel, a repo archive or an unpacked folder) |
 | **`ui-theme/update.py`** | Apps with no `pip` | `python ui-theme/update.py` fetches the latest release from GitHub |
 | **jsDelivr** | Prototypes, single HTML files | `https://cdn.jsdelivr.net/gh/LaserLloyd/ThemeForge@v1.2.0/ui-theme/ui-theme.css`, pinned, never `@main` |
@@ -169,7 +169,9 @@ theme choice lives (it replaces the same list copied into Python, HTML and JavaS
 
 ### Procedure
 
-1. Install: `pip install "forgeui==1.2.*"` (a dev dependency is enough; pin it in the lockfile).
+1. Install: `pip install "forgeui @ git+https://github.com/LaserLloyd/ThemeForge@v1.2.0"` (a dev dependency is
+   enough; pin it in the lockfile). The wheel is not on PyPI: the name `forgeui` there belongs to an
+   unrelated project, so never run a bare `pip install forgeui`.
 2. `python -m forgeui init --dest static/ui-theme`, then edit `forgeui.json`.
 3. `python -m forgeui vendor`. It verifies every file against the bundle's `files.json` before it
    writes, replaces only files the bundle owns, removes files the new bundle dropped, leaves your

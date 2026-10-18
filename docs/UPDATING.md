@@ -8,7 +8,7 @@ Two tools do that safely, with the same guarantees (verified files, no overwriti
 ## With ForgeUI
 
 ```
-pip install --upgrade "forgeui==1.2.*"       # the version your forgeui.json accepts
+pip install --upgrade "forgeui @ git+https://github.com/LaserLloyd/ThemeForge@v1.2.0"   # the release your forgeui.json accepts (not PyPI: that name is another project)
 python -m forgeui vendor                      # write the new copy (VERSION last)
 python -m forgeui vendor --check              # CI: exit 1 when the copy drifted
 python -m forgeui vendor --source forgeui-1.2.0.zip   # offline: a release zip, wheel, archive or folder

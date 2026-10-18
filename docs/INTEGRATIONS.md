@@ -79,7 +79,8 @@ Flask templates take `filename=`:
 (and the same for the other files, in the order above). A complete FastAPI app is in
 [`examples/fastapi-jinja/`](../examples/fastapi-jinja/).
 
-With the `forgeui` package (`pip install forgeui`) the mount and the head block are one line
+With the `forgeui` package (installed from a release tag as in the README; it is not on PyPI) the
+mount and the head block are one line
 each, and the folder served is the wheel's, so there is nothing to copy:
 
 ```python

@@ -13,9 +13,16 @@
   border-bottom: 1px solid var(--border);
   background: var(--surface-1);
 }
-.spec-brand { font-family: var(--font-display); font-size: var(--fs-md); letter-spacing: var(--ls-tight); }
+.spec-brand { margin: 0; font-family: var(--font-display); font-size: var(--fs-md); letter-spacing: var(--ls-tight); }
 .spec-tabs { display: flex; flex: 1 1 420px; flex-wrap: wrap; gap: 6px; }
 .spec-tabs [role="tab"] { gap: 7px; }
+/* The selected tab looks like a pressed button; a tab carries aria-selected, never aria-pressed. */
+.spec-tabs [role="tab"][aria-selected="true"] {
+  border-color: transparent;
+  background: var(--selected);
+  color: var(--on-selected);
+  font-weight: var(--fw-semibold);
+}
 .spec-tabs [role="tab"] .spec-swatch {
   width: 10px;
   height: 10px;

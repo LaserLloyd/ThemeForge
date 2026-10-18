@@ -50,9 +50,11 @@ then run `python3 update.py --source <archive> --dest static/ui-theme` with the 
 its `ui-theme/` folder.
 <!-- install:end -->
 
-Other ways, if Python is not available:
+Other ways (pip for Python apps; the rest when Python is not available):
 
-- **pip (Python apps):** `pip install forgeui`, then `python -m forgeui init --dest static/ui-theme`,
+- **pip (Python apps):** `pip install "forgeui @ git+https://github.com/LaserLloyd/ThemeForge@v1.2.0"`
+  (the wheel is not on PyPI; that name belongs to an unrelated project), then
+  `python -m forgeui init --dest static/ui-theme`,
   edit the `forgeui.json` it writes (themes, default, storage key), and `python -m forgeui vendor`.
   Commit the folder and the manifest; `python -m forgeui vendor --check` in CI keeps the copy honest.
   `forgeui.mount(app, "/static/ui-theme")` and `forgeui.head_html_from_manifest()` serve the folder

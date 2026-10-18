@@ -19,7 +19,9 @@ Nothing is removed or renamed. The index of the rules is the new
   `forgeui.head_html()` (the head tags in the required order, with `?v=` hashes, adapters,
   overlays and a CSP nonce), `forgeui.head_html_from_manifest()` and `forgeui.mount(app)` for
   FastAPI and NiceGUI. CI builds the wheel and sdist (`python -m build`, `twine check`) on Linux
-  and Windows and vendors the examples with the built wheel.
+  and Windows and vendors the examples with the built wheel. Not on PyPI yet: the name `forgeui`
+  there belongs to an unrelated project, so the docs install from the release tag
+  (`pip install "forgeui @ git+...ThemeForge@v1.2.0"`) until the distribution is renamed or published.
 - **`python -m forgeui vendor [--version X] [--check] [--force] [--source <zip|folder>]`**, driven
   by a `forgeui.json` manifest kept in each app's own repository (`dest`, `version`, `adapters`,
   `extra_files`, `settings`): verifies `files.json` before writing, refuses to overwrite
@@ -73,6 +75,8 @@ Nothing is removed or renamed. The index of the rules is the new
 
 **Fixes**
 
+- `python -m forgeui --help` and `--version` answer even when the bundle folder is missing (they
+  say `bundle missing` instead of raising).
 - `sync_theme.py check` (and two unit tests) no longer fail on a clean checkout: sibling
   `LaserLloyd/*` links are allowed in a "Used by" section (a link to the archived UnifyingTheme
   there, or a sibling link anywhere else, is still rejected).

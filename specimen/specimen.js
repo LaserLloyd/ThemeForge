@@ -43,7 +43,6 @@
     for (var i = 0; i < tabs.length; i++) {
       var on = tabs[i].dataset.slug === slug;
       tabs[i].setAttribute('aria-selected', on ? 'true' : 'false');
-      tabs[i].setAttribute('aria-pressed', on ? 'true' : 'false');
       tabs[i].tabIndex = on ? 0 : -1;
     }
     var theme = T.theme();

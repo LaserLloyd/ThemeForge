@@ -5,7 +5,7 @@ one step: thirteen colour themes (dark, OLED black, light, a neutral default and
 pair, with automatic dark mode from the OS setting), a theme picker, design tokens, a base element layer, text standards and
 ready-made component classes, MIT licensed. Plain CSS and a small script in one folder,
 `ui-theme/`. No build step, no dependencies, any framework. The package is called **ForgeUI**
-(`pip install forgeui`); the repository, the `ui-theme/` folder and every token and class keep
+(a `pip`-installable wheel, `forgeui`); the repository, the `ui-theme/` folder and every token and class keep
 the ThemeForge names, so nothing an app depends on changes with the name.
 
 ![On, off, selected and disabled controls in every theme](docs/images/gallery.png)
@@ -59,7 +59,7 @@ For Python apps (FastAPI, NiceGUI, Flask, Django) the folder is also a wheel, an
 your repository says which copy you hold, so the copy can be checked in CI:
 
 ```
-pip install forgeui
+pip install "forgeui @ git+https://github.com/LaserLloyd/ThemeForge@v1.2.0"   # from the release tag; see the note below
 python -m forgeui init --dest static/ui-theme   # writes forgeui.json: your themes, default, storage key
 python -m forgeui vendor                        # copies the folder, verified against its checksums
 python -m forgeui vendor --check                # exit 1 when the copy drifted (CI, a unit test)
@@ -72,6 +72,10 @@ head = forgeui.head_html_from_manifest("forgeui.json", prefix="/static/ui-theme"
 ```
 
 How the manifest, versions and overlays work: [`docs/THEME_SYSTEM.md`](docs/THEME_SYSTEM.md).
+
+The wheel is **not on PyPI**: the name `forgeui` there belongs to an unrelated project, so a bare
+`pip install forgeui` installs the wrong package. Install from the release tag as above (pip builds
+the wheel from the repository; it needs `git`), or from a wheel you built with `python -m build`.
 
 Prefer not to install anything? For a prototype, load the files from jsDelivr:
 `https://cdn.jsdelivr.net/gh/LaserLloyd/ThemeForge@v1.2.0/ui-theme/ui-theme.js` (and the
