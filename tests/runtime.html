@@ -352,6 +352,17 @@
         [['Cancel', 'ui-btn'], ['OK', 'ui-btn ui-btn--danger']]);
   check('confirm: labelled by its title', d29.getElementById(dlg.getAttribute('aria-labelledby')).textContent, 'Delete?');
   if (dlg) dlg.remove();
+  {
+    // Enter that commits an IME composition (Japanese input) must not submit the prompt.
+    const answer = w29.UIComponents.prompt({ title: 'Name', value: '' });
+    const pdlg = d29.querySelector('dialog.ui-dialog');
+    const field = pdlg.querySelector('input');
+    field.value = 'にほん';
+    field.dispatchEvent(new w29.KeyboardEvent('keydown', { key: 'Enter', isComposing: true, bubbles: true, cancelable: true }));
+    check('prompt: Enter during IME composition keeps the dialog open', pdlg.open, true);
+    field.dispatchEvent(new w29.KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }));
+    check('prompt: a plain Enter submits the value', await answer, 'にほん');
+  }
 
   // 30. Printing: a dark theme prints in a light one, then comes back; nothing is stored.
   preset({ t30: 'glacier' });
@@ -582,6 +593,32 @@
     const failed = await U.copy(d.getElementById('cbtn2'));
     check('copy: failure resolves false and says so', [failed, d.getElementById('cbtn2').getAttribute('data-copied'), d.getElementById('cbtn2').textContent],
           [false, 'failed', 'Copy failed']);
+
+    // Inside a modal dialog the page behind it is inert: a textarea there cannot be focused or
+    // selected, so the fallback copied nothing, and a live region there is not spoken.
+    const mdl = d.createElement('dialog');
+    mdl.innerHTML = '<div class="ui-copy"><code class="ui-copy__value">tok-in-dialog</code>' +
+                    '<button class="ui-btn ui-copy__button" id="dbtn" type="button">Copy</button></div>';
+    d.body.appendChild(mdl);
+    mdl.showModal();
+    const seen = [];
+    Object.defineProperty(w.navigator, 'clipboard', { configurable: true, value: undefined });
+    d.execCommand = (cmd) => {
+      const ta = d.querySelector('textarea[readonly]');
+      seen.push([cmd, ta && ta.value, !!(ta && ta.closest('dialog')), d.activeElement === ta]);
+      return true;
+    };
+    d.getElementById('dbtn').focus();
+    check('copy fallback in a modal dialog: the textarea is in the dialog and focused',
+          [await U.copy(d.getElementById('dbtn')), seen], [true, [['copy', 'tok-in-dialog', true, true]]]);
+    check('copy fallback in a modal dialog: focus returns to the button', d.activeElement && d.activeElement.id, 'dbtn');
+    await tick(60);
+    check('copy in a modal dialog: announced from inside the dialog', (mdl.querySelector('[data-ui-live]') || {}).textContent, 'Copied');
+    check('copySource: a data-ui-copy that is not a selector does not throw',
+          await (async () => { const b = d.createElement('button'); b.setAttribute('data-ui-copy', '#1bad['); b.textContent = 'x';
+                               mdl.appendChild(b); try { await U.copy(b); return 'ok'; } catch (e) { return String(e); } })(), 'ok');
+    mdl.close();
+    mdl.remove();
   }
 
   // 43e. Inline field validation.
