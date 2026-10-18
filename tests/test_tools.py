@@ -205,6 +205,71 @@ class LocaleTests(unittest.TestCase):
         self.assertEqual(sorted(keys), sorted(words))
 
 
+class ThemeSystemDocTests(unittest.TestCase):
+    """docs/THEME_SYSTEM.md is the index; its theme list must equal src/themes.json."""
+
+    def setUp(self):
+        self.data = sync.load_registry()
+        self.tmp = tempfile.TemporaryDirectory()
+        self.docs = Path(self.tmp.name)
+        self.real_docs = sync.DOCS
+        sync.DOCS = self.docs
+
+    def tearDown(self):
+        sync.DOCS = self.real_docs
+        self.tmp.cleanup()
+
+    def put(self, text):
+        (self.docs / "THEME_SYSTEM.md").write_text(text, encoding="utf-8")
+
+    def real(self):
+        return (self.real_docs / "THEME_SYSTEM.md").read_text(encoding="utf-8")
+
+    def test_the_real_index_matches_the_registry(self):
+        sync.DOCS = self.real_docs
+        self.assertEqual(sync.theme_system_problems(self.data), [])
+        for t in self.data["themes"]:
+            self.assertIn(f"| `{t['slug']}` |", self.real())
+
+    def test_a_missing_file_is_a_problem(self):
+        self.assertIn("is missing", sync.theme_system_problems(self.data)[0])
+
+    def test_a_missing_block_is_a_problem(self):
+        self.put("# no block here\n")
+        self.assertIn("must hold one", sync.theme_system_problems(self.data)[0])
+
+    def test_a_dropped_theme_is_named(self):
+        text = "\n".join(line for line in self.real().splitlines() if not line.startswith("| `slate` |")) + "\n"
+        self.put(text)
+        problems = sync.theme_system_problems(self.data)
+        self.assertEqual(len(problems), 1)
+        self.assertIn("missing slate", problems[0])
+
+    def test_an_unknown_theme_is_named(self):
+        text = self.real().replace("| `slate` | Slate |", "| `slate` | Slate |\n| `bogus` | Bogus | dark | core | `bogus` | standard |", 1)
+        self.put(text)
+        self.assertIn("not in the registry: bogus", sync.theme_system_problems(self.data)[0])
+
+    def test_a_reordered_list_is_a_problem(self):
+        lines = self.real().splitlines()
+        i = next(n for n, line in enumerate(lines) if line.startswith("| `purple` |"))
+        lines[i], lines[i + 1] = lines[i + 1], lines[i]
+        self.put("\n".join(lines) + "\n")
+        self.assertIn("order differs", sync.theme_system_problems(self.data)[0])
+
+    def test_a_stale_cell_is_a_problem_and_build_fixes_it(self):
+        self.put(self.real().replace("| high |", "| standard |", 1))
+        self.assertIn("stale", sync.theme_system_problems(self.data)[0])
+        self.assertTrue(sync.refresh_theme_system(self.data))
+        self.assertEqual(sync.theme_system_problems(self.data), [])
+        self.assertFalse(sync.refresh_theme_system(self.data), "a second refresh changes nothing")
+
+    def test_doc_consistency_reports_it(self):
+        self.put(self.real().replace("| `slate` |", "| `slate-x` |", 1))
+        problems = sync.doc_consistency(self.data)
+        self.assertTrue([p for p in problems if "theme list differs" in p], problems)
+
+
 class RegistryTests(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()

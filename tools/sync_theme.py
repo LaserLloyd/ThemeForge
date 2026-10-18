@@ -552,12 +552,76 @@ def doc_files(data: dict) -> dict[str, str]:
 
 
 INSTALL_BLOCK = re.compile(r"<!-- install:start -->.*?<!-- install:end -->", re.S)
+THEME_SYSTEM = "THEME_SYSTEM.md"
+THEMES_BLOCK = re.compile(r"<!-- themes:start -->.*?<!-- themes:end -->", re.S)
+GROUND_LABEL = {"oled": "OLED", "dark": "dark", "light": "light"}
 MD_LINK = re.compile(r"\]\(([^)\s]+)\)")
 PINNED = re.compile(r"ThemeForge@v(\d+\.\d+\.\d+)|/ThemeForge/v(\d+\.\d+\.\d+)/|ui-theme#v(\d+\.\d+\.\d+)")
 USED_BY = re.compile(r"^#{2,3}\s+Used by\s*$.*?(?=^#{1,3}\s|\Z)", re.S | re.M)
 #: Repositories that are never a valid link target, even in a "Used by" list.
 DEAD_SLUGS = {"laserlloyd/unifyingtheme"}
 REPO_SLUG = re.compile(r"github(?:usercontent)?\.com/([A-Za-z0-9-]+/[A-Za-z0-9._-]+?)(?=[/@#)\s'\"]|\.git|$)")
+
+
+def theme_system_block(data: dict) -> str:
+    """The generated theme list inside docs/THEME_SYSTEM.md: one row per theme in
+    src/themes.json, so the index can never name a theme the registry lacks."""
+    themes = data["themes"]
+    cc = contrast_module()
+    base = cc.load_base_props(read(CSS / "theme-base.css"))
+    lines = ["<!-- themes:start -->",
+             f"Release **{data['version']}**: {len(themes)} themes sharing {len(base)} tokens "
+             "(the contract, counting the shared geometry, type and motion tokens).",
+             "",
+             "| Slug | Name | Ground | Set | Family | Contrast profile |",
+             "|---|---|---|---|---|---|"]
+    for t in themes:
+        lines.append(f"| `{t['slug']}` | {t['name']} | {GROUND_LABEL[t['ground']]} | {t['set']} | `{t['family']}` | "
+                     f"{t.get('contrastProfile', 'standard')} |")
+    lines.append("<!-- themes:end -->")
+    return "\n".join(lines)
+
+
+def refresh_theme_system(data: dict) -> bool:
+    """Rewrite the generated block of docs/THEME_SYSTEM.md. True when the file changed."""
+    path = DOCS / THEME_SYSTEM
+    if not path.is_file():
+        return False
+    text = read(path)
+    if len(THEMES_BLOCK.findall(text)) != 1:
+        return False
+    new = THEMES_BLOCK.sub(lambda _m: theme_system_block(data), text)
+    if lf(new) == lf(text):
+        return False
+    with open(path, "w", encoding="utf-8", newline="\n") as fh:
+        fh.write(lf(new))
+    return True
+
+
+def theme_system_problems(data: dict) -> list[str]:
+    """docs/THEME_SYSTEM.md must exist and its theme list must equal src/themes.json."""
+    path = DOCS / THEME_SYSTEM
+    rel = f"docs/{THEME_SYSTEM}"
+    if not path.is_file():
+        return [f"{rel} is missing (the index of the token contract, the themes and the vendoring procedure)"]
+    text = lf(read(path))
+    blocks = THEMES_BLOCK.findall(text)
+    if len(blocks) != 1:
+        return [f"{rel} must hold one <!-- themes:start/end --> block"]
+    listed = re.findall(r"^\| `([a-z0-9-]+)` \|", blocks[0], re.M)
+    wanted = [t["slug"] for t in data["themes"]]
+    problems = []
+    if listed != wanted:
+        missing = [x for x in wanted if x not in listed]
+        extra = [x for x in listed if x not in wanted]
+        problems.append(f"{rel}: theme list differs from src/themes.json"
+                        + (f" (missing {', '.join(missing)})" if missing else "")
+                        + (f" (not in the registry: {', '.join(extra)})" if extra else "")
+                        + (" (order differs)" if not missing and not extra else "")
+                        + "; run `python tools/sync_theme.py build`")
+    elif blocks[0] != theme_system_block(data):
+        problems.append(f"{rel}: the generated theme block is stale; run `python tools/sync_theme.py build`")
+    return problems
 
 
 def repo_link_problems(text: str, rel: str) -> list[str]:
@@ -607,6 +671,7 @@ def doc_consistency(data: dict) -> list[str]:
                 problems.append(f"{rel}: broken link {target}")
     if f"## {data['version']}" not in read(ROOT / "CHANGELOG.md"):
         problems.append(f"CHANGELOG.md has no '## {data['version']}' entry")
+    problems += theme_system_problems(data)
     return problems
 
 
@@ -766,6 +831,8 @@ def cmd_build(args) -> int:
                 if rel.startswith("swatch-") and f"images/{rel}" not in files:
                     (folder / "images" / rel).unlink()
             write_all(folder, files, args.quiet)
+    if refresh_theme_system(data):
+        print(f"docs/{THEME_SYSTEM} (theme list refreshed)")
     for problem in doc_consistency(data):
         print("WARN", problem)
     print(open(BUNDLE / "VERSION", encoding="utf-8").read().strip())

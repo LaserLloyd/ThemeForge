@@ -94,6 +94,7 @@ states read by shape as well as colour in every theme. More in
 ## Documentation
 
 - [`AGENTS.md`](AGENTS.md): add the theme to an app, step by step (for agents and people)
+- [`docs/THEME_SYSTEM.md`](docs/THEME_SYSTEM.md): the index: token contract rules, the themes, the versioning policy and how to vendor the folder
 - [`docs/TOKENS.md`](docs/TOKENS.md): every token, by group
 - [`docs/COMPONENTS.md`](docs/COMPONENTS.md): every component class, with markup
 - [`docs/TEXT.md`](docs/TEXT.md): text tiers and the markdown style
