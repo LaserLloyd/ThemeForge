@@ -168,6 +168,42 @@ class DocGateTests(unittest.TestCase):
         self.assertEqual([p for p in sync.doc_consistency(sync.load_registry()) if "links" in p], [])
 
 
+class LocaleTests(unittest.TestCase):
+    """The shipped word tables: every language has every key, placeholders survive."""
+
+    def tables(self):
+        return {p.stem: json.loads(p.read_text(encoding="utf-8")) for p in sorted((ROOT / "src" / "locales").glob("*.json"))}
+
+    def test_en_and_ja_are_shipped(self):
+        bundle = sync.bundle_files(sync.load_registry())
+        self.assertIn("locales/en.json", bundle)
+        self.assertIn("locales/ja.json", bundle)
+
+    def test_every_language_has_exactly_the_english_keys(self):
+        tables = self.tables()
+        for name, table in tables.items():
+            self.assertEqual(sorted(table), sorted(tables["en"]), name)
+            self.assertEqual(table["$locale"], name)
+
+    def test_values_are_filled_and_keep_placeholders(self):
+        import re
+        tables = self.tables()
+        for name, table in tables.items():
+            for key, value in table.items():
+                self.assertIsInstance(value, str, f"{name}.{key}")
+                self.assertTrue(value.strip(), f"{name}.{key}")
+                self.assertEqual(sorted(re.findall(r"\{\w+\}", value)),
+                                 sorted(re.findall(r"\{\w+\}", tables["en"][key])), f"{name}.{key}")
+
+    def test_js_defaults_name_the_same_keys(self):
+        import re
+        source = (ROOT / "src" / "ui-components.js").read_text(encoding="utf-8")
+        block = source[source.index("var DEFAULTS = {"):source.index("};", source.index("var DEFAULTS = {"))]
+        keys = re.findall(r"^\s{4}(\w+):", block, re.M)
+        words = {k: v for k, v in self.tables()["en"].items() if not k.startswith("$")}
+        self.assertEqual(sorted(keys), sorted(words))
+
+
 class RegistryTests(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()

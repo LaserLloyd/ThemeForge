@@ -27,6 +27,7 @@ What build writes into ui-theme/:
   ui-theme.d.ts       TypeScript declarations for the two globals (src/ui-theme.d.ts)
   ui-theme.css        tokens: Purple's :root, every theme block, locale overrides
   adapters/           framework adapters (adapters/*.css, *.js)
+  locales/            words ui-components.js puts on the page, one JSON file per language (src/locales)
   themes.json         the registry, for server-side pickers
   update.py           the installer/updater (tools/update.py)
   README.md           how to use the folder (src/bundle-README.md)
@@ -390,6 +391,8 @@ def bundle_files(data: dict) -> dict[str, str]:
     if (SRC / "ui-components.js").is_file():
         helpers = read(SRC / "ui-components.js")
         files["ui-components.js"] = header("component helpers", helpers, version) + helpers
+    for path in sorted((SRC / "locales").glob("*.json")):
+        files[f"locales/{path.name}"] = read(path)
     for path in sorted(ADAPTERS.iterdir()):
         if path.is_file() and path.suffix in (".css", ".js"):
             body = read(path)

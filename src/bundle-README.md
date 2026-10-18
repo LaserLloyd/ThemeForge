@@ -16,7 +16,8 @@ app's own styles in your app's own CSS files.
 | `ui-theme-base.css` | element defaults (body type, links, focus ring, scrollbars, selection), text tiers `.ui-text-*`, markdown `.ui-markdown` | `<link>` **before** your CSS |
 | `ui-components.css` | component classes: `.ui-btn`, `.ui-input`, `.ui-card`, `.ui-switch`, `.ui-dialog`, ... | `<link>` **before** your CSS |
 | `ui-theme.css` | the colour tokens of every theme | `<link>` **after** your CSS |
-| `ui-components.js` | optional: themed `confirm()`/`alert()`/`prompt()` dialogs and toasts | `<script defer>` anywhere |
+| `ui-components.js` | optional: themed `confirm()`/`alert()`/`prompt()` dialogs and toasts, copy-to-clipboard, inline field validation, settings-row wiring, translatable words | `<script defer>` anywhere |
+| `locales/en.json`, `locales/ja.json` | the words `ui-components.js` puts on the page, per language | `UIComponents.loadLocale('ja')` or `data-locale="auto"` on its script tag |
 | `adapters/quasar.js`, `adapters/quasar.css` | NiceGUI / Quasar apps only | JS right after `ui-theme.js`, CSS right after `ui-theme.css` |
 | `adapters/tailwind.css` | Tailwind CSS v4 apps: `bg-surface-2`, `text-fg`, ... | `@import` it after `tailwindcss` |
 | `adapters/tailwind-v3.preset.js` | Tailwind CSS v3: the same names as a preset | `presets: [require(...)]` in `tailwind.config.js` |
@@ -85,7 +86,8 @@ Components (all in `ui-components.css`): `.ui-btn` (`--primary`, `--ghost`, `--o
 `.ui-badge` (+ status variants), `.ui-dot`, `.ui-count`; `.ui-callout` (+ `--info`,
 `--success`, `--warning`, `--danger`); `.ui-tabs`/`.ui-tab`, `.ui-segmented`; `.ui-table`
 in `.ui-table-wrap`; `.ui-dialog`, `.ui-menu`, `[data-ui-tooltip]`, `.ui-toast`;
-`.ui-progress`, `.ui-spinner`, `.ui-skeleton`; `.ui-codeblock`; `.ui-app` shell with
+`.ui-progress`, `.ui-progress-row` (with a cancel slot), `.ui-spinner`, `.ui-skeleton`; `.ui-codeblock`;
+`.ui-settings`/`.ui-setting` rows, `.ui-copy`, `.ui-empty` with an actions slot; `.ui-app` shell with
 `__header`, `__nav`, `__main`; `.ui-nav__item`; `.ui-stack`, `.ui-row`, `.ui-grid`. State
 comes from attributes: `disabled`, `checked`, `aria-pressed`, `aria-selected`,
 `aria-current`, `aria-invalid`, `aria-busy`.
