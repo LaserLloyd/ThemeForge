@@ -140,6 +140,27 @@ class PackageTests(Base):
         self.assertEqual(forgeui.mount(Fake(), "theme"), "/theme")
         self.assertEqual(calls, [("/theme", BUNDLE, {"max_cache_age": 0})])
 
+    def test_mount_serves_the_vendored_copy_that_head_from_manifest_names(self):
+        # The documented pair: vendor (with an overlay), head_html_from_manifest, mount. The head
+        # names the overlay, which exists only in the vendored copy, so mount must serve that copy.
+        self.manifest(extra_files={"adapters/m-extra.css": "overlay.css"})
+        (self.repo / "overlay.css").write_text(".m { padding: 1px; }\n", encoding="utf-8")
+        self.assertEqual(run_vendor(cwd=self.repo)[0], 0)
+        head = forgeui.head_html_from_manifest(self.repo / "forgeui.json", prefix="/static/ui-theme")
+        self.assertIn("/static/ui-theme/adapters/m-extra.css", head)
+        self.assertFalse((BUNDLE / "adapters" / "m-extra.css").exists(), "the package copy has no overlay")
+        calls = []
+
+        class Fake:
+            def add_static_files(self, url, directory, **kw):
+                calls.append((url, Path(directory)))
+
+        forgeui.mount(Fake(), "/static/ui-theme", folder=self.dest)
+        self.assertEqual(calls, [("/static/ui-theme", self.dest.resolve())])
+        self.assertTrue((calls[0][1] / "adapters" / "m-extra.css").is_file())
+        with self.assertRaises(FileNotFoundError):
+            forgeui.mount(Fake(), "/x", folder=self.repo / "nowhere")
+
     def test_mount_old_nicegui_without_cache_argument(self):
         calls = []
 
