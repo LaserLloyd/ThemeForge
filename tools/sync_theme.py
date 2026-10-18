@@ -3,18 +3,21 @@
 
     python tools/sync_theme.py build      regenerate ui-theme/, tokens/ and the generated docs
     python tools/sync_theme.py check      exit 1 if any generated file is stale (and check app copies)
-    python tools/sync_theme.py install --to DIR
-                                          copy ui-theme/ into DIR (a folder in your app)
-    python tools/sync_theme.py install [<app> ...] --apps REGISTRY [--dest REPO]
-                                          copy ui-theme/ into apps listed in a registry
+    python tools/sync_theme.py install --to DIR      DEPRECATED, see below
+    python tools/sync_theme.py install [<app> ...] --apps REGISTRY [--dest REPO]   DEPRECATED
     python tools/sync_theme.py list       themes, and apps when a registry is given
+
+DEPRECATED: `install` (to a folder, or to apps in a machine-local registry) is replaced by
+`python -m forgeui vendor`, driven by a forgeui.json manifest that lives in each app's own
+repository (docs/THEME_SYSTEM.md). The old command still works and prints a deprecation
+message; it will be removed in the next major version.
 
 Everything an app needs is ONE folder, ui-theme/ at the repository root. It
 is generated from src/ and adapters/ and is the same bytes for every app;
 each app sets its own options (themes, default, storage key) as data-*
 attributes on the <script> tag that loads ui-theme.js. So an update is a new
 copy of the folder: `ui-theme/update.py` inside any copy pulls one from
-GitHub, and `install` copies this checkout's folder into apps on this machine.
+GitHub, and `python -m forgeui vendor` copies it into an app repository from a manifest.
 
 What build writes into ui-theme/:
   ui-theme.js         the runtime with the theme registry; a blocking <script> in <head>
@@ -24,13 +27,14 @@ What build writes into ui-theme/:
   ui-theme.d.ts       TypeScript declarations for the two globals (src/ui-theme.d.ts)
   ui-theme.css        tokens: Purple's :root, every theme block, locale overrides
   adapters/           framework adapters (adapters/*.css, *.js)
+  locales/            words ui-components.js puts on the page, one JSON file per language (src/locales)
   themes.json         the registry, for server-side pickers
   update.py           the installer/updater (tools/update.py)
   README.md           how to use the folder (src/bundle-README.md)
   VERSION             "ThemeForge <version> <hash>"
   files.json          sha256 of every file above (LF line endings), read by update.py
 
-App registry (optional; for people who keep several apps on one machine):
+App registry (DEPRECATED; use forgeui.json and `python -m forgeui vendor`):
 a folder of <app>.json files, OUTSIDE this repository, named with --apps or
 the UI_THEME_APPS environment variable. Each file:
 
@@ -387,6 +391,8 @@ def bundle_files(data: dict) -> dict[str, str]:
     if (SRC / "ui-components.js").is_file():
         helpers = read(SRC / "ui-components.js")
         files["ui-components.js"] = header("component helpers", helpers, version) + helpers
+    for path in sorted((SRC / "locales").glob("*.json")):
+        files[f"locales/{path.name}"] = read(path)
     for path in sorted(ADAPTERS.iterdir()):
         if path.is_file() and path.suffix in (".css", ".js"):
             body = read(path)
@@ -454,7 +460,9 @@ def tokens_doc(data: dict) -> str:
         "Core groups are what most apps use; extension groups exist for apps that need them.",
         "",
         "Contrast floors every theme meets (`tools/check_contrast.py`; the night profile, used",
-        "by Night Red, lowers the text floors as noted in [THEMES.md](THEMES.md)):",
+        "by Night Red, lowers the text floors, and the high profile, used by the High Contrast pair,",
+        "raises them to 7:1 for every text colour and 4.5:1 for edges and indicators, as noted in",
+        "[THEMES.md](THEMES.md)):",
         "",
         "| Pair | Floor |",
         "|---|---|",
@@ -546,9 +554,91 @@ def doc_files(data: dict) -> dict[str, str]:
 
 
 INSTALL_BLOCK = re.compile(r"<!-- install:start -->.*?<!-- install:end -->", re.S)
+THEME_SYSTEM = "THEME_SYSTEM.md"
+THEMES_BLOCK = re.compile(r"<!-- themes:start -->.*?<!-- themes:end -->", re.S)
+GROUND_LABEL = {"oled": "OLED", "dark": "dark", "light": "light"}
 MD_LINK = re.compile(r"\]\(([^)\s]+)\)")
 PINNED = re.compile(r"ThemeForge@v(\d+\.\d+\.\d+)|/ThemeForge/v(\d+\.\d+\.\d+)/|ui-theme#v(\d+\.\d+\.\d+)")
+USED_BY = re.compile(r"^#{2,3}\s+Used by\s*$.*?(?=^#{1,3}\s|\Z)", re.S | re.M)
+#: Repositories that are never a valid link target, even in a "Used by" list.
+DEAD_SLUGS = {"laserlloyd/unifyingtheme"}
 REPO_SLUG = re.compile(r"github(?:usercontent)?\.com/([A-Za-z0-9-]+/[A-Za-z0-9._-]+?)(?=[/@#)\s'\"]|\.git|$)")
+
+
+def theme_system_block(data: dict) -> str:
+    """The generated theme list inside docs/THEME_SYSTEM.md: one row per theme in
+    src/themes.json, so the index can never name a theme the registry lacks."""
+    themes = data["themes"]
+    cc = contrast_module()
+    base = cc.load_base_props(read(CSS / "theme-base.css"))
+    lines = ["<!-- themes:start -->",
+             f"Release **{data['version']}**: {len(themes)} themes sharing {len(base)} tokens "
+             "(the contract, counting the shared geometry, type and motion tokens).",
+             "",
+             "| Slug | Name | Ground | Set | Family | Contrast profile |",
+             "|---|---|---|---|---|---|"]
+    for t in themes:
+        lines.append(f"| `{t['slug']}` | {t['name']} | {GROUND_LABEL[t['ground']]} | {t['set']} | `{t['family']}` | "
+                     f"{t.get('contrastProfile', 'standard')} |")
+    lines.append("<!-- themes:end -->")
+    return "\n".join(lines)
+
+
+def refresh_theme_system(data: dict) -> bool:
+    """Rewrite the generated block of docs/THEME_SYSTEM.md. True when the file changed."""
+    path = DOCS / THEME_SYSTEM
+    if not path.is_file():
+        return False
+    text = read(path)
+    if len(THEMES_BLOCK.findall(text)) != 1:
+        return False
+    new = THEMES_BLOCK.sub(lambda _m: theme_system_block(data), text)
+    if lf(new) == lf(text):
+        return False
+    with open(path, "w", encoding="utf-8", newline="\n") as fh:
+        fh.write(lf(new))
+    return True
+
+
+def theme_system_problems(data: dict) -> list[str]:
+    """docs/THEME_SYSTEM.md must exist and its theme list must equal src/themes.json."""
+    path = DOCS / THEME_SYSTEM
+    rel = f"docs/{THEME_SYSTEM}"
+    if not path.is_file():
+        return [f"{rel} is missing (the index of the token contract, the themes and the vendoring procedure)"]
+    text = lf(read(path))
+    blocks = THEMES_BLOCK.findall(text)
+    if len(blocks) != 1:
+        return [f"{rel} must hold one <!-- themes:start/end --> block"]
+    listed = re.findall(r"^\| `([a-z0-9-]+)` \|", blocks[0], re.M)
+    wanted = [t["slug"] for t in data["themes"]]
+    problems = []
+    if listed != wanted:
+        missing = [x for x in wanted if x not in listed]
+        extra = [x for x in listed if x not in wanted]
+        problems.append(f"{rel}: theme list differs from src/themes.json"
+                        + (f" (missing {', '.join(missing)})" if missing else "")
+                        + (f" (not in the registry: {', '.join(extra)})" if extra else "")
+                        + (" (order differs)" if not missing and not extra else "")
+                        + "; run `python tools/sync_theme.py build`")
+    elif blocks[0] != theme_system_block(data):
+        problems.append(f"{rel}: the generated theme block is stale; run `python tools/sync_theme.py build`")
+    return problems
+
+
+def repo_link_problems(text: str, rel: str) -> list[str]:
+    """Every GitHub link to a LaserLloyd repository must name this one. A
+    "Used by" section is the exception: it names sibling products on purpose,
+    so links there are allowed, except to a repository that no longer exists."""
+    problems = []
+    for slug in REPO_SLUG.findall(USED_BY.sub("", text)):
+        slug = slug.rstrip(".")
+        if slug.lower().startswith("laserlloyd/") and slug != REPO:
+            problems.append(f"{rel}: links {slug}, the repository is {REPO}")
+    for slug in REPO_SLUG.findall("".join(USED_BY.findall(text))):
+        if slug.rstrip(".").lower() in DEAD_SLUGS:
+            problems.append(f"{rel}: 'Used by' links {slug.rstrip('.')}, which is archived")
+    return problems
 
 
 def doc_consistency(data: dict) -> list[str]:
@@ -570,10 +660,7 @@ def doc_consistency(data: dict) -> list[str]:
             pinned = m.group(1) or m.group(2) or m.group(3)
             if pinned != data["version"]:
                 problems.append(f"{rel}: pins v{pinned}, the version is {data['version']}")
-        for slug in REPO_SLUG.findall(text):
-            slug = slug.rstrip(".")
-            if slug.lower().startswith("laserlloyd/") and slug != REPO:
-                problems.append(f"{rel}: links {slug}, the repository is {REPO}")
+        problems += repo_link_problems(text, rel)
     for path in docs + [ROOT / "CHANGELOG.md", ROOT / "CLAUDE.md"]:
         if not path.is_file():
             continue
@@ -586,6 +673,7 @@ def doc_consistency(data: dict) -> list[str]:
                 problems.append(f"{rel}: broken link {target}")
     if f"## {data['version']}" not in read(ROOT / "CHANGELOG.md"):
         problems.append(f"CHANGELOG.md has no '## {data['version']}' entry")
+    problems += theme_system_problems(data)
     return problems
 
 
@@ -718,12 +806,20 @@ def mirror(folder: Path, files: dict[str, str], quiet: bool = False) -> None:
 # ---------------------------------------------------------------- commands
 
 
+def forgeui_files(data: dict) -> dict[str, str]:
+    """The one generated file of the forgeui/ package: its version, which hatchling reads."""
+    lines = ['"""Generated by tools/sync_theme.py build from src/themes.json. Do not edit."""',
+             "", f'__version__ = "{data["version"]}"', ""]
+    return {"_version.py": "\n".join(lines)}
+
+
 def generated(data: dict) -> list[tuple[str, Path, dict[str, str], bool]]:
     """(label, folder, files, owned). An owned folder holds nothing but
-    generated files and is mirrored; docs/ also holds hand-written pages."""
+    generated files and is mirrored; docs/ and forgeui/ also hold hand-written files."""
     return [("ui-theme/", BUNDLE, bundle_files(data), True),
             ("tokens/", TOKENS, token_files(data), True),
-            ("docs/", DOCS, doc_files(data), False)]
+            ("docs/", DOCS, doc_files(data), False),
+            ("forgeui/", ROOT / "forgeui", forgeui_files(data), False)]
 
 
 def cmd_build(args) -> int:
@@ -737,16 +833,24 @@ def cmd_build(args) -> int:
                 if rel.startswith("swatch-") and f"images/{rel}" not in files:
                     (folder / "images" / rel).unlink()
             write_all(folder, files, args.quiet)
+    if refresh_theme_system(data):
+        print(f"docs/{THEME_SYSTEM} (theme list refreshed)")
     for problem in doc_consistency(data):
         print("WARN", problem)
     print(open(BUNDLE / "VERSION", encoding="utf-8").read().strip())
     return 0
 
 
+DEPRECATION = ("deprecated: `sync_theme.py install` is replaced by `python -m forgeui vendor`, which reads a "
+               "forgeui.json kept in each app's own repository (no machine-local registry, overlays never "
+               "appended into bundle files). See docs/THEME_SYSTEM.md. This command still works.")
+
+
 def cmd_install(args) -> int:
     """Copy the bundle folder, as build would write it, into a folder or into
     registered apps. Refuses a stale ui-theme/ so nothing receives a bundle
-    that build would not produce."""
+    that build would not produce. Deprecated: use `python -m forgeui vendor`."""
+    print(DEPRECATION, file=sys.stderr)
     data = load_registry()
     expected = bundle_files(data)
     stale = folder_drift(BUNDLE, expected)

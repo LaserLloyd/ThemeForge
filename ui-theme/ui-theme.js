@@ -1,7 +1,7 @@
-/* GENERATED theme runtime: ThemeForge 1.1.2, drop-in bundle (ui-theme/).
+/* GENERATED theme runtime: ThemeForge 1.2.0, drop-in bundle (ui-theme/).
    https://github.com/LaserLloyd/ThemeForge . Do not edit this copy: update the whole
    folder (python ui-theme/update.py) and keep app styles in the app.
-   body sha256: 313424dddaa27770 */
+   body sha256: b96862481d771124 */
 /* ============================================================================
    ui-theme.js — the theme runtime · ThemeForge
    ----------------------------------------------------------------------------
@@ -35,7 +35,7 @@
      - validates the slug against the enabled list, falling back to the default;
      - sets <html data-palette>, or removes it for Purple (the :root base);
      - sets the derived <html data-theme>: amoled | dark | light;
-     - sets <html data-contrast-profile>: standard | night (the theme's
+     - sets <html data-contrast-profile>: standard | high | night (the theme's
        contrast profile, so component CSS can adapt to a night theme
        without naming a slug);
      - updates <meta name="theme-color"> (created if missing) and any
@@ -61,6 +61,9 @@
     {"slug": "forest", "name": "Forest", "family": "forest", "ground": "oled", "colorScheme": "dark", "themeColor": "#000000", "set": "core", "swatch": "#b5d59b", "fonts": ["Inter", "JetBrains Mono"], "contrastProfile": "standard"},
     {"slug": "paper", "name": "Paper", "family": "paper", "ground": "light", "colorScheme": "light", "themeColor": "#e6d2a8", "set": "core", "swatch": "#a3241c", "fonts": ["Inter", "JetBrains Mono"], "contrastProfile": "standard"},
     {"slug": "daylight", "name": "Daylight", "family": "daylight", "ground": "light", "colorScheme": "light", "themeColor": "#ffffff", "set": "core", "swatch": "#2c56c9", "fonts": ["Inter", "JetBrains Mono"], "contrastProfile": "standard"},
+    {"slug": "slate", "name": "Slate", "family": "slate", "ground": "dark", "colorScheme": "dark", "themeColor": "#0f1318", "set": "core", "swatch": "#2f6db3", "fonts": ["Inter", "JetBrains Mono"], "contrastProfile": "standard"},
+    {"slug": "high-contrast", "name": "High Contrast", "family": "high-contrast", "ground": "dark", "colorScheme": "dark", "themeColor": "#000000", "set": "core", "swatch": "#ffd400", "fonts": ["Inter", "JetBrains Mono"], "contrastProfile": "high"},
+    {"slug": "high-contrast-light", "name": "High Contrast Light", "family": "high-contrast", "ground": "light", "colorScheme": "light", "themeColor": "#ffffff", "set": "core", "swatch": "#1a47c8", "fonts": ["Inter", "JetBrains Mono"], "contrastProfile": "high"},
     {"slug": "electric-yellow", "name": "Electric Yellow", "family": "electric-yellow", "ground": "dark", "colorScheme": "dark", "themeColor": "#0a0a0b", "set": "opt-in", "swatch": "#e8ff00", "fonts": ["Archivo", "JetBrains Mono"], "contrastProfile": "standard"},
     {"slug": "laserlloyd", "name": "LaserLloyd", "family": "laserlloyd", "ground": "dark", "colorScheme": "dark", "themeColor": "#080a0d", "set": "opt-in", "swatch": "#2ea8ff", "fonts": ["Inter", "Space Grotesk"], "contrastProfile": "standard"},
     {"slug": "laserlloyd-light", "name": "LaserLloyd Light", "family": "laserlloyd", "ground": "light", "colorScheme": "light", "themeColor": "#f2f5f9", "set": "opt-in", "swatch": "#0b78d0", "fonts": ["Inter", "Space Grotesk"], "contrastProfile": "standard"},
@@ -545,7 +548,7 @@
   /* ---- API ----
      UITheme.current()              -> active slug
      UITheme.theme([slug])          -> metadata copy (active theme by default),
-                                       incl. contrastProfile: 'standard' | 'night'
+                                       incl. contrastProfile: 'standard' | 'high' | 'night'
      UITheme.list()                 -> enabled themes, picker order
      UITheme.set(slug)              -> apply + persist; unknown/disabled -> default
      UITheme.reset()                -> forget the choice; back to the default
@@ -561,7 +564,7 @@
      UITheme.mountPicker(target[, {label, coreLabel, optInLabel, systemLabel}]) -> the <select>
      document 'ui-theme-change' event carries the same detail as onChange. */
   global.UITheme = {
-    version: /*@version*/'1.1.2',
+    version: /*@version*/'1.2.0',
     config: config,
     current: function () { return current; },
     theme: function (slug) { var t = find(slug || current); return t ? copy(t) : null; },
