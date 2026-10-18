@@ -1,11 +1,11 @@
 {
   "name": "ThemeForge",
   "version": "1.2.0",
-  "hash": "82d997e2846d",
+  "hash": "e4e20337c36b",
   "repo": "LaserLloyd/ThemeForge",
   "files": {
     "README.md": "5c174f5acca3afad6bf2fd66639361dfe0aff7cab8c1c8258006409674d5e85b",
-    "VERSION": "20b8a2609380ddef534e69536e47dcce7fb497fd6896175ff93780150a2bda00",
+    "VERSION": "cce843177fd6ab04e8d37488b62a6e89a2ff0217e941c414ff14e519472ec19e",
     "adapters/quasar.css": "cc9de8a7f3ad7b344c374ab9b830083ec91ee63cd580058f36bc5c4456b828d0",
     "adapters/quasar.js": "77b95e5eabfbac49bee57586553e6fa1cab8381cdb84051be6bbcb49f2da84d1",
     "adapters/tailwind-v3.preset.js": "6f8e2d4a399edb87bb85355d7805436ed442198ff6977bed6a87fb5d883bc46c",
@@ -19,6 +19,6 @@
     "ui-theme.css": "5fdf4891f7f59b27395d0e409e7834781cf3cf61bbbfb49c3ee868074cee689f",
     "ui-theme.d.ts": "7e7b6be2ee7626a52cf85cb2136115a3cc2c59466c07a5c529883ba7207d59ee",
     "ui-theme.js": "36dcd1503c4442a8780e6390752db598a086eb4694f22e85bccf2d1010a8eb20",
-    "update.py": "e44ece9810c55b339628d3c0b57760ea78f050b9a90a0cd072c428e29983b922"
+    "update.py": "7072e183af74dbeaced95137d389603586f54581d7ac6a8c7781fa3264269f1f"
   }
 }

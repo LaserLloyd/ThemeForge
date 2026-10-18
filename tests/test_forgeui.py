@@ -10,6 +10,7 @@ from __future__ import annotations
 import contextlib
 import io
 import json
+import os
 import re
 import shutil
 import sys
@@ -332,6 +333,84 @@ class VendorTests(Base):
         self.assertEqual(run_vendor(cwd=self.repo)[0], 2)
         self.manifest(extra_files={"adapters/a-extra.css": "../o.css"})
         self.assertEqual(run_vendor(cwd=self.repo)[0], 2)
+
+    def test_tampered_copy_files_json_cannot_delete_outside_the_copy(self):
+        # The copy's files.json is committed in the consumer's repository; its entries decide
+        # what vendor removes, so a crafted entry must not reach outside the copy.
+        self.manifest()
+        self.assertEqual(run_vendor(cwd=self.repo)[0], 0)
+        victim = self.repo / "pyproject.toml"
+        victim.write_text("keep", encoding="utf-8")
+        table = json.loads((self.dest / "files.json").read_text(encoding="utf-8"))
+        table["files"]["../../pyproject.toml"] = vendor.digest(b"keep")
+        (self.dest / "files.json").write_text(json.dumps(table), encoding="utf-8")
+        for flags in ((), ("--force",)):
+            code, out = run_vendor(*flags, cwd=self.repo)
+            self.assertEqual(code, 2, out)
+            self.assertIn("pyproject.toml", out)
+            self.assertTrue(victim.is_file(), flags)
+        self.assertEqual(run_vendor("--check", cwd=self.repo)[0], 2)
+
+    def _symlink(self, link: Path, target: Path, is_dir: bool = False) -> None:
+        try:
+            link.symlink_to(target, target_is_directory=is_dir)
+        except (OSError, NotImplementedError) as exc:  # Windows without developer mode
+            self.skipTest(f"cannot create symlinks here: {exc}")
+
+    def test_overlay_source_linking_outside_the_repo_is_refused(self):
+        secret = Path(self.tmp.name) / "secret.env"
+        secret.write_text("TOKEN=1\n", encoding="utf-8")
+        self._symlink(self.repo / "overlay.css", secret)
+        self.manifest(extra_files={"adapters/app-extra.css": "overlay.css"})
+        code, out = run_vendor(cwd=self.repo)
+        self.assertEqual(code, 2, out)
+        self.assertIn("outside", out)
+        self.assertFalse((self.dest / "adapters" / "app-extra.css").exists())
+
+    def test_a_linked_subfolder_of_the_copy_is_not_written_through(self):
+        self.manifest()
+        self.assertEqual(run_vendor(cwd=self.repo)[0], 0)
+        elsewhere = Path(self.tmp.name) / "elsewhere"
+        elsewhere.mkdir()
+        shutil.rmtree(self.dest / "adapters")
+        self._symlink(self.dest / "adapters", elsewhere, is_dir=True)
+        code, out = run_vendor("--force", cwd=self.repo)
+        self.assertEqual(code, 2, out)
+        self.assertIn("outside", out)
+        self.assertEqual(list(elsewhere.iterdir()), [])
+
+    def test_an_app_file_named_like_a_new_bundle_file_is_not_overwritten(self):
+        # A copy from a release without locales/ja.json; the app had put its own file there.
+        self.manifest()
+        self.assertEqual(run_vendor(cwd=self.repo)[0], 0)
+        table = json.loads((self.dest / "files.json").read_text(encoding="utf-8"))
+        del table["files"]["locales/ja.json"]
+        (self.dest / "files.json").write_text(json.dumps(table), encoding="utf-8")
+        own = self.dest / "locales" / "ja.json"
+        own.write_text('{"cancel": "mine"}\n', encoding="utf-8")
+        code, out = run_vendor(cwd=self.repo)
+        self.assertEqual(code, 1, out)
+        self.assertIn("locales/ja.json", out)
+        self.assertEqual(own.read_text(encoding="utf-8"), '{"cancel": "mine"}\n')
+        self.assertEqual(run_vendor("--check", cwd=self.repo)[0], 1)
+        self.assertEqual(run_vendor("--force", cwd=self.repo)[0], 0)
+        self.assertEqual(own.read_bytes(), (BUNDLE / "locales" / "ja.json").read_bytes().replace(b"\r\n", b"\n"))
+
+    @unittest.skipIf(sys.platform == "win32", "POSIX permission bits")
+    def test_written_files_are_readable_by_other_users(self):
+        # mkstemp creates 0600 files; a copy served by nginx or another user must stay readable.
+        old = os.umask(0o022)
+        try:
+            self.manifest()
+            self.assertEqual(run_vendor(cwd=self.repo)[0], 0)
+        finally:
+            os.umask(old)
+        for rel in ("ui-theme.css", "VERSION", "files.json", "locales/en.json"):
+            self.assertEqual((self.dest / rel).stat().st_mode & 0o777, 0o644, rel)
+        (self.dest / "ui-theme.css").chmod(0o640)
+        (self.dest / "ui-theme.css").write_text("/* stale */\n", encoding="utf-8")
+        self.assertEqual(run_vendor("--force", cwd=self.repo)[0], 0)
+        self.assertEqual((self.dest / "ui-theme.css").stat().st_mode & 0o777, 0o640, "an existing mode is kept")
 
     def test_unknown_manifest_key_is_a_typo_error(self):
         self.manifest(extras_files={})
