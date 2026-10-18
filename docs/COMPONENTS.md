@@ -96,6 +96,68 @@ Sizes `--sm`, `--lg`; `--block` for full width. Works on `<a>` too.
 
 `.ui-input--sm` for a compact field. Disabled fields are dashed.
 
+Inline validation: `UIComponents.validate(input, 'Enter a number from 1 to 365.')` sets
+`aria-invalid="true"`, adds a `.ui-error` after the control, points `aria-describedby` at it
+(keeping the help text's id) and announces the message politely; `validate(input, null)`
+clears all of that. Pass the `.ui-field` instead of the control if it is handier, and
+`{ focus: true }` to move focus to the first bad field on submit, or `{ announce: false }` when
+validating on every keystroke. Write errors that say what happened, why, and what to do.
+
+## Settings rows
+
+A label and description on one side, the control on the other, a "reset to default" button, a
+Basic/Advanced marker and a "set by environment" badge. The row wraps, so the control drops
+under the text when there is no room.
+
+```html
+<div class="ui-settings">
+  <div class="ui-setting" data-default="8080">
+    <div class="ui-setting__text">
+      <div class="ui-setting__label">
+        <label for="port">Port</label>
+        <span class="ui-badge ui-setting__level"></span>
+        <span class="ui-badge ui-badge--info ui-setting__env"></span>
+      </div>
+      <p class="ui-setting__desc" id="port-desc">Where the server listens.</p>
+    </div>
+    <div class="ui-setting__control">
+      <input class="ui-input" id="port" value="8081" aria-describedby="port-desc">
+      <button class="ui-btn ui-btn--ghost ui-btn--sm ui-setting__reset" type="button" hidden></button>
+    </div>
+  </div>
+  <div class="ui-setting" data-level="advanced" data-source="env" data-default="info">...</div>
+</div>
+```
+
+State is on the row: `data-default` (what reset restores), `data-level="advanced"` shows the
+Advanced marker, `data-source="env"` shows "Set by environment" and locks the control,
+`data-modified` (set for you) means "differs from the default". `data-level-filter="basic"`
+on `.ui-settings` hides the advanced rows. With `ui-components.js` loaded, rows are wired
+automatically: the reset button appears only while the value differs, restores the default
+and fires `input` and `change`; empty badges and the button get their words from the string
+table, and each reset button is named for its setting ("Reset Port to default"). For a value you
+compute, call `UIComponents.setting(row, { default: '8080', onReset(control, row) { ... } })`.
+Keep Basic settings free of jargon: say what the setting does, not how it works.
+
+## Copy to clipboard
+
+```html
+<div class="ui-copy">
+  <input class="ui-input ui-copy__value" readonly value="http://192.0.2.10:8080/v1" aria-label="Server URL">
+  <button class="ui-btn ui-copy__button" type="button"></button>
+</div>
+```
+
+The value may be a readonly input (also a password field) or any element
+(`<code class="ui-copy__value">`). With `ui-components.js` loaded the button copies on click, says
+"Copied" for a moment (`data-copied="true"`, or `"failed"` when the browser refused) and
+announces it. It uses the clipboard API where the page is a secure context and falls back to a
+hidden textarea and `execCommand('copy')` on plain `http://` addresses, where the API does not
+exist (inside an open modal `<dialog>` the textarea and the announcement are placed in the dialog,
+since the page behind it is inert). `.ui-codeblock__button` works the same way (see Code block). From script:
+`await UIComponents.copy(element | string)` resolves `true` on success. A button with
+`data-ui-copy="#other"` copies that element; `data-ui-copy="off"` opts a button out.
+
 ## Checkbox, radio, switch
 
 ```html
@@ -220,6 +282,35 @@ UIComponents.toast('Settings saved', { kind: 'success', timeout: 4000 });  // 0 
 
 All text is set as text, never HTML, so user input is safe to show.
 
+### Words and languages
+
+Every word `ui-components.js` puts on the page (Cancel, OK, Copy, Copied, Reset to default, ...)
+comes from a string table. `ui-theme/locales/en.json` lists the keys and the English defaults;
+`ja.json` is the Japanese bundle.
+
+```js
+UIComponents.setStrings({ cancel: 'Annuler', ok: 'OK' });   // merge your own words
+await UIComponents.loadLocale('ja');                         // fetch locales/ja.json (true if applied)
+```
+
+```html
+<script src="/static/ui-theme/ui-components.js" data-locale="auto" defer></script>  <!-- follows <html lang> -->
+<html lang="fr" data-ui-str-cancel="Annuler">   <!-- or on any element: its subtree uses these words -->
+```
+
+The word for a key is the first of: a `data-ui-str-<key>` attribute (kebab-case:
+`data-ui-str-copy-failed`) on the element or an ancestor, then `setStrings()` or `loadLocale()`,
+then English. `{name}` style placeholders are filled from the call (`resetNamed`: "Reset {name}
+to default"). Options passed to a call (`confirmLabel`, `cancelLabel`, `label`) still win.
+Locale files are flat JSON objects of strings; keys starting with `$` are metadata. Add a
+language by loading any URL: `loadLocale('de', '/my/de.json')`. Dates and numbers:
+`UIComponents.formatNumber(1234.5)` and `UIComponents.formatDate(date)` use `Intl` in the page's
+language (`UIComponents.locale()`).
+
+The layout is right-to-left safe (logical properties throughout) and is tested with long
+pseudo-translated words at 320px wide, so words two to three times as long as English fit without
+overflowing; give your own text the same room.
+
 ## Menu, tooltip, toast
 
 ```html
@@ -253,30 +344,61 @@ accessible name comes from `aria-label`.
 
 Animations stop under reduced motion.
 
+### Progress with cancel
+
+```html
+<div class="ui-progress-row" aria-busy="true">
+  <div class="ui-progress-row__body">
+    <div class="ui-progress-row__head">
+      <span class="ui-progress-row__label" id="job-1">Generating images</span>
+      <span class="ui-progress-row__value">42%</span>
+    </div>
+    <progress class="ui-progress" value="42" max="100" aria-labelledby="job-1"></progress>
+    <p class="ui-progress-row__detail">Step 13 of 30, about 2 minutes left</p>
+  </div>
+  <button class="ui-btn ui-btn--ghost ui-btn--sm ui-progress-row__cancel" type="button">Cancel</button>
+</div>
+```
+
+The cancel button has a slot of its own, after the body (before it in right-to-left).
+`data-state="done"`, `"failed"` or `"cancelled"` marks how a finished row ended, with an edge as
+well as colour. When the length is unknown, put a `.ui-spinner` in the head instead of the bar;
+say what is happening, not only that something is.
+
 ## Code block
 
 ```html
 <figure class="ui-codeblock">
   <figcaption class="ui-codeblock__bar">
-    <span>python</span><button class="ui-codeblock__button" type="button">Copy</button>
+    <span>python</span><button class="ui-codeblock__button" type="button"></button>
   </figcaption>
   <pre><code class="hljs">…</code></pre>
 </figure>
 ```
+
+With `ui-components.js` loaded the button copies the code as plain text and shows "Copied". Leave
+it empty to get the word for "Copy" in the page's language.
 
 The slab is dark in every theme, light themes too. The base layer maps highlight.js classes to
 the syntax tokens; load highlight.js without its own theme stylesheet.
 
 ## Chat, empty state, media
 
+An empty state says what is missing, why it matters and what to do next; the `__actions` slot
+holds the next step as one or two buttons (`__icon` is optional).
+
 ```html
 <div class="ui-stack">
   <div class="ui-bubble ui-bubble--user">Hi</div>
   <div class="ui-bubble ui-markdown"><p>Hello! <strong>How can I help?</strong></p></div>
-  <span class="ui-typing" aria-label="Typing"><span></span><span></span><span></span></span>
+  <span class="ui-typing" role="img" aria-label="Typing"><span></span><span></span><span></span></span>
 </div>
 
-<div class="ui-empty"><h3 class="ui-empty__title">No jobs yet</h3><p>Start one to see it here.</p></div>
+<div class="ui-empty">
+  <h3 class="ui-empty__title">No jobs yet</h3>
+  <p class="ui-empty__desc">Start one to see it here.</p>
+  <div class="ui-empty__actions"><button class="ui-btn ui-btn--primary">New job</button></div>
+</div>
 
 <img class="ui-media" src="photo.jpg" alt="…">   <!-- follows the theme's media filter -->
 ```

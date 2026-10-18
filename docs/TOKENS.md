@@ -1,6 +1,6 @@
 # Tokens
 
-Generated from `src/css/theme-base.css` by `tools/sync_theme.py build` (ThemeForge 1.1.2).
+Generated from `src/css/theme-base.css` by `tools/sync_theme.py build` (ThemeForge 1.2.0).
 Every theme resolves every token below: a theme sets the colours, and the rest are
 shared or derived. The values shown are Purple's (the `:root` base).
 `tokens/<theme>.json` holds each theme's resolved values in the W3C design tokens format.
@@ -10,7 +10,9 @@ app prefix (`--myapp-sidebar-w`) or alias a token (`--myapp-brand: var(--accent)
 Core groups are what most apps use; extension groups exist for apps that need them.
 
 Contrast floors every theme meets (`tools/check_contrast.py`; the night profile, used
-by Night Red, lowers the text floors as noted in [THEMES.md](THEMES.md)):
+by Night Red, lowers the text floors, and the high profile, used by the High Contrast pair,
+raises them to 7:1 for every text colour and 4.5:1 for edges and indicators, as noted in
+[THEMES.md](THEMES.md)):
 
 | Pair | Floor |
 |---|---|

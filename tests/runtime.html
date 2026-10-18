@@ -352,6 +352,20 @@
         [['Cancel', 'ui-btn'], ['OK', 'ui-btn ui-btn--danger']]);
   check('confirm: labelled by its title', d29.getElementById(dlg.getAttribute('aria-labelledby')).textContent, 'Delete?');
   if (dlg) dlg.remove();
+  {
+    // Enter that commits an IME composition (Japanese input) must not submit the prompt.
+    w29.UIComponents.prompt({ title: 'Name', value: '' });
+    const pdlg = d29.querySelector('dialog.ui-dialog');
+    const field = pdlg.querySelector('input');
+    field.value = 'にほん';
+    field.dispatchEvent(new w29.KeyboardEvent('keydown', { key: 'Enter', isComposing: true, bubbles: true, cancelable: true }));
+    check('prompt: Enter during IME composition keeps the dialog open', pdlg.open, true);
+    field.dispatchEvent(new w29.KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }));
+    // (Checked on the dialog itself: under --virtual-time-budget the dialog's close event, which
+    // resolves the promise, is sometimes never delivered, and awaiting it hung the whole page.)
+    check('prompt: a plain Enter submits as OK', [pdlg.open, pdlg.returnValue, field.value], [false, 'ok', 'にほん']);
+    pdlg.remove();
+  }
 
   // 30. Printing: a dark theme prints in a light one, then comes back; nothing is stored.
   preset({ t30: 'glacier' });
@@ -375,7 +389,7 @@
 
   // 24. The same state rules in every theme, opt-in ones included.
   preset({ t24: null });
-  const f24 = await frame({ attrs: { 'data-themes': 'purple,midnight-gold,glacier,forest,paper,daylight,electric-yellow,laserlloyd,laserlloyd-light,night-red',
+  const f24 = await frame({ attrs: { 'data-themes': 'purple,midnight-gold,glacier,forest,paper,daylight,slate,high-contrast,high-contrast-light,electric-yellow,laserlloyd,laserlloyd-light,night-red',
                                      'data-default': 'purple', 'data-storage-key': 't24' }, css: true });
   await tick(50);
   const w24 = f24.contentWindow, d24 = f24.contentDocument;
@@ -415,7 +429,7 @@
 
   // 42. --cta-gradient and the unread pair resolve in every loaded theme.
   preset({ t42: 'glacier' });
-  const f42 = await frame({ attrs: { 'data-themes': 'purple,midnight-gold,glacier,forest,paper,daylight,electric-yellow,laserlloyd,laserlloyd-light,night-red',
+  const f42 = await frame({ attrs: { 'data-themes': 'purple,midnight-gold,glacier,forest,paper,daylight,slate,high-contrast,high-contrast-light,electric-yellow,laserlloyd,laserlloyd-light,night-red',
                                      'data-default': 'glacier', 'data-storage-key': 't42' }, css: true });
   await tick(50);
   const w42 = f42.contentWindow;
@@ -429,6 +443,372 @@
     w42.UITheme.set(t.slug);
     const pair = w42.UITheme.tokens(['--notify', '--notify-idle']);
     check(`${t.slug}: unread pair resolves`, [/^#[0-9a-f]{6}$/i.test(pair['--notify']), /^#[0-9a-f]{6}$/i.test(pair['--notify-idle']), pair['--notify'] !== pair['--notify-idle']], [true, true, true]);
+  }
+
+  // 44. The slate and high-contrast themes: grounds, profiles, and what makes them what they are.
+  preset({ t44: null });
+  const f44 = await frame({ attrs: { 'data-themes': 'purple,slate,high-contrast,high-contrast-light', 'data-default': 'slate',
+                                     'data-storage-key': 't44', 'data-families': 'true' }, css: true });
+  await tick(50);
+  const w44 = f44.contentWindow;
+  const tok = (name) => w44.UITheme.token(name);
+  check('slate is the default here and is dark', [w44.UITheme.current(), html(f44).getAttribute('data-theme'), html(f44).getAttribute('data-contrast-profile')], ['slate', 'dark', 'standard']);
+  check('slate: dense controls and tighter radii', [tok('--control-h-md'), tok('--radius-sm')], ['32px', '4px']);
+  w44.UITheme.set('high-contrast');
+  check('high-contrast: dark ground, high profile', [html(f44).getAttribute('data-theme'), html(f44).getAttribute('data-contrast-profile'), metaOf(f44, 'theme-color')], ['dark', 'high', '#000000']);
+  check('high-contrast: white on black, solid, thicker focus ring', [tok('--text-primary'), tok('--surface-0'), tok('--glass-1'), tok('--focus-ring-width')], ['#ffffff', '#000000', '#171717', '3px']);
+  check('high-contrast: no depth cues', [tok('--shadow-3'), tok('--backdrop-blur')], ['0 0 0 0 transparent', '0px']);
+  w44.UITheme.set('high-contrast-light');
+  check('high-contrast-light: light ground, high profile', [html(f44).getAttribute('data-theme'), html(f44).getAttribute('data-contrast-profile'), metaOf(f44, 'theme-color')], ['light', 'high', '#ffffff']);
+  check('high-contrast-light: black on white', [tok('--text-primary'), tok('--surface-0'), tok('--border-strong')], ['#000000', '#ffffff', '#000000']);
+  check('high-contrast pair are one family: toggle switches between them', [w44.UITheme.partner('high-contrast'), w44.UITheme.partner('high-contrast-light')], ['high-contrast-light', 'high-contrast']);
+  check('slate has no family partner', w44.UITheme.partner('slate'), null);
+
+  // 43. Component helpers: strings, copy, validation, settings rows, pseudo-locale, RTL.
+  const COMP = new URL('../ui-theme/ui-components.js', location.href).href;
+  const LOCALES = new URL('../ui-theme/locales/', location.href).href;
+  async function comp(markup, { head = '', scriptAttrs = '' } = {}) {
+    preset({ t43: null });
+    const f = await frame({ attrs: attrsFor('t43'), css: true, head,
+                            probe: `<script src="${COMP}"${scriptAttrs ? ' ' + scriptAttrs : ''}><\/script>` + markup });
+    await tick(30);
+    return f;
+  }
+  const rect = (n) => n.getBoundingClientRect();
+
+  // 43a. The string table.
+  {
+    const f = await comp('<div id="holder" data-ui-str-copy-failed="Nope"><button id="b" class="ui-btn">x</button></div>');
+    const w = f.contentWindow, d = f.contentDocument, U = w.UIComponents;
+    check('UIComponents API (components)', ['copy', 'validate', 'setting', 'announce', 'init', 't', 'strings', 'setStrings',
+          'resetStrings', 'loadLocale', 'locale', 'formatNumber', 'formatDate'].map((k) => typeof U[k]),
+          Array(13).fill('function'));
+    check('strings: English by default, placeholders filled', [U.t('cancel'), U.t('resetNamed', null, { name: 'Port' })],
+          ['Cancel', 'Reset Port to default']);
+    check('strings: unknown key falls back to the key', U.t('noSuchWord'), 'noSuchWord');
+    const returned = U.setStrings({ cancel: 'Annuler', $locale: 'fr', ok: 5, extra: 'Plus' });
+    check('strings: setStrings merges strings, skips $keys and non-strings',
+          [U.t('cancel'), U.t('ok'), returned.$locale, U.t('extra')], ['Annuler', 'OK', undefined, 'Plus']);
+    U.confirm({ title: 'Supprimer ?' });
+    const dlg = d.querySelector('dialog.ui-dialog');
+    check('strings: dialogs use the table', Array.from(dlg.querySelectorAll('.ui-dialog__actions button')).map((b) => b.textContent),
+          ['Annuler', 'OK']);
+    dlg.remove();
+    U.resetStrings();
+    check('strings: resetStrings returns to English', U.t('cancel'), 'Cancel');
+    check('strings: data-ui-str-<key> on an ancestor wins', U.t('copyFailed', d.getElementById('b')), 'Nope');
+    check('strings: ... and does not leak outside its subtree', U.t('copyFailed'), 'Copy failed');
+    d.documentElement.setAttribute('data-ui-str-ok', 'Okay');
+    U.alert('Hi');
+    const dlg2 = d.querySelector('dialog.ui-dialog');
+    check('strings: data-ui-str on <html> applies everywhere', dlg2.querySelector('button').textContent, 'Okay');
+    dlg2.remove();
+    d.documentElement.removeAttribute('data-ui-str-ok');
+
+    const en = await (await fetch(LOCALES + 'en.json')).json();
+    const ja = await (await fetch(LOCALES + 'ja.json')).json();
+    const words = Object.assign({}, en);
+    delete words.$locale;
+    check('locales: en.json is the built-in English table', U.strings(), words);
+    check('locales: ja.json has exactly the keys of en.json', Object.keys(ja).sort(), Object.keys(en).sort());
+    check('locales: ja.json translates every word (OK stays OK)', Object.keys(words).filter((k) => ja[k] === words[k]), ['ok']);
+    check('locales: placeholders survive translation', ja.resetNamed.includes('{name}'), true);
+    check('locales: loadLocale(ja) applies', [await U.loadLocale('ja'), U.t('cancel'), U.t('resetNamed', null, { name: 'ポート' })],
+          [true, 'キャンセル', '「ポート」を初期値に戻す']);
+    check('locales: unknown locale resolves false and keeps the words', [await U.loadLocale('xx'), U.t('cancel')], [false, 'キャンセル']);
+    check('locales: ja-JP falls back to ja', [await U.loadLocale('ja-JP'), U.t('copy')], [true, 'コピー']);
+    check('locales: en restores the built-in words', [await U.loadLocale('en'), U.t('cancel')], [true, 'Cancel']);
+    check('locales: an explicit url', [await U.loadLocale('ja', LOCALES + 'ja.json'), U.t('basic')], [true, '基本']);
+  }
+
+  // 43b. data-locale on the script tag loads a locale by itself.
+  {
+    const f = await comp('<button class="ui-codeblock__button" id="cb"></button>', { scriptAttrs: 'data-locale="ja"' });
+    await tick(150);
+    const U = f.contentWindow.UIComponents;
+    check('data-locale="ja": words load', U.t('cancel'), 'キャンセル');
+    check('data-locale="ja": empty copy buttons are filled in Japanese', f.contentDocument.getElementById('cb').textContent, 'コピー');
+    const f2 = await comp('', { scriptAttrs: 'data-locale="auto"', head: '<script>document.documentElement.lang = "ja-JP"<\/script>' });
+    await tick(150);
+    check('data-locale="auto" follows <html lang>', f2.contentWindow.UIComponents.t('copied'), 'コピーしました');
+  }
+
+  // 43c. Locale-aware numbers and dates follow <html lang>.
+  {
+    const fDe = await comp('', { head: '<script>document.documentElement.lang = "de"<\/script>' });
+    const fJa = await comp('', { head: '<script>document.documentElement.lang = "ja"<\/script>' });
+    const when = Date.UTC(2026, 9, 18, 12);
+    check('format: German number', fDe.contentWindow.UIComponents.formatNumber(1234567.5), '1.234.567,5');
+    check('format: Japanese date', fJa.contentWindow.UIComponents.formatDate(when, { dateStyle: 'long', timeZone: 'UTC' }), '2026年10月18日');
+    check('format: locale()', [fDe.contentWindow.UIComponents.locale(), fJa.contentWindow.UIComponents.locale()], ['de', 'ja']);
+    check('format: bad input does not throw', typeof fDe.contentWindow.UIComponents.formatDate('not a date'), 'string');
+  }
+
+  // 43d. Copy to clipboard.
+  {
+    const f = await comp(
+      '<div class="ui-copy"><input class="ui-input ui-copy__value" id="cv" readonly value="http://host:8080/v1">' +
+      '<button class="ui-btn ui-copy__button" id="cbtn" type="button"></button></div>' +
+      '<div class="ui-copy"><code class="ui-copy__value" id="cc">sk-test-123</code><button class="ui-btn ui-copy__button" id="cbtn2" type="button">Copy</button></div>' +
+      '<input type="password" id="pw" value="s3cret">' +
+      '<figure class="ui-codeblock"><figcaption class="ui-codeblock__bar"><span>sh</span><button class="ui-codeblock__button" id="cgb" type="button"></button></figcaption>' +
+      '<pre><code><span class="hljs-keyword">echo</span> hello</code></pre></figure>');
+    const w = f.contentWindow, d = f.contentDocument, U = w.UIComponents;
+    const log = [];
+    Object.defineProperty(w.navigator, 'clipboard', { configurable: true,
+      value: { writeText: (x) => { log.push(x); return Promise.resolve(); } } });
+    const btn = d.getElementById('cbtn');
+    check('copy: an empty button gets the word for Copy', [btn.textContent, d.getElementById('cgb').textContent], ['Copy', 'Copy']);
+    btn.click();
+    await tick(60);
+    check('copy: clicking the button copies the field value', log, ['http://host:8080/v1']);
+    check('copy: the button says Copied and is marked', [btn.textContent, btn.getAttribute('data-copied')], ['Copied', 'true']);
+    check('copy: the live region announces it', d.querySelector('[data-ui-live]').textContent, 'Copied');
+    check('copy: the marked button is not left unstyled', w.getComputedStyle(btn).color !== w.getComputedStyle(d.getElementById('cbtn2')).color, true);
+    d.getElementById('cbtn2').click();
+    await tick(60);
+    check('copy: a non-input value copies its text', log[1], 'sk-test-123');
+    d.getElementById('cgb').click();
+    await tick(60);
+    check('copy: a code block button copies the code as plain text', log[2], 'echo hello');
+    check('copy: the code block button is marked', d.getElementById('cgb').getAttribute('data-copied'), 'true');
+    check('copy(input) copies a password field value', [await U.copy(d.getElementById('pw')), log[3]], [true, 's3cret']);
+    check('copy(string)', [await U.copy('plain'), log[4]], [true, 'plain']);
+    await tick(2000);
+    check('copy: the label and mark are restored', [btn.textContent, btn.hasAttribute('data-copied')], ['Copy', false]);
+
+    // Not a secure context (plain http on a LAN address): execCommand fallback.
+    const calls = [];
+    Object.defineProperty(w.navigator, 'clipboard', { configurable: true, value: undefined });
+    d.execCommand = (cmd) => { const ta = d.querySelector('textarea[readonly]'); calls.push([cmd, ta && ta.value]); return true; };
+    check('copy fallback: resolves true through execCommand', [await U.copy(d.getElementById('cv')), calls], [true, [['copy', 'http://host:8080/v1']]]);
+    check('copy fallback: the scratch textarea is removed', d.querySelectorAll('textarea[readonly]').length, 0);
+    Object.defineProperty(w.navigator, 'clipboard', { configurable: true,
+      value: { writeText: (x) => { log.push('API:' + x); return Promise.resolve(); } } });
+    Object.defineProperty(w, 'isSecureContext', { configurable: true, value: false });
+    await U.copy('insecure');
+    check('copy: isSecureContext=false skips the async API', [calls.length, log.includes('API:insecure')], [2, false]);
+    Object.defineProperty(w, 'isSecureContext', { configurable: true, value: true });
+    Object.defineProperty(w.navigator, 'clipboard', { configurable: true,
+      value: { writeText: () => Promise.reject(new Error('denied')) } });
+    check('copy: a rejected writeText falls back to execCommand', [await U.copy('denied'), calls.length], [true, 3]);
+    d.execCommand = () => false;
+    const failed = await U.copy(d.getElementById('cbtn2'));
+    check('copy: failure resolves false and says so', [failed, d.getElementById('cbtn2').getAttribute('data-copied'), d.getElementById('cbtn2').textContent],
+          [false, 'failed', 'Copy failed']);
+
+    // Inside a modal dialog the page behind it is inert: a textarea there cannot be focused or
+    // selected, so the fallback copied nothing, and a live region there is not spoken.
+    const mdl = d.createElement('dialog');
+    mdl.innerHTML = '<div class="ui-copy"><code class="ui-copy__value">tok-in-dialog</code>' +
+                    '<button class="ui-btn ui-copy__button" id="dbtn" type="button">Copy</button></div>';
+    d.body.appendChild(mdl);
+    mdl.showModal();
+    const seen = [];
+    Object.defineProperty(w.navigator, 'clipboard', { configurable: true, value: undefined });
+    d.execCommand = (cmd) => {
+      const ta = d.querySelector('textarea[readonly]');
+      seen.push([cmd, ta && ta.value, !!(ta && ta.closest('dialog')), d.activeElement === ta]);
+      return true;
+    };
+    d.getElementById('dbtn').focus();
+    check('copy fallback in a modal dialog: the textarea is in the dialog and focused',
+          [await U.copy(d.getElementById('dbtn')), seen], [true, [['copy', 'tok-in-dialog', true, true]]]);
+    check('copy fallback in a modal dialog: focus returns to the button', d.activeElement && d.activeElement.id, 'dbtn');
+    await tick(60);
+    check('copy in a modal dialog: announced from inside the dialog', (mdl.querySelector('[data-ui-live]') || {}).textContent, 'Copied');
+    check('copySource: a data-ui-copy that is not a selector does not throw',
+          await (async () => { const b = d.createElement('button'); b.setAttribute('data-ui-copy', '#1bad['); b.textContent = 'x';
+                               mdl.appendChild(b); try { await U.copy(b); return 'ok'; } catch (e) { return String(e); } })(), 'ok');
+    mdl.close();
+    mdl.remove();
+  }
+
+  // 43e. Inline field validation.
+  {
+    const f = await comp(
+      '<label class="ui-field" id="fld"><span class="ui-label">Days</span><input class="ui-input" id="days" aria-describedby="days-help">' +
+      '<span class="ui-help" id="days-help">1 to 365.</span></label>' +
+      '<label class="ui-field"><span class="ui-label">Name</span><input class="ui-input" id="nm"></label>');
+    const w = f.contentWindow, d = f.contentDocument, U = w.UIComponents;
+    const days = d.getElementById('days');
+    const err = U.validate(days, 'Enter a number from 1 to 365.');
+    check('validate: aria-invalid and a .ui-error inside the field', [days.getAttribute('aria-invalid'), err.className,
+          err.parentNode.id, err.textContent], ['true', 'ui-error', 'fld', 'Enter a number from 1 to 365.']);
+    check('validate: aria-describedby keeps the help and adds the error', days.getAttribute('aria-describedby').split(' '), ['days-help', err.id]);
+    await tick(100);
+    check('validate: the message is announced politely', d.querySelector('[data-ui-live]').textContent, 'Enter a number from 1 to 365.');
+    check('validate: the invalid control is styled', w.getComputedStyle(days).backgroundColor !== w.getComputedStyle(d.getElementById('nm')).backgroundColor, true);
+    const again = U.validate(d.getElementById('fld'), 'Too small.');
+    check('validate: a field wrapper works and the error is reused, not duplicated',
+          [again === err, err.textContent, d.querySelectorAll('.ui-error').length, days.getAttribute('aria-describedby').split(' ').length], [true, 'Too small.', 1, 2]);
+    check('validate(null) clears it all', [U.validate(days, null), days.hasAttribute('aria-invalid'), days.getAttribute('aria-describedby'), d.querySelectorAll('.ui-error').length],
+          [null, false, 'days-help', 0]);
+    const nm = d.getElementById('nm');
+    U.validate(nm, 'Required.', { focus: true, announce: false });
+    check('validate: focus option moves focus', d.activeElement === nm, true);
+    check('validate: describedby is created when there was none', nm.getAttribute('aria-describedby'), 'nm-error');
+    U.validate(nm, '');
+    check('validate: an empty message clears and drops the attribute', [nm.hasAttribute('aria-describedby'), nm.hasAttribute('aria-invalid')], [false, false]);
+    const bare = d.createElement('input');
+    d.body.appendChild(bare);
+    const e3 = U.validate(bare, 'Bad.');
+    check('validate: a control outside any .ui-field gets the message beside it', [e3.parentNode === d.body, bare.id !== ''], [true, true]);
+  }
+
+  // 43f. Settings rows.
+  {
+    const row = (id, extra, control) =>
+      `<div class="ui-setting" id="${id}" ${extra}><div class="ui-setting__text"><div class="ui-setting__label"><label for="${id}-c">${id} setting</label>` +
+      '<span class="ui-badge ui-setting__level"></span><span class="ui-badge ui-badge--info ui-setting__env"></span></div>' +
+      `<p class="ui-setting__desc">About it.</p></div><div class="ui-setting__control">${control}` +
+      '<button class="ui-btn ui-btn--ghost ui-btn--sm ui-setting__reset" type="button" hidden></button></div></div>';
+    const f = await comp('<div class="ui-settings" id="grp">' +
+      row('port', 'data-default="8080"', '<input class="ui-input" id="port-c" value="8081">') +
+      row('same', 'data-default="8080"', '<input class="ui-input" id="same-c" value="8080">') +
+      row('notify', 'data-default="true"', '<input type="checkbox" role="switch" class="ui-switch" id="notify-c" checked>') +
+      row('adv', 'data-level="advanced"', '<input class="ui-input" id="adv-c" value="x">') +
+      row('env', 'data-source="env" data-default="info"', '<select class="ui-select" id="env-c"><option>info</option><option selected>debug</option></select>') +
+      '</div>');
+    const w = f.contentWindow, d = f.contentDocument, U = w.UIComponents;
+    const q = (id, sel) => d.querySelector(`#${id} ${sel}`);
+    const shown = (n) => w.getComputedStyle(n).display !== 'none';
+    check('setting: a row off its default shows reset and is marked', [q('port', '.ui-setting__reset').hidden, d.getElementById('port').hasAttribute('data-modified')], [false, true]);
+    check('setting: a row at its default hides reset', [q('same', '.ui-setting__reset').hidden, d.getElementById('same').hasAttribute('data-modified')], [true, false]);
+    check('setting: reset gets its words and a name of its own', [q('port', '.ui-setting__reset').textContent, q('port', '.ui-setting__reset').getAttribute('aria-label')],
+          ['Reset to default', 'Reset port setting to default']);
+    check('setting: Advanced marker only on advanced rows', [shown(q('adv', '.ui-setting__level')), q('adv', '.ui-setting__level').textContent, shown(q('port', '.ui-setting__level'))], [true, 'Advanced', false]);
+    check('setting: env badge only on env rows, control locked, no reset',
+          [shown(q('env', '.ui-setting__env')), q('env', '.ui-setting__env').textContent, shown(q('port', '.ui-setting__env')), d.getElementById('env-c').disabled, q('env', '.ui-setting__reset').hidden],
+          [true, 'Set by environment', false, true, true]);
+    const events = [];
+    const port = d.getElementById('port-c');
+    port.addEventListener('input', () => events.push('input'));
+    port.addEventListener('change', () => events.push('change'));
+    q('port', '.ui-setting__reset').click();
+    check('setting: reset restores the default, fires input and change, refocuses',
+          [port.value, events, d.activeElement === port, q('port', '.ui-setting__reset').hidden], ['8080', ['input', 'change'], true, true]);
+    port.value = '9';
+    port.dispatchEvent(new w.Event('input', { bubbles: true }));
+    check('setting: editing again shows reset again', q('port', '.ui-setting__reset').hidden, false);
+    const sw = d.getElementById('notify-c');
+    sw.checked = false;
+    sw.dispatchEvent(new w.Event('change', { bubbles: true }));
+    check('setting: a switch compares checked state', q('notify', '.ui-setting__reset').hidden, false);
+    q('notify', '.ui-setting__reset').click();
+    check('setting: reset turns the switch back on', sw.checked, true);
+    check('setting: an advanced row can be hidden by the group', (d.getElementById('grp').setAttribute('data-level-filter', 'basic'), shown(d.getElementById('adv'))), false);
+    check('setting: ... and the basic rows stay', shown(d.getElementById('port')), true);
+    const calls = [];
+    const row2 = d.getElementById('same');
+    const ctl = U.setting(row2, { default: 'zzz', onReset: (c, r) => calls.push([c.id, r.id]) });
+    check('setting(row, { default }) overrides data-default', q('same', '.ui-setting__reset').hidden, false);
+    const sameEvents = [];
+    d.getElementById('same-c').addEventListener('input', () => sameEvents.push('input'));
+    d.getElementById('same-c').addEventListener('change', () => sameEvents.push('change'));
+    q('same', '.ui-setting__reset').click();
+    check('setting: onReset is called with the control and row', [calls, d.getElementById('same-c').value], [[['same-c', 'same']], 'zzz']);
+    check('setting: an explicit call replaces the wiring init() did (one reset, one input, one change)', sameEvents, ['input', 'change']);
+    ctl.destroy();
+    check('setting: the controller has update and destroy', [typeof ctl.update, typeof ctl.destroy], ['function', 'function']);
+  }
+
+  // 43g. Progress row, empty state action slot, new classes exist.
+  {
+    const f = await comp(
+      '<div class="ui-progress-row" id="pr"><div class="ui-progress-row__body"><div class="ui-progress-row__head"><span class="ui-progress-row__label" id="pl">Job</span><span class="ui-progress-row__value">42%</span></div>' +
+      '<progress class="ui-progress" value="42" max="100" aria-labelledby="pl"></progress></div>' +
+      '<button class="ui-btn ui-btn--ghost ui-btn--sm ui-progress-row__cancel" type="button">Cancel</button></div>' +
+      '<div class="ui-progress-row" id="pd" data-state="done"><div class="ui-progress-row__body"></div></div>' +
+      '<div class="ui-empty" id="em"><h3 class="ui-empty__title">None</h3><p class="ui-empty__desc">Nothing here.</p>' +
+      '<div class="ui-empty__actions"><button class="ui-btn ui-btn--primary" id="act1">New</button><button class="ui-btn" id="act2">Import</button></div></div>');
+    const w = f.contentWindow, d = f.contentDocument;
+    const body = d.querySelector('#pr .ui-progress-row__body'), cancel = d.querySelector('#pr .ui-progress-row__cancel');
+    check('progress row: the cancel slot sits after the body', [rect(cancel).left >= rect(body).right - 1, Math.abs(rect(cancel).top + rect(cancel).height / 2 - (rect(body).top + rect(body).height / 2)) < 2], [true, true]);
+    check('progress row: a finished row is marked by an edge', w.getComputedStyle(d.getElementById('pd')).borderInlineStartWidth, '3px');
+    const acts = d.querySelector('#em .ui-empty__actions');
+    check('empty state: actions are a centred row of buttons', [w.getComputedStyle(acts).display, w.getComputedStyle(acts).justifyContent, rect(d.getElementById('act1')).top === rect(d.getElementById('act2')).top], ['flex', 'center', true]);
+  }
+
+  // 43h. Pseudo-locale: every built-in word at 2-3x length must not break the layout.
+  {
+    const accent = { a: 'à', e: 'é', i: 'î', o: 'ö', u: 'ü', A: 'Å', E: 'É', I: 'Î', O: 'Ö', U: 'Û' };
+    const pseudo = (s) => '[' + s.replace(/[aeiouAEIOU]/g, (c) => accent[c]) + ' ·ŀöñĝ·ŧèxŧ·ŵôŕd·]';
+    const markup = (w) =>
+      `<div id="stage" style="width:${w}px;max-width:100%"><div class="ui-settings"><div class="ui-setting" data-level="advanced" data-source="env" data-default="1">` +
+      '<div class="ui-setting__text"><div class="ui-setting__label"><label for="ps">Port</label><span class="ui-badge ui-setting__level"></span><span class="ui-badge ui-badge--info ui-setting__env"></span></div>' +
+      '<p class="ui-setting__desc">A long description of the setting that wraps over several lines in a narrow column.</p></div>' +
+      '<div class="ui-setting__control"><input class="ui-input" id="ps" value="2"><button class="ui-btn ui-btn--ghost ui-btn--sm ui-setting__reset" type="button" hidden></button></div></div>' +
+      '<div class="ui-setting" data-default="1"><div class="ui-setting__text"><div class="ui-setting__label"><label for="ps2">Other</label></div></div>' +
+      '<div class="ui-setting__control"><input class="ui-input" id="ps2" value="2"><button class="ui-btn ui-btn--ghost ui-btn--sm ui-setting__reset" type="button" hidden></button></div></div></div>' +
+      '<div class="ui-copy"><input class="ui-input ui-copy__value" readonly value="http://192.0.2.10:8080/v1" aria-label="URL"><button class="ui-btn ui-copy__button" type="button"></button></div>' +
+      '<div class="ui-progress-row"><div class="ui-progress-row__body"><div class="ui-progress-row__head"><span class="ui-progress-row__label">Generating images for the gallery</span><span class="ui-progress-row__value">42%</span></div>' +
+      '<progress class="ui-progress" value="42" max="100" aria-label="p"></progress></div><button class="ui-btn ui-btn--ghost ui-btn--sm ui-progress-row__cancel" type="button" data-pseudo="cancel"></button></div>' +
+      '<div class="ui-empty"><h3 class="ui-empty__title">No jobs yet</h3><p class="ui-empty__desc">Start one to see it here.</p><div class="ui-empty__actions"><button class="ui-btn ui-btn--primary" type="button" data-pseudo="copy"></button><button class="ui-btn" type="button" data-pseudo="reset"></button></div></div></div>';
+    for (const width of [800, 320]) {
+      const f = await comp('');
+      f.style.width = `${width}px`;  // the viewport itself narrows, so the dialog and toast are measured too
+      const w = f.contentWindow, d = f.contentDocument, U = w.UIComponents;
+      const words = U.strings();
+      const long = {};
+      for (const k of Object.keys(words)) long[k] = pseudo(words[k]);
+      U.setStrings(long);
+      d.body.insertAdjacentHTML('beforeend', markup(width));
+      for (const n of d.querySelectorAll('[data-pseudo]')) n.textContent = U.t(n.getAttribute('data-pseudo'));
+      U.init(d);
+      U.validate(d.getElementById('ps2'), pseudo('Enter a number between one and sixty-five thousand.'), { announce: false });
+      const open = U.confirm({ title: pseudo('Delete job?'), message: pseudo('This cannot be undone and the files are gone for good.'), danger: true });
+      U.toast(pseudo('Settings saved'), { timeout: 0 });
+      await tick(50);
+      const bad = [];
+      const sels = ['#stage', '.ui-setting', '.ui-setting__control', '.ui-setting__label', '.ui-copy', '.ui-progress-row', '.ui-empty', '.ui-dialog', '.ui-dialog__actions', '.ui-toast', '.ui-btn', '.ui-badge', '.ui-error'];
+      for (const sel of sels) {
+        for (const n of d.querySelectorAll(sel)) {
+          const r = rect(n);
+          if (n.scrollWidth > n.clientWidth + 1) bad.push(`${sel} scrolls (${n.scrollWidth}>${n.clientWidth})`);
+          if (r.right > w.innerWidth + 0.5 || r.left < -0.5) bad.push(`${sel} outside the viewport`);
+          if (!n.closest('dialog, .ui-toasts') && n.id !== 'stage' && r.right > rect(d.getElementById('stage')).right + 0.5) bad.push(`${sel} sticks out of its column`);
+        }
+      }
+      check(`pseudo-locale at ${width}px: nothing overflows`, bad, []);
+      check(`pseudo-locale at ${width}px: the page does not scroll sideways`, d.documentElement.scrollWidth <= d.documentElement.clientWidth, true);
+      check(`pseudo-locale at ${width}px: the long words are on the page`, [d.querySelector('.ui-copy__button').textContent === long.copy,
+            d.querySelector('.ui-setting__reset').textContent === long.reset, d.querySelector('dialog .ui-btn').textContent === long.cancel], [true, true, true]);
+      d.querySelector('dialog').remove();
+      void open;
+    }
+  }
+
+  // 43i. Right-to-left smoke test.
+  {
+    const f = await comp(
+      '<div id="stage" style="width:600px">' +
+      '<div class="ui-copy"><input class="ui-input ui-copy__value" id="rv" readonly value="http://host/v1" aria-label="URL"><button class="ui-btn ui-copy__button" id="rb" type="button"></button></div>' +
+      '<div class="ui-setting" id="rs" data-default="1"><div class="ui-setting__text"><div class="ui-setting__label"><label for="rc">إعداد</label></div></div>' +
+      '<div class="ui-setting__control"><input class="ui-input" id="rc" value="2"><button class="ui-btn ui-btn--ghost ui-btn--sm ui-setting__reset" id="rr" type="button" hidden></button></div></div>' +
+      '<div class="ui-progress-row" id="rp"><div class="ui-progress-row__body" id="rpb"><progress class="ui-progress" value="3" max="9" aria-label="p"></progress></div><button class="ui-btn ui-progress-row__cancel" id="rpc" type="button">x</button></div>' +
+      '<label class="ui-check"><input type="checkbox" role="switch" class="ui-switch" id="rsw" checked> تشغيل</label>' +
+      '<div class="ui-codeblock" id="rcb"><div class="ui-codeblock__bar"><span id="rcl">sh</span><button class="ui-codeblock__button" id="rcbtn" type="button"></button></div><pre>echo</pre></div>' +
+      '</div>',
+      { head: '<script>document.documentElement.lang = "ar"; document.documentElement.dir = "rtl"<\/script>' });
+    const w = f.contentWindow, d = f.contentDocument, U = w.UIComponents;
+    check('rtl: direction is rtl', w.getComputedStyle(d.body).direction, 'rtl');
+    check('rtl: the copy button is at the inline end (visually left)', rect(d.getElementById('rb')).right <= rect(d.getElementById('rv')).left + 1, true);
+    check('rtl: the settings text starts on the right, the control follows to its left',
+          rect(d.querySelector('#rs .ui-setting__text')).left >= rect(d.getElementById('rc')).right - 1 || rect(d.querySelector('#rs .ui-setting__text')).top < rect(d.getElementById('rc')).top, true);
+    check('rtl: the cancel slot is on the left', rect(d.getElementById('rpc')).right <= rect(d.getElementById('rpb')).left + 1, true);
+    check('rtl: code block bar puts the button on the left', rect(d.getElementById('rcbtn')).left < rect(d.getElementById('rcl')).left, true);
+    check('rtl: a switch is on, with its knob toward the inline end', w.getComputedStyle(d.getElementById('rsw')).backgroundColor !== 'rgba(0, 0, 0, 0)', true);
+    U.toast('تم الحفظ', { timeout: 0 });
+    check('rtl: toasts stack at the inline end (visually left)', rect(d.querySelector('.ui-toast')).left < w.innerWidth / 2, true);
+    d.getElementById('rc').value = '9';
+    d.getElementById('rc').dispatchEvent(new w.Event('input', { bubbles: true }));
+    check('rtl: reset shows and nothing overflows', [d.getElementById('rr').hidden, d.documentElement.scrollWidth <= d.documentElement.clientWidth], [false, true]);
+    U.confirm({ title: 'حذف؟', message: 'لا يمكن التراجع.', danger: true });
+    const dlg = d.querySelector('dialog.ui-dialog');
+    const btns = Array.from(dlg.querySelectorAll('.ui-dialog__actions button'));
+    check('rtl: dialog actions run right to left (OK is the leftmost last)', rect(btns[0]).left > rect(btns[1]).left, true);
+    dlg.remove();
   }
 
   // Report.

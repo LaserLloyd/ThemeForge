@@ -1,0 +1,13 @@
+{
+  "dest": "static/ui-theme",
+  "version": "1.2",
+  "adapters": [],
+  "extra_files": {},
+  "settings": {
+    "themes": ["purple", "midnight-gold", "glacier", "forest", "paper", "daylight"],
+    "default": "auto",
+    "default_dark": "midnight-gold",
+    "default_light": "daylight",
+    "storage_key": "tasks-example.theme"
+  }
+}

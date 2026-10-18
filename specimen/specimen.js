@@ -43,7 +43,6 @@
     for (var i = 0; i < tabs.length; i++) {
       var on = tabs[i].dataset.slug === slug;
       tabs[i].setAttribute('aria-selected', on ? 'true' : 'false');
-      tabs[i].setAttribute('aria-pressed', on ? 'true' : 'false');
       tabs[i].tabIndex = on ? 0 : -1;
     }
     var theme = T.theme();
@@ -67,6 +66,13 @@
   });
   document.getElementById('spec-drawer-open').addEventListener('click', function () {
     document.getElementById('spec-drawer').showModal();
+  });
+  var days = document.getElementById('spec-days');
+  document.getElementById('spec-validate').addEventListener('click', function () {
+    window.UIComponents.validate(days, 'Enter a number from 1 to 365. Logs older than that are deleted.', { focus: true });
+  });
+  document.getElementById('spec-clear').addEventListener('click', function () {
+    window.UIComponents.validate(days, null);
   });
   document.getElementById('spec-toast').addEventListener('click', function () {
     window.UIComponents.toast('Settings saved', { kind: 'success' });

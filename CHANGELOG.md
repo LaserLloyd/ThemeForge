@@ -4,6 +4,85 @@ Versions follow [Semantic Versioning](https://semver.org/). A release is a git t
 `ui-theme/VERSION` and `UITheme.version` carry the same number. Token names are the public
 API: removing or renaming one is a major version.
 
+## 1.2.0
+
+The package is now called **ForgeUI** (the repository stays ThemeForge, and the shipped
+contract is unchanged: the `ui-theme/` folder, `window.UITheme`, every `--token` and every
+`ui-*` class keep their names, and `VERSION` still reads `ThemeForge <version> <hash>`).
+Nothing is removed or renamed. The index of the rules is the new
+[`docs/THEME_SYSTEM.md`](docs/THEME_SYSTEM.md).
+
+**Distribution**
+
+- **`forgeui` Python package** (`pyproject.toml`, a pure-data wheel, standard library only,
+  Python 3.9 or newer): the `ui-theme/` bundle as package data, plus `forgeui.static_dir()`,
+  `forgeui.head_html()` (the head tags in the required order, with `?v=` hashes, adapters,
+  overlays and a CSP nonce), `forgeui.head_html_from_manifest()` and `forgeui.mount(app)` for
+  FastAPI and NiceGUI. CI builds the wheel and sdist (`python -m build`, `twine check`) on Linux
+  and Windows and vendors the examples with the built wheel. Not on PyPI yet: the name `forgeui`
+  there belongs to an unrelated project, so the docs install from the release tag
+  (`pip install "forgeui @ git+...ThemeForge@v1.2.0"`) until the distribution is renamed or published.
+- **`python -m forgeui vendor [--version X] [--check] [--force] [--source <zip|folder>]`**, driven
+  by a `forgeui.json` manifest kept in each app's own repository (`dest`, `version`, `adapters`,
+  `extra_files`, `settings`): verifies `files.json` before writing, refuses to overwrite
+  hand-edited files, writes `VERSION` last, and `--check` exits 1 on drift (version, stale,
+  edited or missing files, changed overlays, settings that name a theme the bundle lacks).
+  Overlays live under app-owned names and are never appended into bundle files. `init` writes a
+  starter manifest and `head` prints the head tags.
+- **Deprecated:** `sync_theme.py install` and its machine-local app registry (`--apps`,
+  `UI_THEME_APPS`). Both still work and print a message; the next major version removes them.
+  `update.py` is unchanged and still the route for apps without pip.
+
+**Components** (CSS in `ui-components.css`, behaviour in `ui-components.js`)
+
+- **Settings row** `.ui-settings` / `.ui-setting`: label, description, control, a reset-to-default
+  button that appears only while the value differs, a Basic/Advanced marker
+  (`data-level`, with `data-level-filter="basic"` on the group) and a "set by environment" badge
+  that locks the control (`data-source="env"`). `UIComponents.setting(row, { default, onReset })`.
+- **Copy field** `.ui-copy` and `UIComponents.copy(el | string)`: clipboard API on secure
+  contexts, hidden-textarea `execCommand` fallback on plain `http://` pages, "Copied" feedback and
+  a polite announcement. `.ui-codeblock__button` now copies the code too.
+- **Inline validation** `UIComponents.validate(field, message, { focus, announce })`:
+  `aria-invalid`, a `.ui-error` after the control, `aria-describedby` and a live-region
+  announcement; an empty message clears it.
+- **Progress with cancel** `.ui-progress-row` (label, value, detail and a cancel slot;
+  `data-state` for how a finished row ended), and an **empty-state action slot**
+  (`.ui-empty__actions`, `__desc`, `__icon`).
+- `.ui-visually-hidden`, and `.ui-error:empty` is hidden.
+
+**Themes**
+
+- **`high-contrast` (dark) and `high-contrast-light`:** a dedicated pair with the new `high`
+  contrast profile: 7:1 for every text colour (tiers, links and hover, status text, labels on
+  fills, syntax, narrative roles), 4.5:1 for edges, the focus ring, state indicators and chart
+  colours, 3:1 for every line, status hues far apart, and an opacity audit that fails any
+  translucent colour token (the media scrim and canvas overlays are exempt). Surfaces, strokes,
+  glows and the scrim are solid, shadows are zero-size and the focus ring is 3px.
+- **`slate`:** a neutral grey-blue "professional default" with a steel accent, muted status
+  colours and denser geometry (radii 3 to 12px, controls 26, 32 and 40px).
+- All three are core themes; `<html data-contrast-profile>` can now be `high`
+  (the TypeScript declarations list it).
+
+**i18n and accessibility of the helpers**
+
+- A string table for every word the JavaScript puts on the page (`UIComponents.setStrings`,
+  `strings`, `t`, `resetStrings`), `loadLocale('ja')` and `data-locale="auto"` on the script tag,
+  `data-ui-str-<key>` attribute overrides on any element, `{placeholder}` filling, and Intl
+  `formatNumber` / `formatDate` in the page's language.
+- `ui-theme/locales/en.json` and `ja.json`.
+- `tests/runtime.html` now checks long pseudo-translated words at 800px and 320px for overflow,
+  and a right-to-left page; unit tests check that every language has every key.
+
+**Fixes**
+
+- `python -m forgeui --help` and `--version` answer even when the bundle folder is missing (they
+  say `bundle missing` instead of raising).
+- `sync_theme.py check` (and two unit tests) no longer fail on a clean checkout: sibling
+  `LaserLloyd/*` links are allowed in a "Used by" section (a link to the archived UnifyingTheme
+  there, or a sibling link anywhere else, is still rejected).
+- `check` now also verifies that `docs/THEME_SYSTEM.md` lists exactly the themes of
+  `src/themes.json`, and `build` regenerates that list.
+
 ## 1.1.2
 
 - Forest: `--cta-gradient` starts from a lighter step of its green accent and `--notify` is

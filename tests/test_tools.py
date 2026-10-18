@@ -12,8 +12,10 @@ import hashlib
 import importlib.util
 import io
 import json
+import os
 import shutil
 import subprocess
+import sys
 import tarfile
 import tempfile
 import unittest
@@ -91,9 +93,10 @@ class BuildTests(unittest.TestCase):
     def test_runtime_registry_carries_the_contrast_profile(self):
         js = self.bundle["ui-theme.js"]
         self.assertIn('"contrastProfile": "night"', js)
-        self.assertEqual(js.count('"contrastProfile": "standard"'), len(self.data["themes"]) - 1)
+        self.assertEqual(js.count('"contrastProfile": "high"'), 2)
+        self.assertEqual(js.count('"contrastProfile": "standard"'), len(self.data["themes"]) - 3)
         self.assertIn("data-contrast-profile", js)
-        self.assertIn("contrastProfile: 'standard' | 'night'", self.bundle["ui-theme.d.ts"])
+        self.assertIn("contrastProfile: 'standard' | 'high' | 'night'", self.bundle["ui-theme.d.ts"])
 
     def test_no_apple_only_mono_names(self):
         """SFMono-Regular and Menlo resolve to a proportional sans on Linux; ui-monospace covers Apple."""
@@ -138,6 +141,137 @@ class BuildTests(unittest.TestCase):
         self.assertIn("--accent-rgb", doc["$extensions"]["com.laserlloyd.themeforge"]["css"])
 
 
+class DocGateTests(unittest.TestCase):
+    """The docs gate allows sibling LaserLloyd links in a "Used by" section only."""
+
+    def test_used_by_may_link_sibling_repositories(self):
+        text = ("## Used by\n\n- [A](https://github.com/LaserLloyd/StudioForge): a\n"
+                "- [B](https://github.com/LaserLloyd/DisPatch_Chat): b\n\n## Read more\n")
+        self.assertEqual(sync.repo_link_problems(text, "README.md"), [])
+
+    def test_sibling_links_elsewhere_are_still_rejected(self):
+        text = "## Install\n\nSee https://github.com/LaserLloyd/StudioForge for more.\n"
+        self.assertEqual(len(sync.repo_link_problems(text, "README.md")), 1)
+
+    def test_used_by_section_ends_at_the_next_heading(self):
+        text = ("## Used by\n\n- https://github.com/LaserLloyd/StudioForge\n\n"
+                "## License\n\nhttps://github.com/LaserLloyd/ClawForge\n")
+        problems = sync.repo_link_problems(text, "README.md")
+        self.assertEqual(len(problems), 1)
+        self.assertIn("ClawForge", problems[0])
+
+    def test_used_by_may_not_link_the_archived_repository(self):
+        text = "## Used by\n\n- https://github.com/LaserLloyd/UnifyingTheme\n"
+        self.assertIn("archived", sync.repo_link_problems(text, "README.md")[0])
+
+    def test_own_repository_is_always_fine(self):
+        self.assertEqual(sync.repo_link_problems("https://github.com/LaserLloyd/ThemeForge/releases\n", "x.md"), [])
+
+    def test_the_readme_passes_the_gate(self):
+        self.assertEqual([p for p in sync.doc_consistency(sync.load_registry()) if "links" in p], [])
+
+
+class LocaleTests(unittest.TestCase):
+    """The shipped word tables: every language has every key, placeholders survive."""
+
+    def tables(self):
+        return {p.stem: json.loads(p.read_text(encoding="utf-8")) for p in sorted((ROOT / "src" / "locales").glob("*.json"))}
+
+    def test_en_and_ja_are_shipped(self):
+        bundle = sync.bundle_files(sync.load_registry())
+        self.assertIn("locales/en.json", bundle)
+        self.assertIn("locales/ja.json", bundle)
+
+    def test_every_language_has_exactly_the_english_keys(self):
+        tables = self.tables()
+        for name, table in tables.items():
+            self.assertEqual(sorted(table), sorted(tables["en"]), name)
+            self.assertEqual(table["$locale"], name)
+
+    def test_values_are_filled_and_keep_placeholders(self):
+        import re
+        tables = self.tables()
+        for name, table in tables.items():
+            for key, value in table.items():
+                self.assertIsInstance(value, str, f"{name}.{key}")
+                self.assertTrue(value.strip(), f"{name}.{key}")
+                self.assertEqual(sorted(re.findall(r"\{\w+\}", value)),
+                                 sorted(re.findall(r"\{\w+\}", tables["en"][key])), f"{name}.{key}")
+
+    def test_js_defaults_name_the_same_keys(self):
+        import re
+        source = (ROOT / "src" / "ui-components.js").read_text(encoding="utf-8")
+        block = source[source.index("var DEFAULTS = {"):source.index("};", source.index("var DEFAULTS = {"))]
+        keys = re.findall(r"^\s{4}(\w+):", block, re.M)
+        words = {k: v for k, v in self.tables()["en"].items() if not k.startswith("$")}
+        self.assertEqual(sorted(keys), sorted(words))
+
+
+class ThemeSystemDocTests(unittest.TestCase):
+    """docs/THEME_SYSTEM.md is the index; its theme list must equal src/themes.json."""
+
+    def setUp(self):
+        self.data = sync.load_registry()
+        self.tmp = tempfile.TemporaryDirectory()
+        self.docs = Path(self.tmp.name)
+        self.real_docs = sync.DOCS
+        sync.DOCS = self.docs
+
+    def tearDown(self):
+        sync.DOCS = self.real_docs
+        self.tmp.cleanup()
+
+    def put(self, text):
+        (self.docs / "THEME_SYSTEM.md").write_text(text, encoding="utf-8")
+
+    def real(self):
+        return (self.real_docs / "THEME_SYSTEM.md").read_text(encoding="utf-8")
+
+    def test_the_real_index_matches_the_registry(self):
+        sync.DOCS = self.real_docs
+        self.assertEqual(sync.theme_system_problems(self.data), [])
+        for t in self.data["themes"]:
+            self.assertIn(f"| `{t['slug']}` |", self.real())
+
+    def test_a_missing_file_is_a_problem(self):
+        self.assertIn("is missing", sync.theme_system_problems(self.data)[0])
+
+    def test_a_missing_block_is_a_problem(self):
+        self.put("# no block here\n")
+        self.assertIn("must hold one", sync.theme_system_problems(self.data)[0])
+
+    def test_a_dropped_theme_is_named(self):
+        text = "\n".join(line for line in self.real().splitlines() if not line.startswith("| `slate` |")) + "\n"
+        self.put(text)
+        problems = sync.theme_system_problems(self.data)
+        self.assertEqual(len(problems), 1)
+        self.assertIn("missing slate", problems[0])
+
+    def test_an_unknown_theme_is_named(self):
+        text = self.real().replace("| `slate` | Slate |", "| `slate` | Slate |\n| `bogus` | Bogus | dark | core | `bogus` | standard |", 1)
+        self.put(text)
+        self.assertIn("not in the registry: bogus", sync.theme_system_problems(self.data)[0])
+
+    def test_a_reordered_list_is_a_problem(self):
+        lines = self.real().splitlines()
+        i = next(n for n, line in enumerate(lines) if line.startswith("| `purple` |"))
+        lines[i], lines[i + 1] = lines[i + 1], lines[i]
+        self.put("\n".join(lines) + "\n")
+        self.assertIn("order differs", sync.theme_system_problems(self.data)[0])
+
+    def test_a_stale_cell_is_a_problem_and_build_fixes_it(self):
+        self.put(self.real().replace("| high |", "| standard |", 1))
+        self.assertIn("stale", sync.theme_system_problems(self.data)[0])
+        self.assertTrue(sync.refresh_theme_system(self.data))
+        self.assertEqual(sync.theme_system_problems(self.data), [])
+        self.assertFalse(sync.refresh_theme_system(self.data), "a second refresh changes nothing")
+
+    def test_doc_consistency_reports_it(self):
+        self.put(self.real().replace("| `slate` |", "| `slate-x` |", 1))
+        problems = sync.doc_consistency(self.data)
+        self.assertTrue([p for p in problems if "theme list differs" in p], problems)
+
+
 class RegistryTests(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
@@ -169,6 +303,17 @@ class RegistryTests(unittest.TestCase):
         code, out = quiet(sync.main, ["check", "--apps", str(self.registry)])
         self.assertEqual(code, 1)
         self.assertIn("stale", out)
+
+    def test_install_is_deprecated_but_still_works(self):
+        code, out = quiet(sync.main, ["install", "--apps", str(self.registry), "--quiet"])
+        self.assertEqual(code, 0, out)
+        self.assertIn("deprecated", out)
+        self.assertIn("python -m forgeui vendor", out)
+        target = self.base / "deprecated" / "ui-theme"
+        code, out = quiet(sync.main, ["install", "--to", str(target), "--quiet"])
+        self.assertEqual(code, 0, out)
+        self.assertIn("deprecated", out)
+        self.assertEqual(sync.folder_drift(target, sync.bundle_files(sync.load_registry())), [])
 
     def test_install_to_folder(self):
         target = self.base / "plain" / "ui-theme"
@@ -296,6 +441,71 @@ class ContrastTests(unittest.TestCase):
             self.assertTrue(contrast.resolve("--cta-gradient", props).startswith("linear-gradient("), theme["slug"])
 
 
+class HighContrastTests(unittest.TestCase):
+    """The dedicated high-contrast pair, Slate, and the audit that keeps them honest."""
+
+    def setUp(self):
+        self.registry = {t["slug"]: t for t in sync.load_registry()["themes"]}
+        self.base = contrast.load_base_props((ROOT / "src" / "css" / "theme-base.css").read_text(encoding="utf-8"))
+
+    def props(self, slug):
+        return contrast.merged_props(self.registry[slug], self.base)
+
+    def test_pair_slate_and_sets(self):
+        dark, light = self.registry["high-contrast"], self.registry["high-contrast-light"]
+        self.assertEqual((dark["family"], light["family"]), ("high-contrast", "high-contrast"))
+        self.assertEqual((dark["ground"], light["ground"]), ("dark", "light"))
+        self.assertEqual((dark["contrastProfile"], light["contrastProfile"]), ("high", "high"))
+        self.assertEqual((self.registry["slate"]["set"], dark["set"], light["set"]), ("core", "core", "core"))
+        self.assertNotIn("contrastProfile", self.registry["slate"])
+
+    def test_text_is_seven_to_one_everywhere(self):
+        for slug in ("high-contrast", "high-contrast-light"):
+            checks = contrast.apply_profile(contrast.build_checks(self.props(slug)), "high")
+            for c in checks:
+                if c["fg"] in ("text-tertiary", "text-link", "text-secondary") or c["fg"].endswith("-text"):
+                    if c.get("fixed") or c["fg"] == "text-disabled":
+                        continue
+                    self.assertGreaterEqual(c["floor"], 7, f"{slug}: {c['label']}")
+
+    def test_no_translucent_colour_token(self):
+        for slug in ("high-contrast", "high-contrast-light"):
+            self.assertEqual(contrast.translucency_audit(self.props(slug)), [], slug)
+
+    def test_the_audit_catches_a_translucent_token(self):
+        props = dict(self.props("high-contrast"))
+        props["--surface-2"] = "rgba(23,23,23,.9)"
+        props["--shadow-2"] = "0 4px 12px rgba(0,0,0,.4)"
+        names = [n for n, _v in contrast.translucency_audit(props)]
+        self.assertIn("--surface-2", names)
+        self.assertIn("--shadow-2", names)
+        # transparent, alpha 1 and the exempt dimming overlays pass
+        props = dict(self.props("high-contrast"))
+        props["--accent-glow"] = "transparent"
+        props["--scrim-media"] = "linear-gradient(to top, rgba(0,0,0,.9), rgba(0,0,0,0))"
+        self.assertEqual(contrast.translucency_audit(props), [])
+
+    def test_a_weak_high_contrast_theme_fails(self):
+        props = dict(self.props("high-contrast"))
+        props["--text-tertiary"] = "#6a6a6a"
+        surface0 = contrast.parse_color(contrast.resolve("--surface-0", props))
+        checks = contrast.apply_profile(contrast.build_checks(props), "high")
+        rows = [contrast.evaluate(c, props, surface0) for c in checks]
+        self.assertTrue([r for r in rows if r["fg_token"] == "text-tertiary" and not r["pass"]])
+
+    def test_report_runs_the_opacity_audit(self):
+        report, summary = contrast.build_report(["high-contrast-light"])
+        self.assertIn("Opacity audit (high profile)", report)
+        self.assertEqual(summary[0]["failures"], 0)
+
+    def test_slate_is_denser_than_purple(self):
+        slate = self.props("slate")
+        self.assertEqual((slate["--control-h-md"], slate["--radius-sm"]), ("32px", "4px"))
+        self.assertEqual((self.base["--control-h-md"], self.base["--radius-sm"]), ("36px", "6px"))
+        own = contrast.load_theme_own_props((ROOT / "src" / "css" / "theme-slate.css").read_text(encoding="utf-8"), "slate")
+        self.assertFalse([k for k in own if k.startswith("--z-")], "layers are never overridden by a theme")
+
+
 class LintTests(unittest.TestCase):
     def test_self_test(self):
         code, out = quiet(lint.main, ["--self-test"])
@@ -362,6 +572,30 @@ class UpdateTests(unittest.TestCase):
         self.assertEqual(code, 0, out)
         self.assertTrue((self.dest / "adapters" / "mine.css").is_file())
         self.assertFalse(old.exists())
+
+    def test_tampered_files_json_cannot_remove_files_outside_the_folder(self):
+        self.run_update()
+        victim = self.base / "app" / "keep.txt"
+        victim.write_text("keep", encoding="utf-8")
+        manifest = json.loads((self.dest / "files.json").read_text(encoding="utf-8"))
+        manifest["files"]["../../keep.txt"] = update.digest(b"keep")
+        manifest["hash"] = "000000000000"
+        (self.dest / "files.json").write_text(json.dumps(manifest), encoding="utf-8")
+        for extra in ((), ("--force",)):
+            code, out = self.run_update(*extra)
+            self.assertEqual(code, 2, out)
+            self.assertIn("unsafe path", out)
+            self.assertTrue(victim.is_file(), extra)
+
+    @unittest.skipIf(sys.platform == "win32", "POSIX permission bits")
+    def test_written_files_are_readable_by_other_users(self):
+        old = os.umask(0o022)
+        try:
+            self.assertEqual(self.run_update()[0], 0)
+        finally:
+            os.umask(old)
+        for rel in ("ui-theme.css", "VERSION", "files.json"):
+            self.assertEqual((self.dest / rel).stat().st_mode & 0o777, 0o644, rel)
 
     def test_copy_without_manifest_is_upgraded(self):
         self.dest.mkdir(parents=True)
@@ -493,6 +727,15 @@ class ExampleTests(unittest.TestCase):
         self.assertLess(page.text.index("app.css"), page.text.index("ui-theme/ui-theme.css"))
         script = client.get("/static/ui-theme/ui-theme.js")
         self.assertEqual(script.headers.get("cache-control"), "no-cache")
+
+
+class PreviewImageTests(unittest.TestCase):
+    def test_the_preview_redirect_does_not_name_the_container_port(self) -> None:
+        """System test 2026-10-18: `/` redirected to http://127.0.0.1:8080/specimen/ even when the
+        container was published on another host port (8080 is a different service on the rig)."""
+        dockerfile = (ROOT / "Dockerfile").read_text(encoding="utf-8")
+        self.assertIn("absolute_redirect off;", dockerfile)
+        self.assertIn("location = / { return 302 /specimen/; }", dockerfile)
 
 
 if __name__ == "__main__":

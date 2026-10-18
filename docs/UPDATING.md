@@ -1,7 +1,25 @@
 # Updating
 
 An app holds a copy of `ui-theme/` and never edits it, so updating is replacing the copy.
-`ui-theme/update.py` does that safely.
+Two tools do that safely, with the same guarantees (verified files, no overwriting of hand edits):
+`python -m forgeui vendor` for repositories that keep a `forgeui.json` (the ForgeUI package; see
+[THEME_SYSTEM.md](THEME_SYSTEM.md)), and `ui-theme/update.py` for apps without pip.
+
+## With ForgeUI
+
+```
+pip install --upgrade "forgeui @ git+https://github.com/LaserLloyd/ThemeForge@v1.2.0"   # the release your forgeui.json accepts (not PyPI: that name is another project)
+python -m forgeui vendor                      # write the new copy (VERSION last)
+python -m forgeui vendor --check              # CI: exit 1 when the copy drifted
+python -m forgeui vendor --source forgeui-1.2.0.zip   # offline: a release zip, wheel, archive or folder
+```
+
+`--check` fails on a different version, a stale, edited or missing file, a missing or changed
+overlay, or settings that name a theme the bundle does not have. A hand-edited bundle file is
+refused unless you pass `--force`: move the edit into an overlay (`extra_files`, e.g.
+`adapters/<app>-extra.css`) first. Overlays are never appended into bundle files.
+
+## With update.py
 
 ```
 python3 static/ui-theme/update.py            # install the latest release
@@ -53,9 +71,9 @@ vendored code.
 ## Other ways
 
 - **git:** clone this repository (`--depth 1`), copy `ui-theme/` over the app's copy.
-- **degit:** `npx degit LaserLloyd/ThemeForge/ui-theme#v1.1.2 static/ui-theme --force`.
+- **degit:** `npx degit LaserLloyd/ThemeForge/ui-theme#v1.2.0 static/ui-theme --force`.
 - **CDN:** apps that load the files from jsDelivr update by changing the pinned version in the
-  URL: `https://cdn.jsdelivr.net/gh/LaserLloyd/ThemeForge@v1.1.2/ui-theme/ui-theme.css`.
+  URL: `https://cdn.jsdelivr.net/gh/LaserLloyd/ThemeForge@v1.2.0/ui-theme/ui-theme.css`.
   Never pin `@main`: the CDN caches it for up to 12 hours.
 - **Offline:** copy a release archive (`.tar.gz`) to the machine and run
   `python3 update.py --source <archive> --dest static/ui-theme` with the `update.py` from the
@@ -65,7 +83,9 @@ vendored code.
 
 | Message | Meaning |
 |---|---|
-| `edited by hand: ...` | A bundle file in the copy changed. Move the change into the app's own CSS, then rerun with `--force`. `--check` reports it as "updating needs --force". |
+| `edited by hand: ...` | A bundle file in the copy changed. Move the change into the app's own CSS, then rerun with `--force`. `--check` reports it as "updating needs --force". `forgeui vendor` says "refusing to overwrite files edited by hand" and `--check` prints `DRIFT edited ...`. |
+| `asks for ...` (forgeui) | The source bundle's version is outside the manifest's `version` (or `--version`). Upgrade or pin `forgeui`, or change the manifest on purpose. |
+| `the source failed verification` (forgeui) | The zip, wheel or folder given to `--source` is incomplete or altered; nothing was written. |
 | `not a ui-theme folder` | `--dest` points at a folder with other files and no `VERSION`. Pick an empty or new folder. |
 | `cannot verify HTTPS certificates` | A python.org build on macOS: run "Install Certificates.command" from its folder in Applications. |
 | `HTTP 404` | Wrong `--ref`: no such tag, branch or commit. |

@@ -33,8 +33,14 @@ What it checks, per theme:
     two chat bubbles against each other.
 
 Contrast profiles: a theme may name one with "contrastProfile" in
-src/themes.json. "standard" is the default. "night" is for red-on-black night
-themes. With zero blue, text gains luminance only through the green channel,
+src/themes.json. "standard" is the default. "high" is for the high-contrast
+themes: 7:1 for every text colour (tiers, links, status text, labels on fills,
+syntax, narrative roles), 4.5:1 for edges, focus ring, state indicators and
+chart colours, visible borders and dividers (3:1), separated status hues, and
+an opacity audit: no colour token may be translucent (a partial alpha fails;
+`transparent` and the media and canvas overlays that exist to dim a picture are
+exempt), so nothing a user must read ever depends on what is behind it.
+"night" is for red-on-black night themes. With zero blue, text gains luminance only through the green channel,
 which pulls it toward orange, so --text-primary's 7:1 would take the text out
 of the red family. The night profile sets --text-primary 5.5:1, --text-secondary
 4.5:1 everywhere, --text-tertiary 4:1, --text-disabled 2:1 and --md-bold 6:1,
@@ -68,6 +74,30 @@ STATUSES = ["success", "warning", "danger", "info", "live", "idle", "offline", "
 # Floors a theme opts into with "contrastProfile" in src/themes.json, keyed by
 # the checked (foreground) token; a token not listed keeps the standard floor.
 # "night": pure red tops out at 5.25:1 on black (see the module docstring).
+def _high_floors() -> dict[str, float]:
+    """Floors of the high profile, keyed by the checked (foreground) token."""
+    floors: dict[str, float] = {
+        "text-secondary": 7, "text-tertiary": 7, "text-disabled": 4.5, "text-link": 7,
+        "on-accent": 7, "on-cta": 7, "on-selected": 7, "md-bold": 7,
+        "bubble-user-text": 7, "bubble-assistant-text": 7, "diff-add-text": 7, "diff-remove-text": 7,
+        "on-media": 7,
+        "selected": 4.5, "unselected-border": 4.5, "unselected-fg": 4.5, "border-strong": 4.5,
+        "control-track": 4.5, "focus-ring": 7, "chart-axis": 4.5,
+    }
+    for status in STATUSES:
+        floors[f"{status}-text"] = 7
+        floors[f"on-{status}"] = 7
+    for role in ("rp-speech", "rp-action", "rp-thought", "rp-whisper", "rp-ooc", "rp-shout", "rp-critical"):
+        floors[role] = 7
+    for n in range(1, 13):
+        floors[f"cat-{n}"] = 4.5
+    return floors
+
+
+#: Colour tokens that may keep a partial alpha under the high profile: overlays whose job
+#: is to dim the picture beneath them.
+OPAQUE_EXEMPT = frozenset({"scrim-media", "canvas-mask", "canvas-guide"})
+
 CONTRAST_PROFILES: dict[str, dict] = {
     "standard": {"floors": {}, "zero_blue": False},
     "night": {
@@ -81,6 +111,7 @@ CONTRAST_PROFILES: dict[str, dict] = {
         "zero_blue": True,
         "extra": True,
     },
+    "high": {"floors": {}, "zero_blue": False, "opaque": True},  # floors and rows filled in below
 }
 
 # Night-profile structure, ladder and separation rows, appended
@@ -116,6 +147,32 @@ NIGHT_EXTRA: list[tuple[str, str, str, float, str]] = [
     ("text-link vs warning-text (reported)", "text-link", "warning-text", 0, "delta_e"),
     ("text-secondary on bubble-user-bg (reported)", "text-secondary", "bubble-user-bg", 0, "normal"),
     ("text-tertiary on bubble-user-bg (reported)", "text-tertiary", "bubble-user-bg", 0, "normal"),
+]
+
+# High-profile structure rows: every line is visible, and the status hues stay apart. Same row
+# format as NIGHT_EXTRA.
+HIGH_EXTRA: list[tuple[str, str, str, float, str]] = [
+    ("border on surface-0", "border", "surface-0", 3, "normal"),
+    ("border on surface-2", "border", "surface-2", 3, "normal"),
+    ("border-subtle on surface-0", "border-subtle", "surface-0", 3, "normal"),
+    ("border-subtle on surface-2", "border-subtle", "surface-2", 3, "normal"),
+    ("divider on surface-2", "divider", "surface-2", 3, "normal"),
+    ("glass-stroke on surface-0", "glass-stroke", "surface-0", 3, "normal"),
+    ("glass-stroke-strong on surface-0", "glass-stroke-strong", "surface-0", 4.5, "normal"),
+    ("scrollbar-thumb on surface-0", "scrollbar-thumb", "surface-0", 3, "normal"),
+    # Text colours the standard profile does not floor: link hover, markdown emphasis, highlight, accent-2.
+    ("text-link-hover on surface-0", "text-link-hover", "surface-0", 7, "normal"),
+    ("text-link-hover on surface-2", "text-link-hover", "surface-2", 7, "normal"),
+    ("text-link-hover on surface-4", "text-link-hover", "surface-4", 7, "normal"),
+    ("md-italic on surface-2", "md-italic", "surface-2", 7, "normal"),
+    ("md-bolditalic on surface-2", "md-bolditalic", "surface-2", 7, "normal"),
+    ("highlight on surface-2", "highlight", "surface-2", 7, "normal"),
+    ("accent-2 on surface-2", "accent-2", "surface-2", 7, "normal"),
+    ("quote-bar on surface-2 (graphic)", "quote-bar", "surface-2", 4.5, "normal"),
+    ("accent vs danger (Save vs Delete)", "accent", "danger", 20, "delta_e"),
+    ("danger vs warning", "danger", "warning", 15, "delta_e"),
+    ("warning vs info", "warning", "info", 15, "delta_e"),
+    ("info vs success", "info", "success", 15, "delta_e"),
 ]
 
 # Text tiers whose APCA Lc the night profile reports (not gated).
@@ -635,6 +692,10 @@ def apply_profile(checks: list[dict], profile_name: str) -> list[dict]:
     return out
 
 
+CONTRAST_PROFILES["high"]["floors"] = _high_floors()
+CONTRAST_PROFILES["high"]["rows"] = HIGH_EXTRA
+
+
 def _colours_in(name: str, value: str) -> list[RGBA]:
     """Every colour literal in a resolved token value. --*-rgb tokens are a
     bare comma triple ("240,0,0"), read as an opaque colour."""
@@ -723,6 +784,31 @@ def render_zero_blue(blue: list[tuple[str, str]], unparsed: list[tuple[str, str]
     lines.append("")
     lines.append(f"Tokens that light the green channel ({len(green)}), the theme's non-red elements: "
                  + ", ".join(f"`{n}`" for n, _ in green) if green else "No token lights the green channel.")
+    lines.append("")
+    return "\n".join(lines)
+
+
+def translucency_audit(props: dict[str, str]) -> list[tuple[str, str]]:
+    """(token, resolved value) for every colour token that holds a partial alpha, other than
+    OPAQUE_EXEMPT. Alpha 0 (`transparent`) emits nothing and passes; an alpha of 1 passes."""
+    bad = []
+    for name in sorted(props):
+        if name[2:] in OPAQUE_EXEMPT or ALIAS_RE.match(props[name]):
+            continue
+        value = resolve(name, props) or ""
+        if any(0 < c[3] < 1 for c in _colours_in(name, value)):
+            bad.append((name, value))
+    return bad
+
+
+def render_opacity(bad: list[tuple[str, str]]) -> str:
+    lines = ["### Opacity audit (high profile)", ""]
+    if bad:
+        lines += [f"**FAIL**: {len(bad)} token(s) are translucent:", "", "| Token | Resolved value |", "|---|---|"]
+        lines += [f"| {n} | {v} |" for n, v in bad]
+    else:
+        lines.append("pass: no colour token is translucent (exempt: "
+                     + ", ".join(f"`{n}`" for n in sorted(OPAQUE_EXEMPT)) + ").")
     lines.append("")
     return "\n".join(lines)
 
@@ -944,15 +1030,21 @@ def build_report(slugs: list[str] | None) -> tuple[str, list[dict]]:
         if profile not in CONTRAST_PROFILES:
             raise ValueError(f"{theme['slug']}: unknown contrastProfile {profile!r}; known: {sorted(CONTRAST_PROFILES)}")
         checks = apply_profile(build_checks(props), profile)
-        if CONTRAST_PROFILES[profile].get("extra"):
+        extra_rows = NIGHT_EXTRA if CONTRAST_PROFILES[profile].get("extra") else CONTRAST_PROFILES[profile].get("rows")
+        if extra_rows:
             checks += [{"label": label, "fg": fg, "bg": bg, "floor": floor, "mode": mode, "base": None}
-                       for label, fg, bg, floor, mode in NIGHT_EXTRA]
+                       for label, fg, bg, floor, mode in extra_rows]
         rows = [evaluate(c, props, surface0) for c in checks]
         section, failures = render_theme_section(theme, rows)
         out_lines.append(section)
         if CONTRAST_PROFILES[profile].get("extra"):
             out_lines.append(render_apca(props, surface0))
         n_checks = len(rows)
+        if CONTRAST_PROFILES[profile].get("opaque"):
+            bad = translucency_audit(props)
+            out_lines.append(render_opacity(bad))
+            n_checks += 1
+            failures += 1 if bad else 0
         if CONTRAST_PROFILES[profile]["zero_blue"]:
             blue, unparsed, green = zero_blue_audit(props)
             out_lines.append(render_zero_blue(blue, unparsed, green))

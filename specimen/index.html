@@ -12,7 +12,7 @@
   } catch (e) { /* storage blocked: the default paints */ }
 </script>
 <script src="../ui-theme/ui-theme.js"
-        data-themes="purple,midnight-gold,glacier,forest,paper,daylight,electric-yellow,laserlloyd,laserlloyd-light,night-red"
+        data-themes="purple,midnight-gold,glacier,forest,paper,daylight,slate,high-contrast,high-contrast-light,electric-yellow,laserlloyd,laserlloyd-light,night-red"
         data-default="auto"
         data-default-dark="midnight-gold"
         data-default-light="daylight"
@@ -28,7 +28,7 @@
 <header class="spec-header">
   <div class="ui-stack" style="--ui-gap: 2px">
     <span class="ui-kicker">ThemeForge</span>
-    <strong class="spec-brand">Specimen</strong>
+    <h1 class="spec-brand">Specimen</h1>
   </div>
   <div role="tablist" aria-label="Theme" id="theme-tablist" class="spec-tabs"><!-- built by specimen.js --></div>
   <div class="spec-readout">
@@ -187,6 +187,80 @@
     </div>
   </section>
 
+  <section class="spec-section" id="settings">
+    <h2 class="ui-heading">Settings, copy, validation, progress</h2>
+    <div class="ui-grid" style="--ui-grid-min: 420px">
+      <div class="ui-stack">
+        <div class="ui-settings" id="spec-settings">
+          <div class="ui-setting" data-default="8080">
+            <div class="ui-setting__text">
+              <div class="ui-setting__label"><label for="spec-port">Port</label><span class="ui-badge ui-setting__level"></span><span class="ui-badge ui-badge--info ui-setting__env"></span></div>
+              <p class="ui-setting__desc" id="spec-port-desc">Where the server listens. Change it only if another program uses 8080.</p>
+            </div>
+            <div class="ui-setting__control">
+              <input class="ui-input" id="spec-port" value="8081" inputmode="numeric" aria-describedby="spec-port-desc">
+              <button class="ui-btn ui-btn--ghost ui-btn--sm ui-setting__reset" type="button" hidden></button>
+            </div>
+          </div>
+          <div class="ui-setting" data-default="true">
+            <div class="ui-setting__text">
+              <div class="ui-setting__label"><label for="spec-notify">Notify when a job finishes</label><span class="ui-badge ui-setting__level"></span><span class="ui-badge ui-badge--info ui-setting__env"></span></div>
+              <p class="ui-setting__desc" id="spec-notify-desc">A toast appears in this window.</p>
+            </div>
+            <div class="ui-setting__control">
+              <input type="checkbox" role="switch" class="ui-switch" id="spec-notify" checked aria-describedby="spec-notify-desc">
+              <button class="ui-btn ui-btn--ghost ui-btn--sm ui-setting__reset" type="button" hidden></button>
+            </div>
+          </div>
+          <div class="ui-setting" data-level="advanced" data-source="env" data-default="info">
+            <div class="ui-setting__text">
+              <div class="ui-setting__label"><label for="spec-log">Log level</label><span class="ui-badge ui-setting__level"></span><span class="ui-badge ui-badge--info ui-setting__env"></span></div>
+              <p class="ui-setting__desc" id="spec-log-desc">How much detail the log keeps. The environment sets this, so it cannot be changed here.</p>
+            </div>
+            <div class="ui-setting__control">
+              <select class="ui-select" id="spec-log" aria-describedby="spec-log-desc"><option>info</option><option selected>debug</option></select>
+              <button class="ui-btn ui-btn--ghost ui-btn--sm ui-setting__reset" type="button" hidden></button>
+            </div>
+          </div>
+        </div>
+        <label class="ui-field">
+          <span class="ui-label">Retention in days</span>
+          <input class="ui-input" id="spec-days" value="0" inputmode="numeric">
+          <span class="ui-help">Check it with the button below.</span>
+        </label>
+        <div class="ui-row">
+          <button class="ui-btn" type="button" id="spec-validate">Validate</button>
+          <button class="ui-btn ui-btn--ghost" type="button" id="spec-clear">Clear</button>
+        </div>
+      </div>
+      <div class="ui-stack">
+        <div class="ui-copy">
+          <input class="ui-input ui-copy__value" readonly value="http://192.0.2.10:8080/v1" aria-label="Server URL">
+          <button class="ui-btn ui-copy__button" type="button"></button>
+        </div>
+        <div class="ui-progress-row" aria-busy="true">
+          <div class="ui-progress-row__body">
+            <div class="ui-progress-row__head"><span class="ui-progress-row__label" id="spec-job">Generating images</span><span class="ui-progress-row__value">42%</span></div>
+            <progress class="ui-progress" value="42" max="100" aria-labelledby="spec-job"></progress>
+            <p class="ui-progress-row__detail">Step 13 of 30, about 2 minutes left</p>
+          </div>
+          <button class="ui-btn ui-btn--ghost ui-btn--sm ui-progress-row__cancel" type="button">Cancel</button>
+        </div>
+        <div class="ui-progress-row" data-state="done">
+          <div class="ui-progress-row__body">
+            <div class="ui-progress-row__head"><span class="ui-progress-row__label" id="spec-job2">Upscaling</span><span class="ui-progress-row__value">Done</span></div>
+            <progress class="ui-progress" value="100" max="100" aria-labelledby="spec-job2"></progress>
+          </div>
+        </div>
+        <div class="ui-empty">
+          <h3 class="ui-empty__title">No jobs yet</h3>
+          <p class="ui-empty__desc">Jobs you start show up here with their progress, so you can stop one that is going wrong.</p>
+          <div class="ui-empty__actions"><button class="ui-btn ui-btn--primary" type="button">New job</button><button class="ui-btn" type="button">Import</button></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <section class="spec-section">
     <h2 class="ui-heading">Navigation and structure</h2>
     <nav aria-label="Breadcrumb"><ol class="ui-breadcrumbs">
@@ -258,10 +332,10 @@
       <div class="ui-stack">
         <div class="ui-bubble ui-bubble--user">Cut a test ladder in 3 mm birch and tell me the tightest slot that still fits.</div>
         <div class="ui-bubble ui-markdown"><p>The <strong>2.84 mm</strong> slot pressed in by hand. <em>Re-run after any lens change.</em></p></div>
-        <span class="ui-typing" aria-label="Typing"><span></span><span></span><span></span></span>
+        <span class="ui-typing" role="img" aria-label="Typing"><span></span><span></span><span></span></span>
       </div>
       <figure class="ui-codeblock">
-        <figcaption class="ui-codeblock__bar"><span>python</span><button class="ui-codeblock__button" type="button">Copy</button></figcaption>
+        <figcaption class="ui-codeblock__bar"><span>python</span><button class="ui-codeblock__button" type="button"></button></figcaption>
         <pre class="hljs"><code><span class="hljs-comment"># slot ladder from 0.10 to 0.30 mm</span>
 <span class="hljs-keyword">def</span> <span class="hljs-title function_">ladder</span>(<span class="hljs-params">lo=<span class="hljs-number">0.10</span>, hi=<span class="hljs-number">0.30</span></span>):
     <span class="hljs-keyword">return</span> {<span class="hljs-string">"slots"</span>: <span class="hljs-built_in">list</span>(steps(lo, hi))}
