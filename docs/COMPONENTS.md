@@ -390,7 +390,7 @@ holds the next step as one or two buttons (`__icon` is optional).
 <div class="ui-stack">
   <div class="ui-bubble ui-bubble--user">Hi</div>
   <div class="ui-bubble ui-markdown"><p>Hello! <strong>How can I help?</strong></p></div>
-  <span class="ui-typing" aria-label="Typing"><span></span><span></span><span></span></span>
+  <span class="ui-typing" role="img" aria-label="Typing"><span></span><span></span><span></span></span>
 </div>
 
 <div class="ui-empty">
