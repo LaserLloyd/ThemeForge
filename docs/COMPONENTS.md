@@ -65,7 +65,9 @@ figures), `.ui-kbd` (a key), `.ui-code` (inline code), `.ui-divider` (`<hr>`). T
 <button class="ui-btn ui-btn--outline">Export</button>
 <button class="ui-btn ui-btn--danger">Delete</button>
 <button class="ui-btn ui-btn--cta ui-btn--lg">Get started</button>
-<button class="ui-btn ui-btn--icon" aria-label="Settings" data-ui-tooltip="Settings">⚙</button>
+<button class="ui-btn ui-btn--icon" aria-label="Settings" data-ui-tooltip="Settings">
+  <svg class="ui-icon" aria-hidden="true"><use href="/static/ui-theme/icons.svg#settings"/></svg></button>
+<button class="ui-btn"><svg class="ui-icon" aria-hidden="true"><use href="/static/ui-theme/icons.svg#trash"/></svg>Delete</button>
 <button class="ui-btn" aria-pressed="true">Bold</button> <!-- a toggle button that is on -->
 <button class="ui-btn ui-btn--primary" aria-busy="true">Saving</button>
 <button class="ui-btn ui-btn--primary" disabled>Save</button>
@@ -73,6 +75,21 @@ figures), `.ui-kbd` (a key), `.ui-code` (inline code), `.ui-divider` (`<hr>`). T
 ```
 
 Sizes `--sm`, `--lg`; `--block` for full width. Works on `<a>` too.
+
+## Icons and emoji
+
+```html
+<svg class="ui-icon" aria-hidden="true"><use href="/static/ui-theme/icons.svg#bell"/></svg>
+<svg class="ui-icon ui-icon--sm ui-icon--danger" role="img" aria-label="Failed"><use href="/static/ui-theme/icons.svg#circle-x"/></svg>
+<p data-ui-emoji="text">Typed emoji in the text colour 👍</p>     <!-- ui-components.js -->
+<span class="ui-emoji--color">🎉</span>                             <!-- keeps its colours -->
+```
+
+48 outline icons in `icons.svg`, drawn in `currentColor` with the theme's `--icon-stroke`.
+`.ui-icon` is 1.25em; `--sm` 16px, `--md` 20px, `--lg` 24px; colour `--muted`, `--accent`,
+`--success`, `--warning`, `--danger`, `--info`. Script: `UIComponents.icon(name, {label, size})`,
+`iconFor(emoji)`, `icons()`, `emojify(element, 'icon' | 'text' | 'color')`. The names, the emoji
+each replaces and the three emoji styles are in [ICONS.md](ICONS.md).
 
 ## Form fields
 

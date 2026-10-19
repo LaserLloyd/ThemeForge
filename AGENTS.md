@@ -15,9 +15,11 @@ and the versioning policy are in `docs/THEME_SYSTEM.md`.
 spacing, radii, shadows, motion); an element base layer (body text, links, focus ring,
 scrollbars); text tiers and a markdown style; component classes (buttons, form fields,
 switches, cards, badges, callouts, tabs, tables, dialogs, menus, toasts, an app shell);
-themed `confirm()`/`alert()`/`prompt()`; adapters for NiceGUI/Quasar and Tailwind.
-**What you do not get:** icons, fonts (stacks fall back to system fonts; see
-`docs/INTEGRATIONS.md` to load them), or framework components.
+themed `confirm()`/`alert()`/`prompt()`; 48 outline icons that follow the theme, with a map
+from the emoji apps tend to use as icons; adapters for NiceGUI/Quasar and Tailwind.
+**What you do not get:** fonts (stacks fall back to system fonts; see
+`docs/INTEGRATIONS.md` to load them), illustrations or a large icon library, or framework
+components.
 
 **Browsers:** current Chrome, Edge, Firefox and Safari (2024 or newer). The layer uses
 `:has()`, `color-mix()` and the popover API; older browsers keep the colours, but some
@@ -47,12 +49,14 @@ cmd and bash. It downloads the installer, which fetches the latest release from 
 checks every file against its checksum list and writes the folder. Later updates are
 `python3 static/ui-theme/update.py`. Offline: download a release archive (`.tar.gz`) elsewhere,
 then run `python3 update.py --source <archive> --dest static/ui-theme` with the `update.py` from
-its `ui-theme/` folder.
+its `ui-theme/` folder. If you were handed `ThemeForge.zip` (the release zip), unzip it and copy its
+`ui-theme/` folder into the app, or run
+`python3 ThemeForge-<version>/ui-theme/update.py --source ThemeForge-<version>/ui-theme --dest static/ui-theme`.
 <!-- install:end -->
 
 Other ways (pip for Python apps; the rest when Python is not available):
 
-- **pip (Python apps):** `pip install "forgeui @ git+https://github.com/LaserLloyd/ThemeForge@v1.2.0"`
+- **pip (Python apps):** `pip install "forgeui @ git+https://github.com/LaserLloyd/ThemeForge@v1.3.0"`
   (the wheel is not on PyPI; that name belongs to an unrelated project), then
   `python -m forgeui init --dest static/ui-theme`,
   edit the `forgeui.json` it writes (themes, default, storage key), and `python -m forgeui vendor`.
@@ -61,9 +65,9 @@ Other ways (pip for Python apps; the rest when Python is not available):
   and write the head block for FastAPI and NiceGUI. Details: `docs/THEME_SYSTEM.md`.
 - **git:** `git clone --depth 1 https://github.com/LaserLloyd/ThemeForge.git ut-tmp`, copy
   `ut-tmp/ui-theme` into the app, delete `ut-tmp`.
-- **Node:** `npx degit LaserLloyd/ThemeForge/ui-theme#v1.2.0 static/ui-theme`.
+- **Node:** `npx degit LaserLloyd/ThemeForge/ui-theme#v1.3.0 static/ui-theme`.
 - **No install (prototypes, single HTML files):** load the files from jsDelivr, pinned to a
-  release: `https://cdn.jsdelivr.net/gh/LaserLloyd/ThemeForge@v1.2.0/ui-theme/ui-theme.js`
+  release: `https://cdn.jsdelivr.net/gh/LaserLloyd/ThemeForge@v1.3.0/ui-theme/ui-theme.js`
   (and the same path for each CSS file). Never pin `@main`; the CDN caches it for up to
   12 hours. A CDN page updates by changing the pinned version; `update.py` and steps 8.5, 9
   and 10 below do not apply to it.
@@ -222,6 +226,23 @@ reset-to-default button, `.ui-progress-row` with a cancel slot, and `.ui-empty__
 it shows comes from a string table you can translate (`UIComponents.setStrings`, `loadLocale('ja')`,
 `data-locale="auto"`); see `docs/COMPONENTS.md`.
 
+Icons: never an emoji in a button, tab, menu, nav item or status line. Use one of the 48 icons
+in `icons.svg` (names and the emoji each replaces: `docs/ICONS.md`, or `ui-theme/icons.json`).
+They take the colour of their text and the theme's stroke weight:
+
+```html
+<button class="ui-btn"><svg class="ui-icon" aria-hidden="true"><use href="/static/ui-theme/icons.svg#trash"/></svg>Delete</button>
+<button class="ui-btn ui-btn--icon" aria-label="Settings"><svg class="ui-icon" aria-hidden="true"><use href="/static/ui-theme/icons.svg#settings"/></svg></button>
+```
+
+From script: `UIComponents.icon('trash')` returns that `<svg>`; `UIComponents.iconFor('🗑️')` gives
+`'trash'` (null when no icon means it), for turning an emoji someone configured into an icon.
+Emoji people type stay emoji, in one of three styles: `UIComponents.emojify(el, 'icon')` swaps
+the ones with an icon, `'text'` draws them in the text colour (`.ui-emoji`), `'color'` keeps
+their colours (`.ui-emoji--color`, for reactions); `data-ui-emoji="text"` on an element does it on
+load. On a CDN page use `UIComponents.icon()`: a hand-written `<use>` cannot reach a sprite on
+another origin.
+
 ## 6. Rules
 
 Do:
@@ -244,6 +265,8 @@ Do not:
 - Name a theme slug or `[data-palette]` in component CSS. Purple is the absence of
   `data-palette`, not a value of it.
 - Change a `--z-*` value, or edit anything inside `ui-theme/` (it is replaced on update).
+- Use emoji as icons in app chrome; use `icons.svg` (an emoji in a message someone typed is
+  fine). If no icon fits, ask before adding an icon set; ThemeForge keeps its set under 50.
 - Enable opt-in themes nobody asked for.
 
 ## 7. Charts, canvas and SVG
@@ -257,8 +280,8 @@ chart.update(palette());
 UITheme.onChange(() => chart.update(palette()));
 ```
 
-Inline SVG icons: `fill="currentColor"` / `stroke="currentColor"` so they take the text tier
-of their container.
+Icons: use `icons.svg` (section 5). An inline SVG of the app's own: `fill="currentColor"` /
+`stroke="currentColor"` so it takes the text tier of its container.
 
 ## 8. Verify
 
@@ -283,11 +306,12 @@ Add this line to the app's own `AGENTS.md` or `CLAUDE.md` (create one if missing
 agent working on the app keeps using the theme:
 
 ```
-UI styling uses ThemeForge 1.2.0 in static/ui-theme/ (read static/ui-theme/README.md before
+UI styling uses ThemeForge 1.3.0 in static/ui-theme/ (read static/ui-theme/README.md before
 writing CSS). Every page head carries the theme block from the base template: ui-theme.js first
 and blocking, ui-theme-base.css + ui-components.css before the app's CSS, ui-theme.css after it.
 Build from its tokens and ui-* classes, never write colour literals, never edit that folder;
-update it with `python3 static/ui-theme/update.py`.
+icons come from static/ui-theme/icons.svg (<svg class="ui-icon"><use href=".../icons.svg#name"/>),
+never emoji; update it with `python3 static/ui-theme/update.py`.
 ```
 
 (Replace `static/ui-theme/` with the folder you used.)
@@ -295,7 +319,7 @@ update it with `python3 static/ui-theme/update.py`.
 ## 10. Updating later
 
 `python3 static/ui-theme/update.py` installs the latest release (`--check` only reports;
-`--ref v1.2.0` pins a version); an app with a `forgeui.json` raises its `forgeui` pin and runs
+`--ref v1.3.0` pins a version); an app with a `forgeui.json` raises its `forgeui` pin and runs
 `python -m forgeui vendor` instead. It replaces only the files it owns, leaves the app's own
 files in the folder alone, and refuses to overwrite a file that was edited by hand (move the
 edit into the app's CSS). Read `CHANGELOG.md` in this repository for what changed, then repeat
@@ -325,6 +349,9 @@ step 8. More in `docs/UPDATING.md`.
   `color(name)`, `colors(names)` (resolved `rgb()` colours for canvas),
   `mountPicker(selectOrContainer)`, `partner()`, `toggleFamily()`, `version`. The
   `ui-theme-change` event on `document` carries `{slug, theme, previous}`.
+- `window.UIComponents` (icons): `icon(name, {label, size})`, `iconFor(emoji)`, `icons()`,
+  `emojify(element, 'icon' | 'text' | 'color')`; `data-icons` on its script tag moves the sprite,
+  `data-ui-emoji` on an element emojifies it on load.
 - Script tag settings: `data-themes`, `data-default` (slug or `auto`), `data-default-dark`,
   `data-default-light`, `data-storage-key`, `data-families`, `data-print-theme` (`auto`:
   print a dark theme in a light one; a slug; or `none`), `data-legacy-key` + `data-legacy-map`
@@ -332,6 +359,6 @@ step 8. More in `docs/UPDATING.md`.
 - Also built in: printing switches to a light theme and hides navigation and toasts; when the
   system asks for more contrast (`prefers-contrast: more`) lines get stronger and the quietest
   text tier steps up; reduced motion stops loops and shortens animations.
-- Docs: `docs/THEME_SYSTEM.md` (the index, contract rules, versioning, vendoring), `docs/TOKENS.md` (every token), `docs/COMPONENTS.md`, `docs/TEXT.md` (text tiers and
+- Docs: `docs/THEME_SYSTEM.md` (the index, contract rules, versioning, vendoring), `docs/TOKENS.md` (every token), `docs/COMPONENTS.md`, `docs/ICONS.md` (the icons and emoji styles), `docs/TEXT.md` (text tiers and
   markdown), `docs/THEMES.md` (the themes, and making your own), `docs/INTEGRATIONS.md`,
   `docs/UPDATING.md`.

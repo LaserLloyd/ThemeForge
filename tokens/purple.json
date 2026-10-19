@@ -1,5 +1,5 @@
 {
-  "$description": "Purple: ThemeForge 1.2.0 design tokens in the W3C DTCG format (Format Module 2025.10), generated from src/css. The CSS custom property for a token is --<token name>.",
+  "$description": "Purple: ThemeForge 1.3.0 design tokens in the W3C DTCG format (Format Module 2025.10), generated from src/css. The CSS custom property for a token is --<token name>.",
   "$extensions": {
     "com.laserlloyd.themeforge": {
       "theme": {
@@ -2357,6 +2357,16 @@
     "font-display": {
       "$type": "fontFamily",
       "$value": "{type-families.font-sans}"
+    },
+    "font-emoji": {
+      "$type": "fontFamily",
+      "$value": [
+        "Noto Emoji",
+        "Segoe UI Symbol",
+        "Apple Symbols",
+        "Noto Sans Symbols 2",
+        "sans-serif"
+      ]
     }
   },
   "elevation": {
@@ -2841,6 +2851,12 @@
         "value": 1200,
         "unit": "px"
       }
+    }
+  },
+  "icons": {
+    "icon-stroke": {
+      "$type": "number",
+      "$value": 2
     }
   },
   "component-tokens": {

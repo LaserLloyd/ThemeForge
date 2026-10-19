@@ -1,7 +1,7 @@
-# ui-theme 1.2.0
+# ui-theme 1.3.0
 
 A drop-in theme for web apps: thirteen colour themes, a theme picker, design tokens, a base
-element layer, a text standard and ready-made component classes. Plain CSS and two small
+element layer, a text standard, ready-made component classes and 48 icons that follow the theme. Plain CSS and two small
 scripts; no build step, no dependencies. Source and full docs:
 https://github.com/LaserLloyd/ThemeForge
 
@@ -16,7 +16,9 @@ app's own styles in your app's own CSS files.
 | `ui-theme-base.css` | element defaults (body type, links, focus ring, scrollbars, selection), text tiers `.ui-text-*`, markdown `.ui-markdown` | `<link>` **before** your CSS |
 | `ui-components.css` | component classes: `.ui-btn`, `.ui-input`, `.ui-card`, `.ui-switch`, `.ui-dialog`, ... | `<link>` **before** your CSS |
 | `ui-theme.css` | the colour tokens of every theme | `<link>` **after** your CSS |
-| `ui-components.js` | optional: themed `confirm()`/`alert()`/`prompt()` dialogs and toasts, copy-to-clipboard, inline field validation, settings-row wiring, translatable words | `<script defer>` anywhere |
+| `ui-components.js` | optional: themed `confirm()`/`alert()`/`prompt()` dialogs and toasts, copy-to-clipboard, inline field validation, settings-row wiring, icon and emoji helpers, translatable words | `<script defer>` anywhere |
+| `icons.svg` | 48 outline icons, one `<symbol>` each, drawn in the text colour | `<svg class="ui-icon"><use href=".../icons.svg#settings"/></svg>` |
+| `icons.json`, `icons-LICENSE.txt` | the icon names, labels and the emoji each replaces; the icons' license (Lucide, ISC) | not loaded; keep the license with the folder |
 | `locales/en.json`, `locales/ja.json` | the words `ui-components.js` puts on the page, per language | `UIComponents.loadLocale('ja')` or `data-locale="auto"` on its script tag |
 | `adapters/quasar.js`, `adapters/quasar.css` | NiceGUI / Quasar apps only | JS right after `ui-theme.js`, CSS right after `ui-theme.css` |
 | `adapters/tailwind.css` | Tailwind CSS v4 apps: `bg-surface-2`, `text-fg`, ... | `@import` it after `tailwindcss` |
@@ -100,6 +102,11 @@ Rules:
 - Rendered markdown goes in an element with class `ui-markdown`.
 - Keep the focus ring: never `outline: none` without a replacement.
 - Charts and canvas: `UITheme.token('--cat-1')`, and redraw in `UITheme.onChange(fn)`.
+- Icons, never emoji, in buttons, tabs, menus and status lines:
+  `<svg class="ui-icon" aria-hidden="true"><use href="/static/ui-theme/icons.svg#trash"/></svg>`
+  (`UIComponents.icon('trash')` from script; `UIComponents.iconFor('🗑️')` finds the icon for an
+  emoji). Typed emoji: `UIComponents.emojify(el, 'text')` draws them in the text colour,
+  `'color'` keeps their colours. Names: `icons.json`.
 
 ## Update
 

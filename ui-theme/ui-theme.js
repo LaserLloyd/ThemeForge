@@ -1,7 +1,7 @@
-/* GENERATED theme runtime: ThemeForge 1.2.0, drop-in bundle (ui-theme/).
+/* GENERATED theme runtime: ThemeForge 1.3.0, drop-in bundle (ui-theme/).
    https://github.com/LaserLloyd/ThemeForge . Do not edit this copy: update the whole
    folder (python ui-theme/update.py) and keep app styles in the app.
-   body sha256: b96862481d771124 */
+   body sha256: 4cb59ff8b67fe4d0 */
 /* ============================================================================
    ui-theme.js — the theme runtime · ThemeForge
    ----------------------------------------------------------------------------
@@ -564,7 +564,7 @@
      UITheme.mountPicker(target[, {label, coreLabel, optInLabel, systemLabel}]) -> the <select>
      document 'ui-theme-change' event carries the same detail as onChange. */
   global.UITheme = {
-    version: /*@version*/'1.2.0',
+    version: /*@version*/'1.3.0',
     config: config,
     current: function () { return current; },
     theme: function (slug) { var t = find(slug || current); return t ? copy(t) : null; },

@@ -162,4 +162,7 @@
   --scrollbar-hover: #000000;  /* D */
   /* The empty part of a slider: 5.3:1 on white. */
   --control-track: #6b6b6b;
+
+  /* Heavier icon lines, like the rest of this theme. */
+  --icon-stroke: 2.5;
 }

@@ -17,6 +17,7 @@ When a page disagrees with the source in the second column, the source wins and 
 | Token names, groups and Purple's values | [`src/css/theme-base.css`](../src/css/theme-base.css) | [TOKENS.md](TOKENS.md) (generated), [`tokens/*.json`](../tokens/) (W3C design tokens, generated) |
 | What each theme sets | `src/css/theme-<slug>.css` | [THEMES.md](THEMES.md), `tokens/<slug>.json` |
 | Contrast guarantees | [`tools/check_contrast.py`](../tools/check_contrast.py) | [contrast-report.md](contrast-report.md) (generated, every row of every theme) |
+| The icon set, and the emoji each icon replaces | [`src/icons/icons.json`](../src/icons/icons.json) | [ICONS.md](ICONS.md) (generated) |
 | Component classes and behaviour | [`src/css/components.css`](../src/css/components.css), [`src/ui-components.js`](../src/ui-components.js) | [COMPONENTS.md](COMPONENTS.md), the [specimen](../specimen/index.html) |
 | The runtime and its API | [`src/ui-theme.js`](../src/ui-theme.js), [`src/ui-theme.d.ts`](../src/ui-theme.d.ts) | [INTEGRATIONS.md](INTEGRATIONS.md), [AGENTS.md](../AGENTS.md) |
 | What an app receives | [`ui-theme/`](../ui-theme/) (generated, checksummed by `files.json`) | [UPDATING.md](UPDATING.md) |
@@ -24,7 +25,7 @@ When a page disagrees with the source in the second column, the source wins and 
 ## The themes
 
 <!-- themes:start -->
-Release **1.2.0**: 13 themes sharing 275 tokens (the contract, counting the shared geometry, type and motion tokens).
+Release **1.3.0**: 13 themes sharing 277 tokens (the contract, counting the shared geometry, type and motion tokens).
 
 | Slug | Name | Ground | Set | Family | Contrast profile |
 |---|---|---|---|---|---|
@@ -57,8 +58,8 @@ for each theme, and how to add one, are in [THEMES.md](THEMES.md).
    name. Adding a token is a minor release; renaming or removing one is a major release.
 2. **Every theme defines every colour token.** A theme that leaves one out inherits Purple's
    value, which is almost never right. Non-colour tokens (spacing, type scale, motion, layers)
-   are shared; a theme may set radii, control heights, shell metrics and font stacks, and never
-   a `--z-*` layer.
+   are shared; a theme may set radii, control heights, shell metrics, font stacks and the icon
+   stroke, and never a `--z-*` layer.
 3. **Apps and components use tokens, never colour literals.** `color: var(--text-primary)`, not
    `#fff`. `tools/lint_colors.py` enforces it on the component layer, and the app checklist in
    [AGENTS.md](../AGENTS.md) enforces it on apps.
@@ -72,7 +73,10 @@ for each theme, and how to add one, are in [THEMES.md](THEMES.md).
    `aria-selected`, `aria-current`, `aria-invalid`, `aria-busy`), not from extra classes.
 7. **Component CSS never names a theme.** No slug and no `[data-palette]`: Purple is the absence
    of `data-palette`, and a component must work in a theme that does not exist yet.
-8. **Contrast is a gate, not a goal.** Every theme passes every row of its profile in
+8. **Icons, not emoji, in app chrome.** A button, tab, menu or status line draws an icon from
+   `ui-theme/icons.svg` (`currentColor`, so it takes the theme); emoji are for what people type.
+   The set stays under 50 icons; an icon name is public API like a token name.
+9. **Contrast is a gate, not a goal.** Every theme passes every row of its profile in
    `check_contrast.py` before it ships; CI fails otherwise. The floors are listed at the top of
    [TOKENS.md](TOKENS.md).
 
@@ -109,7 +113,7 @@ The public API is everything an app can depend on:
 - every `--token` of the contract, every `ui-*` class and its `__part` and `--variant` names, the
   state attributes components read (`data-level`, `data-source`, `data-default`, `data-state`,
   `data-copied`, ...), `[data-palette]`, `<html data-theme>` and `<html data-contrast-profile>`;
-- theme slugs, and the keys of `locales/*.json`;
+- theme slugs, icon names (the `<symbol>` ids of `icons.svg`), and the keys of `locales/*.json`;
 - the `forgeui` Python package (`static_dir`, `head_html`, `head_html_from_manifest`, `mount`),
   the `python -m forgeui` commands and flags, and the `forgeui.json` schema.
 
@@ -121,8 +125,8 @@ Versions follow [Semantic Versioning](https://semver.org/):
 
 | Release | What may change |
 |---|---|
-| **Major** | Renaming or removing a token, class, API, file, theme slug or locale key; changing what a token means; an incompatible `forgeui.json` change; dropping a supported Python version. Also the point where deprecated things are removed, and where the `ThemeForge` stamp in `VERSION` may become `ForgeUI`. |
-| **Minor** | Adding a token (defined in every theme), a theme, a component class, a string key, a command or flag, an adapter. Nothing an app uses changes. |
+| **Major** | Renaming or removing a token, class, API, file, theme slug, icon or locale key; changing what a token means; an incompatible `forgeui.json` change; dropping a supported Python version. Also the point where deprecated things are removed, and where the `ThemeForge` stamp in `VERSION` may become `ForgeUI`. |
+| **Minor** | Adding a token (defined in every theme), a theme, a component class, an icon, an emoji mapping, a string key, a command or flag, an adapter. Nothing an app uses changes. |
 | **Patch** | Fixes, value tweaks that keep every contrast floor passing, documentation. |
 
 Deprecations are announced in [CHANGELOG.md](../CHANGELOG.md) and, where there is a command, by a
@@ -138,11 +142,13 @@ One folder is the whole contract, so every route ends in "this folder, byte for 
 | Route | For | How |
 |---|---|---|
 | **`forgeui` wheel** (primary) | Python apps (FastAPI, NiceGUI, Flask, Django) and any repo that can run `pip` in dev | `pip install` from a release tag (not PyPI; see Procedure); `python -m forgeui vendor` copies the folder into the repo; `forgeui.head_html()` and `forgeui.mount(app)` wire it |
-| **Release zip or tarball** | Offline machines, CI caches | `python -m forgeui vendor --source forgeui-1.2.0.zip` (also takes a wheel, a repo archive or an unpacked folder) |
+| **Release zip** | AI agents, offline machines, CI caches | Every [GitHub release](https://github.com/LaserLloyd/ThemeForge/releases) carries `ThemeForge-<version>.zip` (the bundle, `AGENTS.md`, the docs, tokens and examples); [`releases/latest/download/ThemeForge.zip`](https://github.com/LaserLloyd/ThemeForge/releases/latest/download/ThemeForge.zip) is always the newest. `python -m forgeui vendor --source ThemeForge-1.3.0.zip` vendors from it (it also takes a wheel, a repo archive or an unpacked folder) |
 | **`ui-theme/update.py`** | Apps with no `pip` | `python ui-theme/update.py` fetches the latest release from GitHub |
-| **jsDelivr** | Prototypes, single HTML files | `https://cdn.jsdelivr.net/gh/LaserLloyd/ThemeForge@v1.2.0/ui-theme/ui-theme.css`, pinned, never `@main` |
+| **jsDelivr** | Prototypes, single HTML files | `https://cdn.jsdelivr.net/gh/LaserLloyd/ThemeForge@v1.3.0/ui-theme/ui-theme.css`, pinned, never `@main` |
 
-There is no JavaScript build step in any route.
+There is no JavaScript build step in any route. Releasing is merging: when `src/themes.json` on
+`main` names a version with no tag yet, `.github/workflows/release.yml` runs the checks, builds
+the zip (`tools/release_zip.py`) and the wheel, and publishes the release, which creates the tag.
 
 ### The manifest: `forgeui.json`
 
@@ -169,7 +175,7 @@ theme choice lives (it replaces the same list copied into Python, HTML and JavaS
 
 ### Procedure
 
-1. Install: `pip install "forgeui @ git+https://github.com/LaserLloyd/ThemeForge@v1.2.0"` (a dev dependency is
+1. Install: `pip install "forgeui @ git+https://github.com/LaserLloyd/ThemeForge@v1.3.0"` (a dev dependency is
    enough; pin it in the lockfile). The wheel is not on PyPI: the name `forgeui` there belongs to an
    unrelated project, so never run a bare `pip install forgeui`.
 2. `python -m forgeui init --dest static/ui-theme`, then edit `forgeui.json`.

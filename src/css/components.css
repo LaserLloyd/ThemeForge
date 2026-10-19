@@ -238,6 +238,49 @@
   font-size: .86em;
 }
 
+/* ---- Icons and emoji ----------------------------------------------------------
+   <svg class="ui-icon" aria-hidden="true"><use href="/static/ui-theme/icons.svg#settings"/></svg>
+   48 outline icons (names in docs/ICONS.md). They draw in currentColor, so they take
+   the colour of their text, and with the theme's --icon-stroke. 1.25em by default;
+   --sm 16px, --md 20px, --lg 24px, or set --ui-icon-size. A button whose only content
+   is an icon needs an aria-label.
+
+   Emoji, three ways (UIComponents.emojify(element, style) applies one to text):
+     icon    an emoji in app chrome (⚙ 🗑 📁) becomes the outline icon above
+     text    an emoji someone typed, in the text colour:  <span class="ui-emoji">👍</span>
+     colour  an emoji that keeps its colours (reactions): <span class="ui-emoji--color">🎉</span>
+   Faces have no text glyph in system fonts; they turn monochrome once the page loads
+   Noto Emoji (see --font-emoji). */
+
+.ui-icon {
+  display: inline-block;
+  flex: none;
+  inline-size: var(--ui-icon-size, 1.25em);
+  block-size: var(--ui-icon-size, 1.25em);
+  vertical-align: -0.25em;
+  overflow: visible;
+}
+.ui-icon--sm { --ui-icon-size: 16px; }
+.ui-icon--md { --ui-icon-size: 20px; }
+.ui-icon--lg { --ui-icon-size: 24px; }
+.ui-icon--muted   { color: var(--text-secondary); }
+.ui-icon--accent  { color: var(--text-link); }
+.ui-icon--success { color: var(--success-text); }
+.ui-icon--warning { color: var(--warning-text); }
+.ui-icon--danger  { color: var(--danger-text); }
+.ui-icon--info    { color: var(--info-text); }
+
+.ui-emoji {
+  font-family: var(--font-emoji);
+  font-style: normal;
+  font-variant-emoji: text;
+}
+.ui-emoji--color {
+  font-style: normal;
+  font-variant-emoji: emoji;
+  filter: var(--media-filter);
+}
+
 /* ---- Buttons ----------------------------------------------------------------
    <button class="ui-btn ui-btn--primary">Save</button>
    Variants: --primary, (secondary is the default), --ghost, --outline,
