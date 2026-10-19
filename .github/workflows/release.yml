@@ -1,0 +1,64 @@
+name: release
+
+# A version bump merged to main is the release: when src/themes.json names a version
+# that has no v<version> tag yet, this checks the tree, builds the release zip and the
+# wheel, and publishes a GitHub release, which creates the tag. ui-theme/update.py
+# installs "latest" from the tag that main's VERSION names, so main never points at a
+# tag that does not exist for longer than this job takes.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Is this version released?
+        id: v
+        run: |
+          v=$(python -c "import json; print(json.load(open('src/themes.json'))['version'])")
+          echo "version=$v" >> "$GITHUB_OUTPUT"
+          if git rev-parse -q --verify "refs/tags/v$v" > /dev/null; then
+            echo "v$v is already tagged; nothing to release"
+            echo "new=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "new=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Checks
+        if: steps.v.outputs.new == 'true'
+        run: |
+          python tools/sync_theme.py check
+          python tools/check_contrast.py --fail-on any > /dev/null
+          python -m unittest discover -s tests
+      - name: Build the zip and the wheel
+        if: steps.v.outputs.new == 'true'
+        run: |
+          python -m pip install --upgrade build
+          python -m build --wheel
+          python tools/release_zip.py --out dist
+          python tools/release_zip.py --notes > notes.md
+          printf '\n---\nFor an AI agent: download ThemeForge.zip, unzip it, and have the agent follow AGENTS.md in it (copy its ui-theme/ folder into the app, or run `python3 ThemeForge-%s/ui-theme/update.py --source ThemeForge-%s/ui-theme --dest static/ui-theme`). Always the newest: https://github.com/%s/releases/latest/download/ThemeForge.zip\n' \
+            "${{ steps.v.outputs.version }}" "${{ steps.v.outputs.version }}" "${{ github.repository }}" >> notes.md
+          ls -l dist
+      - name: Tag and publish
+        if: steps.v.outputs.new == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "v${{ steps.v.outputs.version }}" dist/*.zip dist/*.whl \
+            --target "$GITHUB_SHA" --title "ThemeForge ${{ steps.v.outputs.version }}" --notes-file notes.md

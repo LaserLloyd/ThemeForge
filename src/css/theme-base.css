@@ -291,6 +291,9 @@
   --font-serif:   var(--font-sans);
   --font-mono:    'JetBrains Mono', 'Fira Code', ui-monospace, monospace;  /* no SFMono-Regular/Menlo: ui-monospace covers Apple, and Linux fontconfig maps both names to a proportional sans */
   --font-display: var(--font-sans);
+  /* Typed emoji drawn in the text colour (.ui-emoji). Noto Emoji is monochrome:
+     load it (data-fonts-href) to draw faces, which system fonts only have in colour. */
+  --font-emoji:   'Noto Emoji', 'Segoe UI Symbol', 'Apple Symbols', 'Noto Sans Symbols 2', sans-serif;
 
   /* ---- Elevation ---- */
   --shadow-1: 0 1px 2px rgba(0,0,0,.30);
@@ -316,7 +319,8 @@
 
 /* ==========================================================================
    B. THEME-INVARIANT TOKENS
-   Themes may override radii, control heights and shell metrics. Themes NEVER
+   Themes may override radii, control heights, shell metrics and the icon
+   stroke. Themes NEVER
    override --z-*.
    ========================================================================== */
 
@@ -345,6 +349,10 @@
   --rail-w:      72px;
   --bar-h:       60px;
   --content-max: 1200px;
+
+  /* Icons: the stroke of ui-theme/icons.svg, in units of its 24px grid (2 = 1/12
+     of the icon's size). A theme may change it; the high-contrast pair draws heavier. */
+  --icon-stroke: 2;
 
   /* Component tokens */
   --slider-track-h: 4px;
@@ -554,6 +562,7 @@ progress { accent-color: var(--accent); }
     --divider: var(--border-strong);
     --glass-stroke: var(--border-strong);
     --text-tertiary: var(--text-secondary);
+    --icon-stroke: 2.5;
   }
 }
 

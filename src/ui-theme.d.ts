@@ -75,6 +75,12 @@ declare global {
   type UIStringKey = 'cancel' | 'ok' | 'confirm' | 'input' | 'message' | 'value' | 'copy' | 'copied' |
     'copyFailed' | 'reset' | 'resetNamed' | 'basic' | 'advanced' | 'setByEnv';
 
+  /** An icon in ui-theme/icons.svg (docs/ICONS.md). */
+  type UIIconName = /*@icon-names*/string/*@end-icon-names*/;
+
+  /** How emojify() draws emoji: as icons, in the text colour, or in their own colours. */
+  type UIEmojiStyle = 'icon' | 'text' | 'color';
+
   interface UISettingController {
     /** Re-read the control and show or hide the reset button. */
     update(): void;
@@ -86,6 +92,14 @@ declare global {
     alert(options: UIDialogOptions | string): Promise<void>;
     prompt(options: UIPromptOptions | string): Promise<string | null>;
     toast(message: string, options?: { kind?: 'info' | 'success' | 'warning' | 'danger'; timeout?: number }): HTMLElement;
+    /** An <svg class="ui-icon"> that uses the sprite; decorative (aria-hidden) unless it has a label. */
+    icon(name: UIIconName, options?: { label?: string; size?: 'sm' | 'md' | 'lg'; className?: string }): SVGSVGElement;
+    /** The icon an emoji or symbol stands for ('⚙️' -> 'settings'), or null. */
+    iconFor(text: string): UIIconName | null;
+    /** Every icon name, in display order. */
+    icons(): UIIconName[];
+    /** Draw the emoji in an element's text in one style (default 'icon'); returns how many changed. */
+    emojify(root: Node, style?: UIEmojiStyle): number;
     /** Copy an element's text (a .ui-copy, a code block, an input's value) or a string. Resolves true on success. */
     copy(target: Element | string): Promise<boolean>;
     /** Mark a field invalid with a message (aria-invalid, aria-describedby, announced); an empty message clears it. */

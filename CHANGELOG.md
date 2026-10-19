@@ -4,6 +4,48 @@ Versions follow [Semantic Versioning](https://semver.org/). A release is a git t
 `ui-theme/VERSION` and `UITheme.version` carry the same number. Token names are the public
 API: removing or renaming one is a major version.
 
+## 1.3.0
+
+Icons, so apps stop using emoji as icons. Nothing is removed or renamed.
+
+**Icons** ([`docs/ICONS.md`](docs/ICONS.md))
+
+- **`ui-theme/icons.svg`**: 48 outline icons from [Lucide](https://lucide.dev) 1.50.0 (ISC; the
+  notice ships as `ui-theme/icons-LICENSE.txt`), one sprite of 15 KB (3 KB gzipped). Use:
+  `<svg class="ui-icon" aria-hidden="true"><use href="/static/ui-theme/icons.svg#settings"/></svg>`.
+  They draw in `currentColor` with the theme's stroke weight, so every theme colours them. The set
+  covers app chrome (actions, navigation, status, areas, people and AI, system, media,
+  reactions) and stays under 50; icon names are public API like token names.
+- **`.ui-icon`** (1.25em, or `--sm` 16px, `--md` 20px, `--lg` 24px, or `--ui-icon-size`) with colour
+  modifiers `--muted`, `--accent`, `--success`, `--warning`, `--danger`, `--info`.
+- **Emoji, three ways:** as an icon (an emoji in app chrome becomes the outline icon it stands
+  for), as text (`.ui-emoji`: a typed emoji in the text colour, text presentation), or in colour
+  (`.ui-emoji--color`: native colours, toned by the theme's `--media-filter`, so Night Red keeps
+  them red).
+- **`ui-components.js`:** `UIComponents.icon(name, { label, size })`, `UIComponents.iconFor('🗑️')`
+  (the icon an emoji or symbol stands for: 164 mapped, e.g. ⚙ 🗑 📁 ✅ ❌ ✕ ▸ ☰),
+  `UIComponents.icons()`, `UIComponents.emojify(element, 'icon' | 'text' | 'color')`, and
+  `data-ui-emoji="..."` on an element to do it on load. The sprite is found next to the script
+  (`data-icons` overrides); on another origin (the CDN) it is fetched once and inlined, because
+  `<use>` cannot cross origins. `ui-theme.d.ts` types the icon names.
+- **`ui-theme/icons.json`**: the names, labels, uses and emoji map, for server-side templates
+  and agents.
+
+**Tokens** (added in every theme)
+
+- `--icon-stroke` (2; 2.5 in the high-contrast pair and under `prefers-contrast: more`).
+- `--font-emoji`: a monochrome-first stack (Noto Emoji, then system symbol fonts) for `.ui-emoji`.
+
+**Releases**
+
+- **Merging a version bump to `main` is the release.** `.github/workflows/release.yml` checks the
+  tree, builds the release zip and the wheel, and publishes a GitHub release with the tag, so
+  `update.py`'s "latest" (the tag that `main` names) always exists.
+- **`ThemeForge-<version>.zip`** (`tools/release_zip.py`): the bundle, `AGENTS.md`, the docs, tokens
+  and examples, for handing to an AI agent or an offline machine.
+  `https://github.com/LaserLloyd/ThemeForge/releases/latest/download/ThemeForge.zip` is always
+  the newest.
+
 ## 1.2.0
 
 The package is now called **ForgeUI** (the repository stays ThemeForge, and the shipped

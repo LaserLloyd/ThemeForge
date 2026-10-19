@@ -2,8 +2,8 @@
    ui-components.js — behaviour for the component layer (optional) · ThemeForge
    ----------------------------------------------------------------------------
    Themed dialogs and toasts, a copy-to-clipboard helper, inline field
-   validation, settings-row wiring and a string table for all of them. Load it
-   anywhere (defer is fine):
+   validation, settings-row wiring, the icon helpers and a string table for all
+   of them. Load it anywhere (defer is fine):
 
      <script src="ui-theme/ui-components.js" defer></script>
 
@@ -17,6 +17,15 @@
      UIComponents.validate(input, 'Enter a port from 1 to 65535.');   // aria-invalid + message
      UIComponents.validate(input, null);                    // clear it
      UIComponents.setting(row, { default: '8080' });        // "reset to default" for a .ui-setting
+
+     button.append(UIComponents.icon('trash'));             // <svg class="ui-icon"> from icons.svg
+     UIComponents.iconFor('🗑️');                            // 'trash' (null when no icon means it)
+     UIComponents.emojify(message, 'text');                 // emoji as icons | text colour | colour
+     <div data-ui-emoji="icon">                             // the same, run by init()
+
+   Icons come from icons.svg next to this file; data-icons="<url>" on the script tag
+   points elsewhere. On another origin (a CDN) the sprite is fetched once and put in
+   the page, because <use> cannot reach across origins.
 
    Every string is set as text, never as HTML, so it is safe to show user
    input. A string argument is shorthand for { message: string }.
@@ -554,14 +563,171 @@
     return controller;
   }
 
+  /* ---- Icons and emoji ---------------------------------------------------- */
+
+  // icon name -> the emoji and symbols that stand for it (src/icons/icons.json; the
+  // build fills this in).
+  var ICONS = /*@icons*/{}/*@end-icons*/;
+  var SVG = 'http://www.w3.org/2000/svg';
+  var sprite = (script && script.getAttribute('data-icons')) || base + 'icons.svg';
+  var byEmoji = {};
+  Object.keys(ICONS).forEach(function (name) {
+    ICONS[name].forEach(function (emoji) { byEmoji[emojiKey(emoji)] = name; });
+  });
+
+  // A pictograph or flag, with its variation selector, skin tone and ZWJ parts.
+  var EMOJI = null;
+  var SHOWN = null;  // ...and drawn as an emoji by default, not as a text symbol like ↗
+  try {
+    EMOJI = new RegExp('(?:\\p{Regional_Indicator}{2}|[#*0-9]\\uFE0F?\\u20E3|\\p{Extended_Pictographic}[\\uFE0E\\uFE0F]?\\p{Emoji_Modifier}?' +
+      '(?:\\u200D\\p{Extended_Pictographic}[\\uFE0E\\uFE0F]?\\p{Emoji_Modifier}?)*)', 'gu');
+    SHOWN = new RegExp('^\\p{Emoji_Presentation}|[\\uFE0F\\u200D\\u20E3]', 'u');
+  } catch (e) { EMOJI = null; }
+
+  function emojiKey(text) {
+    return String(text).replace(/[︎️]|\uD83C[\uDFFB-\uDFFF]/g, '');
+  }
+
+  // iconFor('⚙️') -> 'settings'; null when no icon means it. A ZWJ sequence (🧑‍💻)
+  // falls back to its first emoji.
+  function iconFor(text) {
+    var key = emojiKey(String(text == null ? '' : text).trim());
+    var has = Object.prototype.hasOwnProperty;
+    if (has.call(byEmoji, key)) return byEmoji[key];
+    var first = key.split('‍')[0];
+    return has.call(byEmoji, first) ? byEmoji[first] : null;
+  }
+
+  // <use> cannot reach a sprite on another origin (the CDN install), so that sprite
+  // is fetched once and put in the page, its ids prefixed with ui-icon-.
+  var crossOrigin = null;
+  var inlined = null;
+  function href(name) {
+    if (crossOrigin === null) {
+      // self.origin, not location.origin: an about:srcdoc frame shares its parent's origin.
+      try { crossOrigin = new URL(sprite, doc.baseURI).origin !== (global.origin || global.location.origin); }
+      catch (e) { crossOrigin = false; }
+    }
+    if (!crossOrigin) return sprite + '#' + name;
+    if (!inlined && global.fetch) {
+      inlined = global.fetch(sprite).then(function (r) { return r.ok ? r.text() : ''; }).then(function (text) {
+        var parsed = new global.DOMParser().parseFromString(text, 'image/svg+xml').documentElement;
+        if (!parsed || parsed.nodeName !== 'svg') return;
+        var symbols = parsed.querySelectorAll('symbol[id]');
+        for (var i = 0; i < symbols.length; i++) symbols[i].id = 'ui-icon-' + symbols[i].id;
+        var host = doc.importNode(parsed, true);
+        host.setAttribute('aria-hidden', 'true');
+        host.setAttribute('style', 'position:absolute;width:0;height:0;overflow:hidden');
+        (doc.body || doc.documentElement).appendChild(host);
+      }).catch(function () {});
+    }
+    return '#ui-icon-' + name;
+  }
+
+  // icon('trash', { label: 'Delete', size: 'sm' }) -> <svg class="ui-icon"> that uses
+  // the sprite. With no label it is decoration (aria-hidden); with one, an image.
+  function icon(name, opts) {
+    opts = opts || {};
+    if (!Object.prototype.hasOwnProperty.call(ICONS, name) && global.console) {
+      global.console.warn('UIComponents.icon: no icon named "' + name + '" (see ui-theme/icons.json)');
+    }
+    var svg = doc.createElementNS(SVG, 'svg');
+    svg.setAttribute('class', 'ui-icon' + (opts.size ? ' ui-icon--' + opts.size : '') +
+      (opts.className ? ' ' + opts.className : ''));
+    if (opts.label) {
+      svg.setAttribute('role', 'img');
+      svg.setAttribute('aria-label', opts.label);
+    } else {
+      svg.setAttribute('aria-hidden', 'true');
+    }
+    var use = doc.createElementNS(SVG, 'use');
+    use.setAttribute('href', href(name));
+    svg.appendChild(use);
+    return svg;
+  }
+
+  function icons() { return Object.keys(ICONS); }
+
+  // One emoji drawn in a style: 'icon' swaps it for its icon (the emoji stays in the
+  // page for copy, find and screen readers) or, with no icon, falls back to 'text';
+  // 'text' is the text colour; 'color' keeps its colours.
+  function emojiNode(seq, style) {
+    var name = style === 'icon' ? iconFor(seq) : null;
+    if (name) {
+      var frag = doc.createDocumentFragment();
+      frag.appendChild(icon(name));
+      frag.appendChild(el('span', 'ui-visually-hidden', seq));
+      return frag;
+    }
+    if (style === 'color') return el('span', 'ui-emoji--color', seq);
+    var bare = seq.replace(/[︎️]/g, '');
+    // U+FE0E asks for the text glyph; it is only valid after a single code point.
+    return el('span', 'ui-emoji', Array.from(bare).length === 1 ? bare + '︎' : seq);
+  }
+
+  var NO_EMOJIFY = 'code, pre, kbd, samp, script, style, textarea, input, select, svg, [contenteditable], ' +
+    '.ui-emoji, .ui-emoji--color, .ui-visually-hidden';
+
+  // emojify(element, style): draws the emoji in the element's text in one style
+  // ('icon' by default, 'text' or 'color'). A text node that is nothing but one mapped
+  // symbol (a button reading ⚙ or ✕) also becomes its icon. Code, inputs and editable
+  // text are left alone. Returns how many it changed; running it again changes none.
+  function emojify(root, style) {
+    style = style === 'text' || style === 'color' ? style : 'icon';
+    if (!EMOJI || !root) return 0;
+    var walker = doc.createTreeWalker(root, 4 /* NodeFilter.SHOW_TEXT */);
+    var nodes = [];
+    var node;
+    while ((node = walker.nextNode())) {
+      var parent = node.parentElement;
+      var area = parent && parent.closest('[data-ui-emoji]');
+      // A nested [data-ui-emoji] area keeps its own style (init() does it).
+      if (parent && !parent.closest(NO_EMOJIFY) && !(area && area !== root && root.contains(area))) nodes.push(node);
+    }
+    var count = 0;
+    for (var i = 0; i < nodes.length; i++) {
+      var text = nodes[i].nodeValue;
+      var lone = style === 'icon' && text.trim() && iconFor(text) ? text.trim() : null;
+      var out = doc.createDocumentFragment();
+      var last = 0;
+      var changed = 0;
+      var m;
+      EMOJI.lastIndex = 0;
+      while ((m = EMOJI.exec(text))) {
+        if (!lone && !SHOWN.test(m[0])) continue;
+        if (lone && m[0] !== lone) continue;
+        if (m.index > last) out.appendChild(doc.createTextNode(text.slice(last, m.index)));
+        out.appendChild(emojiNode(m[0], style));
+        last = m.index + m[0].length;
+        changed++;
+      }
+      if (lone && !changed) {  // a mapped text symbol (✕ ▸ ☰) that is not a pictograph
+        last = text.indexOf(lone);
+        if (last) out.appendChild(doc.createTextNode(text.slice(0, last)));
+        out.appendChild(emojiNode(lone, style));
+        last += lone.length;
+        changed = 1;
+      }
+      if (!changed) continue;
+      if (last < text.length) out.appendChild(doc.createTextNode(text.slice(last)));
+      nodes[i].parentNode.replaceChild(out, nodes[i]);
+      count += changed;
+    }
+    return count;
+  }
+
   /* ---- Page wiring ------------------------------------------------------ */
 
-  // init([root]): fills empty copy buttons with the word for "Copy" and wires every
+  // init([root]): fills empty copy buttons with the word for "Copy", wires every
   // .ui-setting row (words that came from the table are re-translated when it
-  // changes). Runs on DOMContentLoaded and after a locale loads; call it after adding
-  // such markup later.
+  // changes) and runs emojify() on every [data-ui-emoji="icon|text|color"] element.
+  // Runs on DOMContentLoaded and after a locale loads; call it after adding such
+  // markup later.
   function init(root) {
     root = root || doc;
+    var areas = root.querySelectorAll ? [].slice.call(root.querySelectorAll('[data-ui-emoji]')) : [];
+    if (root.matches && root.matches('[data-ui-emoji]')) areas.unshift(root);
+    for (var a = 0; a < areas.length; a++) emojify(areas[a], areas[a].getAttribute('data-ui-emoji'));
     var buttons = root.querySelectorAll ? root.querySelectorAll(COPY_BUTTON) : [];
     for (var i = 0; i < buttons.length; i++) {
       if (!buttons[i].hasAttribute('aria-label')) fill(buttons[i], 'copy');
@@ -591,6 +757,10 @@
     alert: function (arg) { return modal('alert', arg); },
     prompt: function (arg) { return modal('prompt', arg); },
     toast: toast,
+    icon: icon,
+    iconFor: iconFor,
+    icons: icons,
+    emojify: emojify,
     copy: copy,
     validate: validate,
     setting: setting,

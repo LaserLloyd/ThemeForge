@@ -8,10 +8,10 @@ Two tools do that safely, with the same guarantees (verified files, no overwriti
 ## With ForgeUI
 
 ```
-pip install --upgrade "forgeui @ git+https://github.com/LaserLloyd/ThemeForge@v1.2.0"   # the release your forgeui.json accepts (not PyPI: that name is another project)
+pip install --upgrade "forgeui @ git+https://github.com/LaserLloyd/ThemeForge@v1.3.0"   # the release your forgeui.json accepts (not PyPI: that name is another project)
 python -m forgeui vendor                      # write the new copy (VERSION last)
 python -m forgeui vendor --check              # CI: exit 1 when the copy drifted
-python -m forgeui vendor --source forgeui-1.2.0.zip   # offline: a release zip, wheel, archive or folder
+python -m forgeui vendor --source ThemeForge-1.3.0.zip   # offline: a release zip, wheel, archive or folder
 ```
 
 `--check` fails on a different version, a stale, edited or missing file, a missing or changed
@@ -24,7 +24,7 @@ refused unless you pass `--force`: move the edit into an overlay (`extra_files`,
 ```
 python3 static/ui-theme/update.py            # install the latest release
 python3 static/ui-theme/update.py --check    # report only; exits 1 when an update exists
-python3 static/ui-theme/update.py --ref v1.2.0   # a specific release (or a branch or commit)
+python3 static/ui-theme/update.py --ref v1.3.0   # a specific release (or a branch or commit)
 ```
 
 (On Windows, `python` or `py` instead of `python3`.) It needs Python 3.9 or newer and nothing
@@ -54,7 +54,7 @@ Run it again any time: it is safe to repeat, and an up-to-date copy is left unto
 `files.json` travels inside the download, so it proves the files arrived complete and
 unaltered, and that the installed copy was not edited. It does not prove where they came
 from: that rests on HTTPS to `github.com`. To fix exactly what you get, pin a release tag
-(`--ref v1.2.0`) and review the diff in your app's version control after updating, like any
+(`--ref v1.3.0`) and review the diff in your app's version control after updating, like any
 vendored code.
 
 ## After updating
@@ -71,9 +71,9 @@ vendored code.
 ## Other ways
 
 - **git:** clone this repository (`--depth 1`), copy `ui-theme/` over the app's copy.
-- **degit:** `npx degit LaserLloyd/ThemeForge/ui-theme#v1.2.0 static/ui-theme --force`.
+- **degit:** `npx degit LaserLloyd/ThemeForge/ui-theme#v1.3.0 static/ui-theme --force`.
 - **CDN:** apps that load the files from jsDelivr update by changing the pinned version in the
-  URL: `https://cdn.jsdelivr.net/gh/LaserLloyd/ThemeForge@v1.2.0/ui-theme/ui-theme.css`.
+  URL: `https://cdn.jsdelivr.net/gh/LaserLloyd/ThemeForge@v1.3.0/ui-theme/ui-theme.css`.
   Never pin `@main`: the CDN caches it for up to 12 hours.
 - **Offline:** copy a release archive (`.tar.gz`) to the machine and run
   `python3 update.py --source <archive> --dest static/ui-theme` with the `update.py` from the

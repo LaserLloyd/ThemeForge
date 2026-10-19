@@ -23,8 +23,11 @@ What build writes into ui-theme/:
   ui-theme.js         the runtime with the theme registry; a blocking <script> in <head>
   ui-theme-base.css   element layer (src/css/theme-base.css section C) + text standard (text.css)
   ui-components.css   component classes (src/css/components.css)
-  ui-components.js    dialog and toast helpers (src/ui-components.js)
-  ui-theme.d.ts       TypeScript declarations for the two globals (src/ui-theme.d.ts)
+  ui-components.js    dialog, toast and icon helpers (src/ui-components.js + the emoji map)
+  ui-theme.d.ts       TypeScript declarations for the two globals (src/ui-theme.d.ts + icon names)
+  icons.svg           the icon sprite, one <symbol> per icon (src/icons)
+  icons.json          the icon names, labels and the emoji each stands for
+  icons-LICENSE.txt   the icons' license (Lucide, ISC)
   ui-theme.css        tokens: Purple's :root, every theme block, locale overrides
   adapters/           framework adapters (adapters/*.css, *.js)
   locales/            words ui-components.js puts on the page, one JSON file per language (src/locales)
@@ -360,6 +363,112 @@ def header(kind: str, body: str, version: str) -> str:
     )
 
 
+# ---------------------------------------------------------------- icons
+#
+# src/icons/icons.json lists the icon set; src/icons/lucide/<name>.svg is each
+# icon's source, copied unchanged from the Lucide package the file names. The
+# build writes one sprite (ui-theme/icons.svg, a <symbol id="<name>"> per icon)
+# and puts the emoji each icon stands for into ui-components.js.
+
+ICONS = SRC / "icons"
+ICON_LIMIT = 49
+ICON_NAME = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
+ICON_GROUPS = ("actions", "navigation", "status", "areas", "people", "system", "media", "reactions")
+ICONS_RE = re.compile(r"/\*@icons\*/.*?/\*@end-icons\*/", re.S)
+ICON_NAMES_RE = re.compile(r"/\*@icon-names\*/.*?/\*@end-icon-names\*/", re.S)
+SVG_ROOT = re.compile(r"<svg\b([^>]*)>(.*)</svg>", re.S)
+XML_COMMENT = re.compile(r"<!--.*?-->", re.S)
+#: What every source icon's root element must say: the shape the sprite and .ui-icon assume.
+LUCIDE_ROOT = {"viewBox": "0 0 24 24", "fill": "none", "stroke": "currentColor", "stroke-width": "2",
+               "stroke-linecap": "round", "stroke-linejoin": "round"}
+
+
+def emoji_key(text: str) -> str:
+    """An emoji as icons.json and UIComponents.iconFor() compare it: no variation
+    selectors, no skin tone."""
+    return re.sub("[︎️\U0001F3FB-\U0001F3FF]", "", text)
+
+
+def load_icons() -> dict:
+    data = json.loads(read(ICONS / "icons.json"))
+    icons = data.get("icons") or {}
+    if not icons or len(icons) > ICON_LIMIT:
+        raise SyncError(f"src/icons/icons.json: the set holds {len(icons)} icons; keep it between 1 and {ICON_LIMIT}")
+    owner: dict[str, str] = {}
+    for name, entry in icons.items():
+        if not ICON_NAME.match(name):
+            raise SyncError(f"src/icons/icons.json: {name!r} is not a lower-case-kebab icon name")
+        if not (ICONS / "lucide" / f"{name}.svg").is_file():
+            raise SyncError(f"src/icons/icons.json: {name} has no source file src/icons/lucide/{name}.svg")
+        if entry.get("group") not in ICON_GROUPS or not entry.get("label") or not entry.get("use"):
+            raise SyncError(f"src/icons/icons.json: {name} needs a group ({', '.join(ICON_GROUPS)}), a label and a use")
+        for emoji in entry.get("emoji", []):
+            key = emoji_key(emoji)
+            if not key or key in owner:
+                raise SyncError(f"src/icons/icons.json: {emoji} is listed under {owner.get(key, '?')} and {name}")
+            owner[key] = name
+    extra = sorted(p.stem for p in (ICONS / "lucide").glob("*.svg") if p.stem not in icons)
+    if extra:
+        raise SyncError(f"src/icons/lucide/ holds {', '.join(extra)}, which icons.json does not list")
+    return data
+
+
+def icon_symbol(name: str) -> str:
+    """One icon as a sprite <symbol>: the source's shapes, its root attributes
+    moved onto the symbol, and the stroke weight read from --icon-stroke (a custom
+    property inherits into a <use>, so every theme can set its own)."""
+    text = XML_COMMENT.sub("", read(ICONS / "lucide" / f"{name}.svg"))
+    m = SVG_ROOT.search(text)
+    attrs = dict(re.findall(r'([\w:-]+)="([^"]*)"', m.group(1))) if m else {}
+    wrong = [k for k, v in LUCIDE_ROOT.items() if attrs.get(k) != v]
+    if not m or wrong:
+        raise SyncError(f"src/icons/lucide/{name}.svg: not a Lucide 24px outline icon ({', '.join(wrong) or 'no <svg>'})")
+    body = re.sub(r"\s+/>", "/>", re.sub(r">\s+<", "><", m.group(2).strip()))
+    if re.search(r"<(?!/?(?:path|circle|rect|line|polyline|polygon|ellipse)\b)", body) or "style=" in body:
+        raise SyncError(f"src/icons/lucide/{name}.svg: only plain shapes are allowed in an icon")
+    return (f'<symbol id="{name}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" '
+            f'stroke-linejoin="round" style="stroke-width:var(--icon-stroke,2)">{body}</symbol>')
+
+
+def icon_sprite(icons: dict, version: str) -> str:
+    src = icons["source"]
+    lines = [f'<svg xmlns="http://www.w3.org/2000/svg">',
+             f"<!-- GENERATED: {NAME} {version} icons ({len(icons['icons'])}), from {src['name']} {src['version']} "
+             f"({src['license']}; notice in icons-LICENSE.txt). Use: <svg class=\"ui-icon\"><use href=\"icons.svg#name\"/></svg> -->"]
+    lines += [icon_symbol(name) for name in icons["icons"]]
+    return "\n".join(lines) + "\n</svg>\n"
+
+
+def icon_registry(icons: dict, version: str) -> str:
+    out = {"name": NAME, "version": version, "sprite": "icons.svg", "source": icons["source"],
+           "icons": {n: {k: e[k] for k in ("group", "label", "use", "emoji") if k in e} for n, e in icons["icons"].items()}}
+    return json.dumps(out, indent=2, ensure_ascii=False) + "\n"
+
+
+def icon_license(icons: dict) -> str:
+    src = icons["source"]
+    return (f"The icons in icons.svg are {src['name']} icons ({src['url']}), from the {src['package']} "
+            f"{src['version']} package, used under the license below.\n\n" + read(ICONS / "LICENSE"))
+
+
+def render_components(icons: dict) -> str:
+    source = read(SRC / "ui-components.js")
+    if len(ICONS_RE.findall(source)) != 1:
+        raise SyncError("src/ui-components.js needs exactly one /*@icons*/{}/*@end-icons*/")
+    table = {n: e.get("emoji", []) for n, e in icons["icons"].items()}
+    # ASCII only (\u escapes), so the file reads the same whatever charset a server declares.
+    block = "/*@icons*/" + json.dumps(table, ensure_ascii=True, separators=(",", ":")) + "/*@end-icons*/"
+    return ICONS_RE.sub(lambda _m: block, source)
+
+
+def render_types(icons: dict) -> str:
+    source = read(SRC / "ui-theme.d.ts")
+    if len(ICON_NAMES_RE.findall(source)) != 1:
+        raise SyncError("src/ui-theme.d.ts needs exactly one /*@icon-names*/string/*@end-icon-names*/")
+    names = " | ".join(f"'{n}'" for n in icons["icons"])
+    return ICON_NAMES_RE.sub(lambda _m: f"/*@icon-names*/{names}/*@end-icon-names*/", source)
+
+
 def public_registry(data: dict) -> str:
     keep = ("slug", "name", "family", "ground", "colorScheme", "themeColor", "set", "swatch",
             "fonts", "contrastProfile", "description")
@@ -374,6 +483,7 @@ def bundle_files(data: dict) -> dict[str, str]:
     tokens, layer, locale = split_base(read(CSS / "theme-base.css"))
     themes_css = "".join("\n" + read(CSS / t["css"]) for t in data["themes"] if t.get("css"))
     runtime = render_runtime(data)
+    icons = load_icons()
     base_body = layer + "\n" + read(CSS / "text.css")
     css_body = tokens + themes_css + "\n" + locale
     components = read(CSS / "components.css")
@@ -386,11 +496,12 @@ def bundle_files(data: dict) -> dict[str, str]:
         "README.md": read(SRC / "bundle-README.md").replace("{version}", version).replace("{repo}", REPO),
         "update.py": read(ROOT / "tools" / "update.py").replace('REPO = "LaserLloyd/ThemeForge"', f'REPO = "{REPO}"'),
     }
-    if (SRC / "ui-theme.d.ts").is_file():
-        files["ui-theme.d.ts"] = read(SRC / "ui-theme.d.ts")
-    if (SRC / "ui-components.js").is_file():
-        helpers = read(SRC / "ui-components.js")
-        files["ui-components.js"] = header("component helpers", helpers, version) + helpers
+    files["ui-theme.d.ts"] = render_types(icons)
+    helpers = render_components(icons)
+    files["ui-components.js"] = header("component helpers", helpers, version) + helpers
+    files["icons.svg"] = icon_sprite(icons, version)
+    files["icons.json"] = icon_registry(icons, version)
+    files["icons-LICENSE.txt"] = icon_license(icons)
     for path in sorted((SRC / "locales").glob("*.json")):
         files[f"locales/{path.name}"] = read(path)
     for path in sorted(ADAPTERS.iterdir()):
@@ -423,11 +534,12 @@ GROUP_NOTES = {
     "code-block-chrome": ("extension", "The bar above a code block and its strokes, mixed from the syntax pair so they stay dark with the slab."),
     "categorical-data": ("extension", "Twelve series colours for charts and tags, at 3:1 on the page; chart grid and axis; and two ramps mixed from the theme: `--seq-1` ... `--seq-5` (low to high, for heatmaps) and `--div-1` ... `--div-5` (bad, neutral, good)."),
     "canvas": ("extension", "Overlays drawn on images in editors: mask, handles, guides, outlines."),
-    "type-families": ("core", "Font stacks. They name Inter, JetBrains Mono and a few display faces, and fall back to system fonts."),
+    "type-families": ("core", "Font stacks. They name Inter, JetBrains Mono and a few display faces, and fall back to system fonts. `--font-emoji` draws typed emoji in the text colour (`.ui-emoji`)."),
     "elevation": ("core", "Shadows from 1 (subtle) to 4 (dialogs), a glow and an inset highlight."),
     "browser": ("core", "Text selection and scrollbars."),
     "control-boundary-fill": ("core", "`--control-track`: the empty part of a slider (3:1 on the surfaces)."),
     "geometry": ("core, invariant", "Radii, the 4px spacing scale, strokes, control heights, touch target and shell metrics. Themes may change radii."),
+    "icons": ("core", "The stroke weight of `ui-theme/icons.svg` in units of its 24px grid. Themes may change it; the high-contrast pair and `prefers-contrast: more` draw 2.5. See [ICONS.md](ICONS.md)."),
     "component-tokens": ("core, invariant", "Slider, toggle and chip sizes and colours."),
     "type-scale": ("core, invariant", "Font sizes, weights, line heights and letter spacing."),
     "motion": ("core, invariant", "Easings and durations. The base layer shortens every animation under reduced motion."),
@@ -542,12 +654,117 @@ def swatch_svg(cc, props: dict[str, str], name: str) -> str:
     )
 
 
+def icons_preview(icons: dict) -> str:
+    """docs/images/icons.svg: every icon with its name, for choosing one on GitHub."""
+    names = list(icons["icons"])
+    cols, w, h = 8, 120, 64
+    rows = -(-len(names) // cols)
+    out = [f'<svg xmlns="http://www.w3.org/2000/svg" width="{cols * w}" height="{rows * h}" '
+           f'viewBox="0 0 {cols * w} {rows * h}" role="img" aria-label="{NAME} icons">',
+           f'<rect width="{cols * w}" height="{rows * h}" rx="8" fill="#ffffff"/>']
+    out += [icon_symbol(n) for n in names]
+    for i, n in enumerate(names):
+        x, y = (i % cols) * w, (i // cols) * h
+        out.append(f'<use href="#{n}" x="{x + w / 2 - 12:g}" y="{y + 10}" width="24" height="24" color="#1f2328"/>'
+                   f'<text x="{x + w / 2:g}" y="{y + 52}" font-family="ui-monospace,monospace" font-size="11" '
+                   f'text-anchor="middle" fill="#57606a">{n}</text>')
+    return "\n".join(out) + "\n</svg>\n"
+
+
+def icons_doc(data: dict, icons: dict) -> str:
+    src = icons["source"]
+    v = data["version"]
+    lines = [
+        "# Icons",
+        "",
+        f"Generated from `src/icons/icons.json` by `tools/sync_theme.py build` ({NAME} {v}).",
+        "",
+        f"{len(icons['icons'])} outline icons for app chrome, one sprite (`ui-theme/icons.svg`). They draw in",
+        "`currentColor` with the theme's `--icon-stroke`, so every theme colours them and the",
+        "high-contrast pair draws them heavier. They are not decoration: use them where an app",
+        "would otherwise put an emoji in a button, tab, menu or status line.",
+        "",
+        "![The icon set](images/icons.svg)",
+        "",
+        "## Use",
+        "",
+        "Markup (any page; the path is wherever the app serves `ui-theme/`):",
+        "",
+        "```html",
+        '<svg class="ui-icon" aria-hidden="true"><use href="/static/ui-theme/icons.svg#settings"/></svg>',
+        '<button class="ui-btn"><svg class="ui-icon" aria-hidden="true"><use href="/static/ui-theme/icons.svg#trash"/></svg>Delete</button>',
+        '<button class="ui-btn ui-btn--icon" aria-label="Close"><svg class="ui-icon" aria-hidden="true"><use href="/static/ui-theme/icons.svg#x"/></svg></button>',
+        "```",
+        "",
+        "Script (with `ui-components.js` loaded, which finds `icons.svg` next to itself, and inlines it",
+        "when it is on another origin such as the CDN, where `<use>` cannot reach):",
+        "",
+        "```js",
+        "button.append(UIComponents.icon('trash'));                 // decorative",
+        "UIComponents.icon('bell', { label: 'Notifications', size: 'sm' });  // an image with a name",
+        "UIComponents.iconFor('🗑️');                               // 'trash'; null when no icon means it",
+        "UIComponents.icons();                                      // every name",
+        "```",
+        "",
+        "Size: `1.25em` (it follows the text), or `.ui-icon--sm` (16px), `--md` (20px), `--lg` (24px), or",
+        "`--ui-icon-size` on the element. Colour: the text colour, or `.ui-icon--muted`, `--accent`,",
+        "`--success`, `--warning`, `--danger`, `--info`. Weight: `--icon-stroke` (2; 2.5 in the",
+        "high-contrast themes and when the system asks for more contrast).",
+        "",
+        "## Emoji, three ways",
+        "",
+        "| Style | Class | For |",
+        "|---|---|---|",
+        "| icon | `.ui-icon` | An emoji in app chrome (⚙ 🗑 📁 ✕). It becomes the outline icon the table below names. |",
+        "| text | `.ui-emoji` | An emoji someone typed (chat, notes), drawn in the text colour. |",
+        "| colour | `.ui-emoji--color` | An emoji whose colours are the point (reactions), toned by the theme's `--media-filter` (Night Red keeps it red). |",
+        "",
+        "`UIComponents.emojify(element, 'icon' | 'text' | 'color')` applies one to an element's text, and",
+        "`data-ui-emoji=\"icon\"` (or `text`, `color`) on an element does it on load. In `icon` style an",
+        "emoji with no icon falls back to `text`; a text node that is nothing but one mapped symbol",
+        "(a button reading `⚙` or `✕`) becomes its icon; arrows and symbols inside sentences are left",
+        "alone. The emoji stays in the page, visually hidden, so copy, find and screen readers keep it.",
+        "",
+        "System fonts draw faces (😀) only in colour. For monochrome faces in `text` style, load the",
+        "Noto Emoji web font, which `--font-emoji` names first, e.g.",
+        "`data-fonts-href=\"https://fonts.googleapis.com/css2?family=Noto+Emoji&display=swap\"` on the",
+        "`ui-theme.js` tag.",
+        "",
+        "## The set",
+        "",
+        "| Icon | Label | Use for | Emoji and symbols it replaces |",
+        "|---|---|---|---|",
+    ]
+    for group in ICON_GROUPS:
+        for name, e in icons["icons"].items():
+            if e["group"] == group:
+                lines.append(f"| `{name}` | {e['label']} | {e['use']} | {' '.join(e.get('emoji', []))} |")
+    lines += [
+        "",
+        "## Adding an icon",
+        "",
+        "The set stays under 50: it covers chrome, not illustration. To add one, copy the icon's file from the",
+        f"`{src['package']}` {src['version']} package (`icons/<name>.svg`, unchanged) into `src/icons/lucide/`, add",
+        "an entry to `src/icons/icons.json`, and run `python tools/sync_theme.py build`. Icon names are public",
+        "API, like token names: never rename or remove one in a minor release.",
+        "",
+        "## License",
+        "",
+        f"The icons are [{src['name']}]({src['url']}) {src['version']}, {src['license']} license (some derived from",
+        "Feather, MIT). The notice ships beside the sprite as `ui-theme/icons-LICENSE.txt`; keep it with any copy.",
+        "",
+    ]
+    return "\n".join(lines)
+
+
 def doc_files(data: dict) -> dict[str, str]:
     """Generated files under docs/, keyed by their path inside docs/."""
     cc = contrast_module()
     base_props = cc.load_base_props(read(CSS / "theme-base.css"))
+    icons = load_icons()
     out = {"TOKENS.md": tokens_doc(data), "theme-template.css": theme_template(data),
-           "contrast-report.md": cc.build_report(None)[0]}
+           "contrast-report.md": cc.build_report(None)[0],
+           "ICONS.md": icons_doc(data, icons), "images/icons.svg": icons_preview(icons)}
     for t in data["themes"]:
         out[f"images/swatch-{t['slug']}.svg"] = swatch_svg(cc, cc.merged_props(t, base_props), t["name"])
     return out

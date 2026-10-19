@@ -77,4 +77,17 @@
   document.getElementById('spec-toast').addEventListener('click', function () {
     window.UIComponents.toast('Settings saved', { kind: 'success' });
   });
+
+  // The icon grid. ui-components.js is deferred, so it has run by DOMContentLoaded.
+  document.addEventListener('DOMContentLoaded', function () {
+    var grid = document.getElementById('spec-icons');
+    window.UIComponents.icons().forEach(function (name) {
+      var cell = document.createElement('div');
+      var label = document.createElement('span');
+      label.textContent = name;
+      cell.appendChild(window.UIComponents.icon(name, { size: 'lg' }));
+      cell.appendChild(label);
+      grid.appendChild(cell);
+    });
+  });
 })();

@@ -13,6 +13,7 @@ import importlib.util
 import io
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -139,6 +140,79 @@ class BuildTests(unittest.TestCase):
         self.assertEqual(doc["geometry"]["radius-md"], {"$type": "dimension", "$value": {"value": 12, "unit": "px"}})
         self.assertTrue(doc["component-tokens"]["slider-color"]["$value"].startswith("{"))
         self.assertIn("--accent-rgb", doc["$extensions"]["com.laserlloyd.themeforge"]["css"])
+
+
+class IconTests(unittest.TestCase):
+    def setUp(self):
+        self.icons = sync.load_icons()
+        self.bundle = sync.bundle_files(sync.load_registry())
+
+    def test_the_set_stays_small(self):
+        self.assertLessEqual(len(self.icons["icons"]), 49)
+
+    def test_sprite_has_one_symbol_per_icon_and_no_colour(self):
+        sprite = self.bundle["icons.svg"]
+        ids = re.findall(r'<symbol id="([^"]+)"', sprite)
+        self.assertEqual(ids, list(self.icons["icons"]))
+        self.assertEqual(sprite.count("style=\"stroke-width:var(--icon-stroke,2)\""), len(ids))
+        self.assertNotRegex(sprite, r"#[0-9a-fA-F]{3,8}\b|rgba?\(")
+
+    def test_components_carry_the_emoji_map(self):
+        js = self.bundle["ui-components.js"]
+        table = json.loads(re.search(r"/\*@icons\*/(.*?)/\*@end-icons\*/", js).group(1))
+        self.assertEqual(list(table), list(self.icons["icons"]))
+        self.assertIn("⚙", table["settings"])
+        self.assertNotRegex(re.search(r"/\*@icons\*/.*?/\*@end-icons\*/", js).group(0), r"[^\x00-\x7f]")
+
+    def test_types_name_every_icon(self):
+        dts = self.bundle["ui-theme.d.ts"]
+        for name in self.icons["icons"]:
+            self.assertIn(f"'{name}'", dts)
+
+    def test_license_ships_with_the_sprite(self):
+        self.assertIn("ISC License", self.bundle["icons-LICENSE.txt"])
+        self.assertIn("icons-LICENSE.txt", self.bundle["icons.svg"])
+
+    def _broken(self, change):
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        folder = Path(tmp.name) / "icons"
+        shutil.copytree(sync.ICONS, folder)
+        data = json.loads((folder / "icons.json").read_text(encoding="utf-8"))
+        change(data, folder)
+        (folder / "icons.json").write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
+        old = sync.ICONS
+        sync.ICONS = folder
+        try:
+            with self.assertRaises(sync.SyncError) as ctx:
+                sync.bundle_files(sync.load_registry())
+        finally:
+            sync.ICONS = old
+        return str(ctx.exception)
+
+    def test_an_emoji_under_two_icons_is_refused(self):
+        msg = self._broken(lambda d, f: d["icons"]["trash"]["emoji"].append("⚙️"))
+        self.assertIn("settings", msg)
+
+    def test_an_icon_without_a_source_is_refused(self):
+        msg = self._broken(lambda d, f: (f / "lucide" / "bell.svg").unlink())
+        self.assertIn("bell", msg)
+
+    def test_a_source_nobody_lists_is_refused(self):
+        msg = self._broken(lambda d, f: d["icons"].pop("bell"))
+        self.assertIn("bell", msg)
+
+    def test_more_than_49_icons_is_refused(self):
+        def grow(d, f):
+            for i in range(50):
+                d["icons"][f"extra-{i}"] = dict(d["icons"]["bell"], emoji=[])
+        self.assertIn("49", self._broken(grow))
+
+    def test_a_filled_or_styled_source_is_refused(self):
+        def fill(d, f):
+            path = f / "lucide" / "bell.svg"
+            path.write_text(path.read_text(encoding="utf-8").replace('fill="none"', 'fill="red"'), encoding="utf-8")
+        self.assertIn("bell.svg", self._broken(fill))
 
 
 class DocGateTests(unittest.TestCase):

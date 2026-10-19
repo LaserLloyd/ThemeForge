@@ -1,6 +1,6 @@
 # Tokens
 
-Generated from `src/css/theme-base.css` by `tools/sync_theme.py build` (ThemeForge 1.2.0).
+Generated from `src/css/theme-base.css` by `tools/sync_theme.py build` (ThemeForge 1.3.0).
 Every theme resolves every token below: a theme sets the colours, and the rest are
 shared or derived. The values shown are Purple's (the `:root` base).
 `tokens/<theme>.json` holds each theme's resolved values in the W3C design tokens format.
@@ -314,7 +314,7 @@ raises them to 7:1 for every text colour and 4.5:1 for edges and indicators, as 
 
 ## Type families
 
-*core.* Font stacks. They name Inter, JetBrains Mono and a few display faces, and fall back to system fonts.
+*core.* Font stacks. They name Inter, JetBrains Mono and a few display faces, and fall back to system fonts. `--font-emoji` draws typed emoji in the text colour (`.ui-emoji`).
 
 | Token | Purple value |
 |---|---|
@@ -322,6 +322,7 @@ raises them to 7:1 for every text colour and 4.5:1 for edges and indicators, as 
 | `--font-serif` | `var(--font-sans)` |
 | `--font-mono` | `'JetBrains Mono', 'Fira Code', ui-monospace, monospace` |
 | `--font-display` | `var(--font-sans)` |
+| `--font-emoji` | `'Noto Emoji', 'Segoe UI Symbol', 'Apple Symbols', 'Noto Sans Symbols 2', sans-serif` |
 
 ## Elevation
 
@@ -387,6 +388,14 @@ raises them to 7:1 for every text colour and 4.5:1 for edges and indicators, as 
 | `--rail-w` | `72px` |
 | `--bar-h` | `60px` |
 | `--content-max` | `1200px` |
+
+## Icons
+
+*core.* The stroke weight of `ui-theme/icons.svg` in units of its 24px grid. Themes may change it; the high-contrast pair and `prefers-contrast: more` draw 2.5. See [ICONS.md](ICONS.md).
+
+| Token | Purple value |
+|---|---|
+| `--icon-stroke` | `2` |
 
 ## Component tokens
 

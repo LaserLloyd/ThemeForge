@@ -161,4 +161,7 @@
   --scrollbar-hover: #e6e6e6;  /* D */
   /* The empty part of a slider: 5.3:1 on surface-2, 6.2:1 on surface-0. */
   --control-track: #8c8c8c;
+
+  /* Heavier icon lines, like the rest of this theme. */
+  --icon-stroke: 2.5;
 }

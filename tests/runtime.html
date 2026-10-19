@@ -730,6 +730,56 @@
     check('empty state: actions are a centred row of buttons', [w.getComputedStyle(acts).display, w.getComputedStyle(acts).justifyContent, rect(d.getElementById('act1')).top === rect(d.getElementById('act2')).top], ['flex', 'center', true]);
   }
 
+  // 43j. Icons and the three emoji styles.
+  {
+    const f = await comp(
+      '<p id="ic" style="font-size:20px"></p><div data-palette="high-contrast" id="hc"></div>' +
+      '<p id="e1" data-ui-emoji="icon">Saved ✅ then 🎉 → next ↗ <code>⚙️</code></p>' +
+      '<p id="e2" data-ui-emoji="text">ok 👍 and ❤️</p><p id="e3" data-ui-emoji="color">yay 🎉</p>' +
+      '<div id="e4" data-ui-emoji="icon"><span data-ui-emoji="color">🗑️</span> 🗑️</div>' +
+      '<button id="eb" class="ui-btn ui-btn--icon" aria-label="Close">✕</button>');
+    const w = f.contentWindow, d = f.contentDocument, U = w.UIComponents;
+    check('icons: API', ['icon', 'iconFor', 'icons', 'emojify'].map((k) => typeof U[k]), Array(4).fill('function'));
+    check('icons: the set is under 50 and in display order', [U.icons().length < 50, U.icons()[0], U.icons().includes('settings')], [true, 'plus', true]);
+    const svg = U.icon('trash');
+    d.getElementById('ic').append(svg);
+    check('icons: icon() is a decorative .ui-icon using the sprite next to the script',
+          [svg.getAttribute('class'), svg.getAttribute('aria-hidden'), svg.firstChild.getAttribute('href')],
+          ['ui-icon', 'true', new URL('../ui-theme/icons.svg#trash', location.href).href]);
+    const named = U.icon('bell', { label: 'Alerts', size: 'sm' });
+    check('icons: a label makes it a named image', [named.getAttribute('role'), named.getAttribute('aria-label'), named.getAttribute('class'), named.hasAttribute('aria-hidden')],
+          ['img', 'Alerts', 'ui-icon ui-icon--sm', false]);
+    check('icons: 1.25em of the text by default', Math.round(rect(svg).width), 25);
+    check('icons: the stroke is a theme token, heavier in high contrast',
+          [w.getComputedStyle(svg).getPropertyValue('--icon-stroke').trim(), w.getComputedStyle(d.getElementById('hc')).getPropertyValue('--icon-stroke').trim()], ['2', '2.5']);
+    check('iconFor: variation selector, skin tone and ZWJ fall back sensibly',
+          [U.iconFor('🗑️'), U.iconFor('🗑'), U.iconFor('👍🏽'), U.iconFor('🧑‍💻'), U.iconFor(' ⚙ '), U.iconFor('✕')],
+          ['trash', 'trash', 'thumbs-up', 'user', 'settings', 'x']);
+    check('iconFor: no icon means null', [U.iconFor('🦄'), U.iconFor('x'), U.iconFor(''), U.iconFor(null)], [null, null, null, null]);
+    const e1 = d.getElementById('e1');
+    check('emojify icon: a mapped emoji becomes its icon, the emoji stays for copy and screen readers',
+          [e1.querySelectorAll('svg.ui-icon').length, e1.querySelector('use').getAttribute('href').split('#')[1], e1.querySelector('.ui-visually-hidden').textContent],
+          [1, 'circle-check', '✅']);
+    check('emojify icon: an unmapped emoji falls back to text; symbols in a sentence and code stay',
+          [e1.querySelector('.ui-emoji').textContent, e1.textContent.includes('→ next ↗'), d.querySelector('#e1 code').textContent],
+          ['🎉︎', true, '⚙️']);
+    check('emojify text: monochrome text presentation', Array.from(d.querySelectorAll('#e2 .ui-emoji')).map((n) => n.textContent), ['👍︎', '❤︎']);
+    check('emojify color: kept, wrapped for the theme filter', d.querySelector('#e3 .ui-emoji--color').textContent, '🎉');
+    check('emojify: a nested area keeps its own style',
+          [d.querySelectorAll('#e4 .ui-emoji--color').length, d.querySelectorAll('#e4 svg.ui-icon').length], [1, 1]);
+    check('emojify: running it again changes nothing', U.emojify(e1, 'icon') + U.emojify(d.getElementById('e2'), 'text'), 0);
+    check('emojify: a button that is one mapped symbol gets the icon',
+          [U.emojify(d.getElementById('eb')), d.querySelector('#eb use').getAttribute('href').split('#')[1]], [1, 'x']);
+    const other = `http://localhost:${location.port}/ui-theme/icons.svg`;
+    const fx = await comp('', { scriptAttrs: `data-icons="${other}"` });
+    check('icons: a sprite on another origin is referenced in the page (it is fetched and inlined)',
+          fx.contentWindow.UIComponents.icon('trash').firstChild.getAttribute('href'), '#ui-icon-trash');
+    if ('fontVariantEmoji' in d.body.style) {
+      check('emoji css: text and colour presentation', [w.getComputedStyle(d.querySelector('#e2 .ui-emoji')).fontVariantEmoji,
+            w.getComputedStyle(d.querySelector('#e3 .ui-emoji--color')).fontVariantEmoji], ['text', 'emoji']);
+    }
+  }
+
   // 43h. Pseudo-locale: every built-in word at 2-3x length must not break the layout.
   {
     const accent = { a: 'à', e: 'é', i: 'î', o: 'ö', u: 'ü', A: 'Å', E: 'É', I: 'Î', O: 'Ö', U: 'Û' };
