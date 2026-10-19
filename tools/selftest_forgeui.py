@@ -2,7 +2,7 @@
 """Self-test `python -m forgeui vendor` on the examples' forgeui.json manifests.
 
     python tools/selftest_forgeui.py                       use this checkout's forgeui/ package
-    python tools/selftest_forgeui.py --wheel dist/forgeui-1.3.0-py3-none-any.whl
+    python tools/selftest_forgeui.py --wheel dist/forgeui-1.4.0-py3-none-any.whl
                                                            install the built wheel into a throwaway
                                                            virtual environment and test THAT
 

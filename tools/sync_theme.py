@@ -371,10 +371,12 @@ def header(kind: str, body: str, version: str) -> str:
 # and puts the emoji each icon stands for into ui-components.js.
 
 ICONS = SRC / "icons"
-ICON_LIMIT = 49
+#: A curated set, not a library: each icon is one an app draws. The cap keeps it that way.
+ICON_LIMIT = 120
 ICON_NAME = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 ICON_GROUPS = ("actions", "navigation", "status", "areas", "people", "system", "media", "reactions")
 ICONS_RE = re.compile(r"/\*@icons\*/.*?/\*@end-icons\*/", re.S)
+MATERIAL_NAME = re.compile(r"^[a-z0-9]+(?:_[a-z0-9]+)*$")
 ICON_NAMES_RE = re.compile(r"/\*@icon-names\*/.*?/\*@end-icon-names\*/", re.S)
 SVG_ROOT = re.compile(r"<svg\b([^>]*)>(.*)</svg>", re.S)
 XML_COMMENT = re.compile(r"<!--.*?-->", re.S)
@@ -407,6 +409,16 @@ def load_icons() -> dict:
             if not key or key in owner:
                 raise SyncError(f"src/icons/icons.json: {emoji} is listed under {owner.get(key, '?')} and {name}")
             owner[key] = name
+        for material in entry.get("material", []):
+            if not MATERIAL_NAME.match(material):
+                raise SyncError(f"src/icons/icons.json: {name}: {material!r} is not a Material Icons name")
+            if material in icons and material != name:
+                raise SyncError(f"src/icons/icons.json: Material name {material} under {name} is the name of "
+                                f"another icon; leave it out (forgeui.quasar_icon() takes either kind of name)")
+            if "material:" + material in owner:
+                raise SyncError(f"src/icons/icons.json: Material name {material} is listed under "
+                                f"{owner['material:' + material]} and {name}")
+            owner["material:" + material] = name
     extra = sorted(p.stem for p in (ICONS / "lucide").glob("*.svg") if p.stem not in icons)
     if extra:
         raise SyncError(f"src/icons/lucide/ holds {', '.join(extra)}, which icons.json does not list")
@@ -441,7 +453,7 @@ def icon_sprite(icons: dict, version: str) -> str:
 
 def icon_registry(icons: dict, version: str) -> str:
     out = {"name": NAME, "version": version, "sprite": "icons.svg", "source": icons["source"],
-           "icons": {n: {k: e[k] for k in ("group", "label", "use", "emoji") if k in e} for n, e in icons["icons"].items()}}
+           "icons": {n: {k: e[k] for k in ("group", "label", "use", "emoji", "material") if k in e} for n, e in icons["icons"].items()}}
     return json.dumps(out, indent=2, ensure_ascii=False) + "\n"
 
 
@@ -657,7 +669,7 @@ def swatch_svg(cc, props: dict[str, str], name: str) -> str:
 def icons_preview(icons: dict) -> str:
     """docs/images/icons.svg: every icon with its name, for choosing one on GitHub."""
     names = list(icons["icons"])
-    cols, w, h = 8, 120, 64
+    cols, w, h = 8, 140, 64
     rows = -(-len(names) // cols)
     out = [f'<svg xmlns="http://www.w3.org/2000/svg" width="{cols * w}" height="{rows * h}" '
            f'viewBox="0 0 {cols * w} {rows * h}" role="img" aria-label="{NAME} icons">',
@@ -682,7 +694,9 @@ def icons_doc(data: dict, icons: dict) -> str:
         f"{len(icons['icons'])} outline icons for app chrome, one sprite (`ui-theme/icons.svg`). They draw in",
         "`currentColor` with the theme's `--icon-stroke`, so every theme colours them and the",
         "high-contrast pair draws them heavier. They are not decoration: use them where an app",
-        "would otherwise put an emoji in a button, tab, menu or status line.",
+        "would otherwise put an emoji in a button, tab, menu or status line. The set is what the",
+        "LaserLloyd apps draw, not a library; each icon lists the emoji and the Material Icons names",
+        "it replaces, so moving an app over is a lookup.",
         "",
         "![The icon set](images/icons.svg)",
         "",
@@ -704,6 +718,17 @@ def icons_doc(data: dict, icons: dict) -> str:
         "UIComponents.icon('bell', { label: 'Notifications', size: 'sm' });  // an image with a name",
         "UIComponents.iconFor('🗑️');                               // 'trash'; null when no icon means it",
         "UIComponents.icons();                                      // every name",
+        "```",
+        "",
+        "NiceGUI and Quasar: Quasar draws a sprite icon from `svguse:<url>#<name>`, so any `icon=` takes",
+        "one. `forgeui.quasar_icon()` writes that string, from an icon name or the Material name the app",
+        "uses today:",
+        "",
+        "```python",
+        "import forgeui",
+        "forgeui.mount(app)                                          # the bundle at /theme",
+        "ui.button(icon=forgeui.quasar_icon('trash'))                # 'svguse:/theme/icons.svg#trash'",
+        "ui.icon(forgeui.quasar_icon('delete_forever'))              # a Material name maps to trash too",
         "```",
         "",
         "Size: `1.25em` (it follows the text), or `.ui-icon--sm` (16px), `--md` (20px), `--lg` (24px), or",
@@ -732,18 +757,21 @@ def icons_doc(data: dict, icons: dict) -> str:
         "",
         "## The set",
         "",
-        "| Icon | Label | Use for | Emoji and symbols it replaces |",
-        "|---|---|---|---|",
+        "| Icon | Label | Use for | Emoji and symbols it replaces | Material Icons names |",
+        "|---|---|---|---|---|",
     ]
     for group in ICON_GROUPS:
         for name, e in icons["icons"].items():
             if e["group"] == group:
-                lines.append(f"| `{name}` | {e['label']} | {e['use']} | {' '.join(e.get('emoji', []))} |")
+                material = ", ".join(f"`{m}`" for m in e.get("material", []))
+                lines.append(f"| `{name}` | {e['label']} | {e['use']} | {' '.join(e.get('emoji', []))} | {material} |")
     lines += [
         "",
         "## Adding an icon",
         "",
-        "The set stays under 50: it covers chrome, not illustration. To add one, copy the icon's file from the",
+        f"The set holds what the apps draw, and the build refuses more than {ICON_LIMIT}: add an icon when an app",
+        "needs one and nothing here means the same thing (a Material name or an emoji can usually join an",
+        "existing icon instead). To add one, copy the icon's file from the",
         f"`{src['package']}` {src['version']} package (`icons/<name>.svg`, unchanged) into `src/icons/lucide/`, add",
         "an entry to `src/icons/icons.json`, and run `python tools/sync_theme.py build`. Icon names are public",
         "API, like token names: never rename or remove one in a minor release.",

@@ -15,8 +15,8 @@ and the versioning policy are in `docs/THEME_SYSTEM.md`.
 spacing, radii, shadows, motion); an element base layer (body text, links, focus ring,
 scrollbars); text tiers and a markdown style; component classes (buttons, form fields,
 switches, cards, badges, callouts, tabs, tables, dialogs, menus, toasts, an app shell);
-themed `confirm()`/`alert()`/`prompt()`; 48 outline icons that follow the theme, with a map
-from the emoji apps tend to use as icons; adapters for NiceGUI/Quasar and Tailwind.
+themed `confirm()`/`alert()`/`prompt()`; 105 outline icons that follow the theme, with a map
+from the emoji and Material Icons names apps use for them; adapters for NiceGUI/Quasar and Tailwind.
 **What you do not get:** fonts (stacks fall back to system fonts; see
 `docs/INTEGRATIONS.md` to load them), illustrations or a large icon library, or framework
 components.
@@ -56,7 +56,7 @@ its `ui-theme/` folder. If you were handed `ThemeForge.zip` (the release zip), u
 
 Other ways (pip for Python apps; the rest when Python is not available):
 
-- **pip (Python apps):** `pip install "forgeui @ git+https://github.com/LaserLloyd/ThemeForge@v1.3.0"`
+- **pip (Python apps):** `pip install "forgeui @ git+https://github.com/LaserLloyd/ThemeForge@v1.4.0"`
   (the wheel is not on PyPI; that name belongs to an unrelated project), then
   `python -m forgeui init --dest static/ui-theme`,
   edit the `forgeui.json` it writes (themes, default, storage key), and `python -m forgeui vendor`.
@@ -65,9 +65,9 @@ Other ways (pip for Python apps; the rest when Python is not available):
   and write the head block for FastAPI and NiceGUI. Details: `docs/THEME_SYSTEM.md`.
 - **git:** `git clone --depth 1 https://github.com/LaserLloyd/ThemeForge.git ut-tmp`, copy
   `ut-tmp/ui-theme` into the app, delete `ut-tmp`.
-- **Node:** `npx degit LaserLloyd/ThemeForge/ui-theme#v1.3.0 static/ui-theme`.
+- **Node:** `npx degit LaserLloyd/ThemeForge/ui-theme#v1.4.0 static/ui-theme`.
 - **No install (prototypes, single HTML files):** load the files from jsDelivr, pinned to a
-  release: `https://cdn.jsdelivr.net/gh/LaserLloyd/ThemeForge@v1.3.0/ui-theme/ui-theme.js`
+  release: `https://cdn.jsdelivr.net/gh/LaserLloyd/ThemeForge@v1.4.0/ui-theme/ui-theme.js`
   (and the same path for each CSS file). Never pin `@main`; the CDN caches it for up to
   12 hours. A CDN page updates by changing the pinned version; `update.py` and steps 8.5, 9
   and 10 below do not apply to it.
@@ -226,8 +226,10 @@ reset-to-default button, `.ui-progress-row` with a cancel slot, and `.ui-empty__
 it shows comes from a string table you can translate (`UIComponents.setStrings`, `loadLocale('ja')`,
 `data-locale="auto"`); see `docs/COMPONENTS.md`.
 
-Icons: never an emoji in a button, tab, menu, nav item or status line. Use one of the 48 icons
-in `icons.svg` (names and the emoji each replaces: `docs/ICONS.md`, or `ui-theme/icons.json`).
+Icons: never an emoji in a button, tab, menu, nav item or status line. Use one of the 105 icons
+in `icons.svg` (names, and the emoji and Material Icons names each replaces: `docs/ICONS.md`, or
+`ui-theme/icons.json`). NiceGUI/Quasar: `icon=forgeui.quasar_icon('trash')` (it also takes the
+Material name the app uses now, e.g. `'delete_forever'`).
 They take the colour of their text and the theme's stroke weight:
 
 ```html
@@ -266,7 +268,7 @@ Do not:
   `data-palette`, not a value of it.
 - Change a `--z-*` value, or edit anything inside `ui-theme/` (it is replaced on update).
 - Use emoji as icons in app chrome; use `icons.svg` (an emoji in a message someone typed is
-  fine). If no icon fits, ask before adding an icon set; ThemeForge keeps its set under 50.
+  fine). If no icon fits, ask for one to be added to ThemeForge rather than adding an icon set.
 - Enable opt-in themes nobody asked for.
 
 ## 7. Charts, canvas and SVG
@@ -306,7 +308,7 @@ Add this line to the app's own `AGENTS.md` or `CLAUDE.md` (create one if missing
 agent working on the app keeps using the theme:
 
 ```
-UI styling uses ThemeForge 1.3.0 in static/ui-theme/ (read static/ui-theme/README.md before
+UI styling uses ThemeForge 1.4.0 in static/ui-theme/ (read static/ui-theme/README.md before
 writing CSS). Every page head carries the theme block from the base template: ui-theme.js first
 and blocking, ui-theme-base.css + ui-components.css before the app's CSS, ui-theme.css after it.
 Build from its tokens and ui-* classes, never write colour literals, never edit that folder;
@@ -319,7 +321,7 @@ never emoji; update it with `python3 static/ui-theme/update.py`.
 ## 10. Updating later
 
 `python3 static/ui-theme/update.py` installs the latest release (`--check` only reports;
-`--ref v1.3.0` pins a version); an app with a `forgeui.json` raises its `forgeui` pin and runs
+`--ref v1.4.0` pins a version); an app with a `forgeui.json` raises its `forgeui` pin and runs
 `python -m forgeui vendor` instead. It replaces only the files it owns, leaves the app's own
 files in the folder alone, and refuses to overwrite a file that was edited by hand (move the
 edit into the app's CSS). Read `CHANGELOG.md` in this repository for what changed, then repeat

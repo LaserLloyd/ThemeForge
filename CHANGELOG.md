@@ -4,6 +4,35 @@ Versions follow [Semantic Versioning](https://semver.org/). A release is a git t
 `ui-theme/VERSION` and `UITheme.version` carry the same number. Token names are the public
 API: removing or renaming one is a major version.
 
+## 1.4.0
+
+The icon set grows from 48 to 105 so it covers what the LaserLloyd apps draw today. An audit of
+DisPatch (Chat and Voice), MailForge, StudioForge, ChatForge, CrucibleForge, ClawForge,
+SpeechForge, InfoForge and TransForge found 57 icons they use (as emoji, Material Icons names or
+hand-drawn SVG) that the set did not have. Nothing is removed or renamed.
+
+- **57 icons added**, all Lucide 1.50.0: `activity` `archive` `arrow-down` `arrow-right`
+  `arrow-up` `arrow-up-down` `ban` `book-open` `brain` `camera` `chevron-left` `chevron-up`
+  `circle-question-mark` `clipboard-list` `clock` `cloud-off` `code` `cpu` `database`
+  `ellipsis-vertical` `eraser` `eye` `eye-off` `flag` `flask-conical` `gauge` `grip-vertical`
+  `history` `image-off` `inbox` `key` `life-buoy` `list` `list-checks` `lock-open` `mail`
+  `mail-open` `maximize-2` `messages-square` `moon` `music` `pause` `pin` `power` `reply` `save`
+  `shield` `shield-alert` `shield-check` `sliders-horizontal` `smartphone` `sun` `tag` `target`
+  `undo-2` `unlink` `user-plus`. The sprite is 33 KB (5 KB gzipped).
+- **Material Icons names:** every icon lists the Material names that mean it (223 in all), in
+  `icons.json` and the table in [`docs/ICONS.md`](docs/ICONS.md), for the NiceGUI apps.
+- **`forgeui.quasar_icon(name, prefix="/theme")`** returns Quasar's `svguse:` string for an icon,
+  from its name or a Material name it lists: `ui.button(icon=forgeui.quasar_icon('delete_forever'))`
+  draws `trash` from the sprite (checked against the Quasar that NiceGUI 3.18 ships).
+- **Emoji map:** 263 emoji and symbols (from 164). These now name the closer new icon: ✉📧📨📩📮
+  `mail` (was `send`), 📥📬 `inbox`, 📷📸 `camera` (was `image`), ⬆ ⬇ `arrow-up`/`arrow-down` (were
+  `upload`/`download`), ◂◀‹❮ `chevron-left` (was `arrow-left`), ⋮ `ellipsis-vertical`, 🗄
+  `database` and 🗃📦 `archive` (were `folder`/`puzzle`), 📋 `clipboard-list`, 📖📚 `book-open`,
+  🔑🗝 `key` and 🛡 `shield` (were `lock`), 🎛🎚 `sliders-horizontal` (was `wrench`), ⛔🚫 `ban`
+  (was `circle-x`).
+- **Policy:** the set holds what the apps draw rather than a fixed count: an icon is added when an
+  app needs one and no icon already means it, and the build refuses more than 120.
+
 ## 1.3.0
 
 Icons, so apps stop using emoji as icons. Nothing is removed or renamed.

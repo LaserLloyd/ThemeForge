@@ -1,6 +1,6 @@
 {
   "name": "ThemeForge",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "sprite": "icons.svg",
   "source": {
     "name": "Lucide",
@@ -18,6 +18,10 @@
         "➕",
         "＋",
         "✚"
+      ],
+      "material": [
+        "add",
+        "add_circle"
       ]
     },
     "x": {
@@ -30,6 +34,10 @@
         "✗",
         "✘",
         "❎"
+      ],
+      "material": [
+        "close",
+        "clear"
       ]
     },
     "check": {
@@ -40,6 +48,10 @@
         "✓",
         "✔",
         "☑"
+      ],
+      "material": [
+        "check",
+        "done"
       ]
     },
     "pencil": {
@@ -52,6 +64,11 @@
         "✒",
         "🖊",
         "🖋"
+      ],
+      "material": [
+        "edit",
+        "edit_note",
+        "mode_edit"
       ]
     },
     "trash": {
@@ -60,6 +77,12 @@
       "use": "delete, discard",
       "emoji": [
         "🗑"
+      ],
+      "material": [
+        "delete",
+        "delete_forever",
+        "delete_outline",
+        "delete_sweep"
       ]
     },
     "copy": {
@@ -68,16 +91,37 @@
       "use": "copy, duplicate",
       "emoji": [
         "⧉"
+      ],
+      "material": [
+        "content_copy"
+      ]
+    },
+    "save": {
+      "group": "actions",
+      "label": "Save",
+      "use": "save, store to disk",
+      "emoji": [
+        "💾",
+        "💿",
+        "📀"
+      ],
+      "material": [
+        "save"
       ]
     },
     "download": {
       "group": "actions",
       "label": "Download",
-      "use": "download, export, import into",
+      "use": "download, export",
       "emoji": [
-        "📥",
-        "⬇",
         "⤓"
+      ],
+      "material": [
+        "download",
+        "cloud_download",
+        "system_update_alt",
+        "download_for_offline",
+        "file_download"
       ]
     },
     "upload": {
@@ -86,14 +130,18 @@
       "use": "upload, attach from disk, publish",
       "emoji": [
         "📤",
-        "⬆",
         "⤒"
+      ],
+      "material": [
+        "upload",
+        "cloud_upload",
+        "file_upload"
       ]
     },
     "refresh-cw": {
       "group": "actions",
       "label": "Refresh",
-      "use": "refresh, retry, sync, regenerate",
+      "use": "refresh, retry, sync, regenerate, restart",
       "emoji": [
         "🔄",
         "🔃",
@@ -102,6 +150,37 @@
         "⟳",
         "↺",
         "⟲"
+      ],
+      "material": [
+        "refresh",
+        "sync",
+        "autorenew",
+        "restart_alt",
+        "replay"
+      ]
+    },
+    "undo-2": {
+      "group": "actions",
+      "label": "Undo",
+      "use": "undo, restore",
+      "emoji": [
+        "⎌",
+        "↶"
+      ],
+      "material": [
+        "undo",
+        "restore"
+      ]
+    },
+    "reply": {
+      "group": "actions",
+      "label": "Reply",
+      "use": "reply, quote in a reply",
+      "emoji": [
+        "↩"
+      ],
+      "material": [
+        "reply"
       ]
     },
     "search": {
@@ -111,6 +190,11 @@
       "emoji": [
         "🔍",
         "🔎"
+      ],
+      "material": [
+        "search",
+        "search_off",
+        "troubleshoot"
       ]
     },
     "link": {
@@ -119,15 +203,153 @@
       "use": "link, URL, connect two things",
       "emoji": [
         "🔗"
+      ],
+      "material": [
+        "link"
+      ]
+    },
+    "unlink": {
+      "group": "actions",
+      "label": "Unlink",
+      "use": "remove a link, disconnect",
+      "emoji": [],
+      "material": [
+        "link_off"
       ]
     },
     "external-link": {
       "group": "actions",
       "label": "Open in new tab",
-      "use": "opens elsewhere",
+      "use": "opens elsewhere, pop out",
       "emoji": [
         "↗",
         "⬈"
+      ],
+      "material": [
+        "open_in_new",
+        "launch"
+      ]
+    },
+    "pin": {
+      "group": "actions",
+      "label": "Pin",
+      "use": "pin, keep on top, sticky",
+      "emoji": [
+        "📌",
+        "📍"
+      ],
+      "material": [
+        "push_pin"
+      ]
+    },
+    "archive": {
+      "group": "actions",
+      "label": "Archive",
+      "use": "archive, put away; zip files",
+      "emoji": [
+        "🗃",
+        "📦"
+      ],
+      "material": [
+        "archive",
+        "inventory_2"
+      ]
+    },
+    "tag": {
+      "group": "actions",
+      "label": "Label",
+      "use": "label, tag, category",
+      "emoji": [
+        "🏷",
+        "🔖"
+      ],
+      "material": [
+        "label",
+        "sell"
+      ]
+    },
+    "flag": {
+      "group": "actions",
+      "label": "Flag",
+      "use": "flag, report, mark",
+      "emoji": [
+        "🚩",
+        "🏁",
+        "🏳",
+        "🏴"
+      ],
+      "material": [
+        "flag",
+        "outlined_flag"
+      ]
+    },
+    "eraser": {
+      "group": "actions",
+      "label": "Clear",
+      "use": "clear, clean up, start over",
+      "emoji": [
+        "🧹",
+        "🧽"
+      ],
+      "material": [
+        "cleaning_services",
+        "layers_clear",
+        "clear_all"
+      ]
+    },
+    "eye": {
+      "group": "actions",
+      "label": "Show",
+      "use": "show, preview, visible",
+      "emoji": [
+        "👁",
+        "👀"
+      ],
+      "material": [
+        "visibility"
+      ]
+    },
+    "eye-off": {
+      "group": "actions",
+      "label": "Hide",
+      "use": "hide, private, not visible",
+      "emoji": [
+        "🙈"
+      ],
+      "material": [
+        "visibility_off"
+      ]
+    },
+    "sliders-horizontal": {
+      "group": "actions",
+      "label": "Adjust",
+      "use": "tune, adjust, controls",
+      "emoji": [
+        "🎛",
+        "🎚"
+      ],
+      "material": [
+        "tune",
+        "settings_input_component"
+      ]
+    },
+    "user-plus": {
+      "group": "actions",
+      "label": "Add person",
+      "use": "invite, add a user",
+      "emoji": [],
+      "material": [
+        "person_add"
+      ]
+    },
+    "list-checks": {
+      "group": "actions",
+      "label": "Checklist",
+      "use": "checklist, steps, tasks",
+      "emoji": [],
+      "material": [
+        "checklist",
+        "fact_check"
       ]
     },
     "menu": {
@@ -137,6 +359,9 @@
       "emoji": [
         "☰",
         "≡"
+      ],
+      "material": [
+        "menu"
       ]
     },
     "ellipsis": {
@@ -145,19 +370,53 @@
       "use": "more actions",
       "emoji": [
         "…",
-        "⋯",
+        "⋯"
+      ],
+      "material": [
+        "more_horiz"
+      ]
+    },
+    "ellipsis-vertical": {
+      "group": "navigation",
+      "label": "More",
+      "use": "more actions (kebab)",
+      "emoji": [
         "⋮"
+      ],
+      "material": [
+        "more_vert"
       ]
     },
     "chevron-down": {
       "group": "navigation",
       "label": "Expand",
-      "use": "expand, open a list",
+      "use": "expand, open a list, sorted descending",
       "emoji": [
         "▾",
         "▼",
         "⌄",
         "🔽"
+      ],
+      "material": [
+        "expand_more",
+        "keyboard_arrow_down",
+        "arrow_drop_down"
+      ]
+    },
+    "chevron-up": {
+      "group": "navigation",
+      "label": "Collapse",
+      "use": "collapse, sorted ascending",
+      "emoji": [
+        "▴",
+        "▲",
+        "⌃",
+        "🔼"
+      ],
+      "material": [
+        "expand_less",
+        "keyboard_arrow_up",
+        "arrow_drop_up"
       ]
     },
     "chevron-right": {
@@ -169,20 +428,129 @@
         "▹",
         "›",
         "❯"
+      ],
+      "material": [
+        "chevron_right",
+        "keyboard_arrow_right",
+        "navigate_next"
+      ]
+    },
+    "chevron-left": {
+      "group": "navigation",
+      "label": "Previous",
+      "use": "previous, back one step",
+      "emoji": [
+        "◂",
+        "◀",
+        "◃",
+        "‹",
+        "❮"
+      ],
+      "material": [
+        "chevron_left",
+        "keyboard_arrow_left",
+        "navigate_before"
       ]
     },
     "arrow-left": {
       "group": "navigation",
       "label": "Back",
-      "use": "back, previous",
+      "use": "back",
       "emoji": [
         "←",
         "⬅",
-        "🔙",
-        "◂",
-        "◀",
-        "‹",
-        "❮"
+        "🔙"
+      ],
+      "material": [
+        "arrow_back"
+      ]
+    },
+    "arrow-right": {
+      "group": "navigation",
+      "label": "Forward",
+      "use": "forward, continue",
+      "emoji": [
+        "→",
+        "➡",
+        "⟶"
+      ],
+      "material": [
+        "arrow_forward"
+      ]
+    },
+    "arrow-up": {
+      "group": "navigation",
+      "label": "Up",
+      "use": "up, scroll to top, sort ascending",
+      "emoji": [
+        "↑",
+        "⬆"
+      ],
+      "material": [
+        "arrow_upward"
+      ]
+    },
+    "arrow-down": {
+      "group": "navigation",
+      "label": "Down",
+      "use": "down, scroll to latest, sort descending",
+      "emoji": [
+        "↓",
+        "⬇"
+      ],
+      "material": [
+        "arrow_downward"
+      ]
+    },
+    "arrow-up-down": {
+      "group": "navigation",
+      "label": "Sort",
+      "use": "sortable column, reorder",
+      "emoji": [
+        "⇅",
+        "↕"
+      ],
+      "material": [
+        "swap_vert",
+        "unfold_more",
+        "sort"
+      ]
+    },
+    "grip-vertical": {
+      "group": "navigation",
+      "label": "Drag",
+      "use": "drag handle",
+      "emoji": [
+        "⠿",
+        "⋮⋮",
+        "⣿"
+      ],
+      "material": [
+        "drag_indicator",
+        "drag_handle"
+      ]
+    },
+    "list": {
+      "group": "navigation",
+      "label": "List",
+      "use": "list view",
+      "emoji": [],
+      "material": [
+        "list",
+        "view_list"
+      ]
+    },
+    "maximize-2": {
+      "group": "navigation",
+      "label": "Expand view",
+      "use": "open in full, full screen",
+      "emoji": [
+        "⛶",
+        "⤢"
+      ],
+      "material": [
+        "open_in_full",
+        "fullscreen"
       ]
     },
     "info": {
@@ -193,6 +561,10 @@
         "ℹ",
         "ⓘ",
         "💡"
+      ],
+      "material": [
+        "info",
+        "lightbulb"
       ]
     },
     "triangle-alert": {
@@ -205,6 +577,12 @@
         "❕",
         "‼",
         "🚨"
+      ],
+      "material": [
+        "warning",
+        "report_problem",
+        "priority_high",
+        "report"
       ]
     },
     "circle-check": {
@@ -214,18 +592,54 @@
       "emoji": [
         "✅",
         "🟢"
+      ],
+      "material": [
+        "check_circle",
+        "task_alt"
       ]
     },
     "circle-x": {
       "group": "status",
       "label": "Error",
-      "use": "error, failed, blocked",
+      "use": "error, failed",
       "emoji": [
         "❌",
         "🛑",
-        "⛔",
-        "🚫",
         "🔴"
+      ],
+      "material": [
+        "cancel",
+        "error",
+        "highlight_off"
+      ]
+    },
+    "ban": {
+      "group": "status",
+      "label": "Blocked",
+      "use": "blocked, not allowed",
+      "emoji": [
+        "🚫",
+        "⛔"
+      ],
+      "material": [
+        "block",
+        "do_not_disturb"
+      ]
+    },
+    "circle-question-mark": {
+      "group": "status",
+      "label": "Help",
+      "use": "help, unknown, maybe",
+      "emoji": [
+        "❓",
+        "❔",
+        "⁉",
+        "🤔"
+      ],
+      "material": [
+        "help",
+        "help_outline",
+        "contact_support"
       ]
     },
     "bell": {
@@ -236,6 +650,76 @@
         "🔔",
         "📣",
         "📢"
+      ],
+      "material": [
+        "notifications",
+        "campaign"
+      ]
+    },
+    "clock": {
+      "group": "status",
+      "label": "Time",
+      "use": "time, schedule, pending",
+      "emoji": [
+        "⏰",
+        "⏱",
+        "⏲",
+        "⌚",
+        "⌛",
+        "⏳",
+        "🕐",
+        "🕑",
+        "🕒",
+        "🕓",
+        "🕔",
+        "🕕",
+        "🕖",
+        "🕗",
+        "🕘",
+        "🕙",
+        "🕚",
+        "🕛"
+      ],
+      "material": [
+        "schedule",
+        "pending_actions",
+        "access_time",
+        "timer"
+      ]
+    },
+    "history": {
+      "group": "status",
+      "label": "History",
+      "use": "history, earlier sessions",
+      "emoji": [
+        "🕰"
+      ],
+      "material": [
+        "history"
+      ]
+    },
+    "activity": {
+      "group": "status",
+      "label": "Health",
+      "use": "health, activity, pulse",
+      "emoji": [
+        "🩺",
+        "💓"
+      ],
+      "material": [
+        "monitor_heart",
+        "health_and_safety",
+        "show_chart"
+      ]
+    },
+    "cloud-off": {
+      "group": "status",
+      "label": "Offline",
+      "use": "offline, not connected",
+      "emoji": [],
+      "material": [
+        "cloud_off",
+        "wifi_off"
       ]
     },
     "settings": {
@@ -245,6 +729,9 @@
       "emoji": [
         "⚙",
         "🔩"
+      ],
+      "material": [
+        "settings"
       ]
     },
     "wrench": {
@@ -255,9 +742,12 @@
         "🔧",
         "🛠",
         "🔨",
-        "🧰",
-        "🎛",
-        "🎚"
+        "🧰"
+      ],
+      "material": [
+        "build",
+        "construction",
+        "handyman"
       ]
     },
     "palette": {
@@ -267,6 +757,41 @@
       "emoji": [
         "🎨",
         "🖌"
+      ],
+      "material": [
+        "palette",
+        "brush"
+      ]
+    },
+    "sun": {
+      "group": "areas",
+      "label": "Light",
+      "use": "light theme, daytime",
+      "emoji": [
+        "☀",
+        "🌞",
+        "🔆",
+        "🔅"
+      ],
+      "material": [
+        "light_mode",
+        "wb_sunny"
+      ]
+    },
+    "moon": {
+      "group": "areas",
+      "label": "Dark",
+      "use": "dark theme, night",
+      "emoji": [
+        "🌙",
+        "🌛",
+        "🌜",
+        "☾",
+        "☽"
+      ],
+      "material": [
+        "dark_mode",
+        "nightlight"
       ]
     },
     "folder": {
@@ -276,25 +801,64 @@
       "emoji": [
         "📁",
         "📂",
-        "🗂",
-        "🗃",
-        "🗄"
+        "🗂"
+      ],
+      "material": [
+        "folder",
+        "folder_open"
       ]
     },
     "file-text": {
       "group": "areas",
       "label": "Document",
-      "use": "document, page, docs, notes",
+      "use": "document, page, notes",
       "emoji": [
         "📄",
         "📃",
         "📑",
         "📜",
-        "📋",
         "📰",
+        "📕"
+      ],
+      "material": [
+        "description",
+        "article",
+        "sticky_note_2",
+        "note"
+      ]
+    },
+    "book-open": {
+      "group": "areas",
+      "label": "Knowledge",
+      "use": "docs, manual, library",
+      "emoji": [
         "📖",
-        "📕",
-        "📚"
+        "📚",
+        "📘",
+        "📗",
+        "📙",
+        "📓",
+        "📔",
+        "📒"
+      ],
+      "material": [
+        "menu_book",
+        "library_books",
+        "auto_stories"
+      ]
+    },
+    "clipboard-list": {
+      "group": "areas",
+      "label": "Jobs",
+      "use": "jobs, tasks, board",
+      "emoji": [
+        "📋",
+        "💼",
+        "🗒"
+      ],
+      "material": [
+        "assignment",
+        "work"
       ]
     },
     "paperclip": {
@@ -304,6 +868,10 @@
       "emoji": [
         "📎",
         "🖇"
+      ],
+      "material": [
+        "attach_file",
+        "attachment"
       ]
     },
     "image": {
@@ -312,9 +880,34 @@
       "use": "image, photo, gallery",
       "emoji": [
         "🖼",
-        "📷",
-        "📸",
         "🎞"
+      ],
+      "material": [
+        "image",
+        "photo",
+        "collections"
+      ]
+    },
+    "image-off": {
+      "group": "areas",
+      "label": "No images",
+      "use": "images hidden",
+      "emoji": [],
+      "material": [
+        "hide_image"
+      ]
+    },
+    "camera": {
+      "group": "areas",
+      "label": "Camera",
+      "use": "take or change a picture",
+      "emoji": [
+        "📷",
+        "📸"
+      ],
+      "material": [
+        "photo_camera",
+        "add_a_photo"
       ]
     },
     "message-circle": {
@@ -326,19 +919,75 @@
         "🗨",
         "💭",
         "🗯"
+      ],
+      "material": [
+        "chat",
+        "chat_bubble",
+        "comment"
       ]
     },
-    "send": {
+    "messages-square": {
       "group": "areas",
-      "label": "Send",
-      "use": "send a message, mail",
+      "label": "Chats",
+      "use": "conversations, thread list",
+      "emoji": [],
+      "material": [
+        "forum",
+        "question_answer"
+      ]
+    },
+    "mail": {
+      "group": "areas",
+      "label": "Mail",
+      "use": "email, message",
       "emoji": [
         "✉",
         "📧",
         "📨",
         "📩",
-        "📬",
         "📮"
+      ],
+      "material": [
+        "mail",
+        "email",
+        "mark_email_unread"
+      ]
+    },
+    "mail-open": {
+      "group": "areas",
+      "label": "Read mail",
+      "use": "read, opened, drafts",
+      "emoji": [],
+      "material": [
+        "mark_email_read",
+        "drafts"
+      ]
+    },
+    "inbox": {
+      "group": "areas",
+      "label": "Inbox",
+      "use": "inbox, incoming",
+      "emoji": [
+        "📥",
+        "📬",
+        "📭",
+        "📫",
+        "📪"
+      ],
+      "material": [
+        "inbox",
+        "all_inbox",
+        "move_to_inbox"
+      ]
+    },
+    "send": {
+      "group": "areas",
+      "label": "Send",
+      "use": "send a message, outbox",
+      "emoji": [],
+      "material": [
+        "send",
+        "outbox"
       ]
     },
     "chart-column": {
@@ -349,6 +998,12 @@
         "📊",
         "📈",
         "📉"
+      ],
+      "material": [
+        "bar_chart",
+        "query_stats",
+        "insights",
+        "leaderboard"
       ]
     },
     "puzzle": {
@@ -356,8 +1011,46 @@
       "label": "Extensions",
       "use": "plugins, extensions, apps",
       "emoji": [
-        "🧩",
-        "📦"
+        "🧩"
+      ],
+      "material": [
+        "extension"
+      ]
+    },
+    "code": {
+      "group": "areas",
+      "label": "Code",
+      "use": "code, source, markup",
+      "emoji": [],
+      "material": [
+        "code"
+      ]
+    },
+    "music": {
+      "group": "areas",
+      "label": "Audio",
+      "use": "audio, music, sound file",
+      "emoji": [
+        "🎵",
+        "🎶",
+        "🎼"
+      ],
+      "material": [
+        "music_note",
+        "audiotrack",
+        "library_music"
+      ]
+    },
+    "target": {
+      "group": "areas",
+      "label": "Goal",
+      "use": "goal, focus, aim",
+      "emoji": [
+        "🎯"
+      ],
+      "material": [
+        "gps_fixed",
+        "track_changes"
       ]
     },
     "user": {
@@ -370,6 +1063,10 @@
         "👨",
         "👩",
         "🙋"
+      ],
+      "material": [
+        "person",
+        "account_circle"
       ]
     },
     "users": {
@@ -379,6 +1076,11 @@
       "emoji": [
         "👥",
         "👪"
+      ],
+      "material": [
+        "group",
+        "people",
+        "groups"
       ]
     },
     "bot": {
@@ -388,6 +1090,20 @@
       "emoji": [
         "🤖",
         "👾"
+      ],
+      "material": [
+        "smart_toy"
+      ]
+    },
+    "brain": {
+      "group": "people",
+      "label": "Thinking",
+      "use": "thinking, reasoning, memory",
+      "emoji": [
+        "🧠"
+      ],
+      "material": [
+        "psychology"
       ]
     },
     "sparkles": {
@@ -399,6 +1115,22 @@
         "🌟",
         "💫",
         "⭐"
+      ],
+      "material": [
+        "auto_awesome"
+      ]
+    },
+    "life-buoy": {
+      "group": "people",
+      "label": "Support",
+      "use": "help, support, recovery",
+      "emoji": [
+        "🛟",
+        "🆘"
+      ],
+      "material": [
+        "support",
+        "support_agent"
       ]
     },
     "lock": {
@@ -408,20 +1140,98 @@
       "emoji": [
         "🔒",
         "🔐",
-        "🔏",
+        "🔏"
+      ],
+      "material": [
+        "lock"
+      ]
+    },
+    "lock-open": {
+      "group": "system",
+      "label": "Unlocked",
+      "use": "unlocked, sign in",
+      "emoji": [
+        "🔓"
+      ],
+      "material": [
+        "lock_open",
+        "no_encryption"
+      ]
+    },
+    "key": {
+      "group": "system",
+      "label": "Key",
+      "use": "password, key, token",
+      "emoji": [
         "🔑",
-        "🗝",
+        "🗝"
+      ],
+      "material": [
+        "key",
+        "vpn_key",
+        "password"
+      ]
+    },
+    "shield": {
+      "group": "system",
+      "label": "Protection",
+      "use": "protection, safety",
+      "emoji": [
         "🛡"
+      ],
+      "material": [
+        "shield",
+        "security"
+      ]
+    },
+    "shield-check": {
+      "group": "system",
+      "label": "Verified",
+      "use": "verified, trusted, safe",
+      "emoji": [],
+      "material": [
+        "verified",
+        "verified_user",
+        "gpp_good"
+      ]
+    },
+    "shield-alert": {
+      "group": "system",
+      "label": "Suspicious",
+      "use": "suspicious, spam, phishing",
+      "emoji": [],
+      "material": [
+        "gpp_maybe",
+        "gpp_bad"
       ]
     },
     "monitor": {
       "group": "system",
       "label": "Device",
-      "use": "device, screen, host",
+      "use": "computer, screen, host",
       "emoji": [
         "🖥",
         "💻",
         "📺"
+      ],
+      "material": [
+        "computer",
+        "desktop_windows",
+        "monitor"
+      ]
+    },
+    "smartphone": {
+      "group": "system",
+      "label": "Phone",
+      "use": "phone, this device",
+      "emoji": [
+        "📱",
+        "📲"
+      ],
+      "material": [
+        "smartphone",
+        "phone_iphone",
+        "phone_android"
       ]
     },
     "terminal": {
@@ -430,15 +1240,67 @@
       "use": "console, logs, command line",
       "emoji": [
         "⌨"
+      ],
+      "material": [
+        "terminal"
+      ]
+    },
+    "cpu": {
+      "group": "system",
+      "label": "Model",
+      "use": "AI model, processor, memory",
+      "emoji": [],
+      "material": [
+        "memory",
+        "developer_board"
+      ]
+    },
+    "database": {
+      "group": "system",
+      "label": "Database",
+      "use": "database, storage",
+      "emoji": [
+        "🗄",
+        "🛢"
+      ],
+      "material": [
+        "storage",
+        "dns"
+      ]
+    },
+    "gauge": {
+      "group": "system",
+      "label": "Speed",
+      "use": "speed, benchmark, load",
+      "emoji": [],
+      "material": [
+        "speed"
+      ]
+    },
+    "power": {
+      "group": "system",
+      "label": "Power",
+      "use": "start, stop, power",
+      "emoji": [
+        "⏻",
+        "⏼",
+        "⭘"
+      ],
+      "material": [
+        "power_settings_new"
       ]
     },
     "plug": {
       "group": "system",
       "label": "Connect",
-      "use": "connection, integration, power",
+      "use": "connection, integration",
       "emoji": [
         "🔌",
         "🔋"
+      ],
+      "material": [
+        "electrical_services",
+        "cable"
       ]
     },
     "globe": {
@@ -451,6 +1313,25 @@
         "🌎",
         "🌏",
         "🗺"
+      ],
+      "material": [
+        "public",
+        "language",
+        "travel_explore"
+      ]
+    },
+    "flask-conical": {
+      "group": "system",
+      "label": "Test",
+      "use": "tests, experiments, evals",
+      "emoji": [
+        "🧪",
+        "⚗",
+        "🔬"
+      ],
+      "material": [
+        "science",
+        "biotech"
       ]
     },
     "zap": {
@@ -461,6 +1342,12 @@
         "⚡",
         "🔥",
         "🚀"
+      ],
+      "material": [
+        "bolt",
+        "flash_on",
+        "local_fire_department",
+        "rocket_launch"
       ]
     },
     "play": {
@@ -471,6 +1358,22 @@
         "▶",
         "⏯",
         "►"
+      ],
+      "material": [
+        "play_arrow",
+        "play_circle"
+      ]
+    },
+    "pause": {
+      "group": "media",
+      "label": "Pause",
+      "use": "pause, hold",
+      "emoji": [
+        "⏸"
+      ],
+      "material": [
+        "pause",
+        "pause_circle"
       ]
     },
     "square": {
@@ -482,6 +1385,10 @@
         "■",
         "◼",
         "⬛"
+      ],
+      "material": [
+        "stop",
+        "stop_circle"
       ]
     },
     "mic": {
@@ -491,6 +1398,10 @@
       "emoji": [
         "🎤",
         "🎙"
+      ],
+      "material": [
+        "mic",
+        "keyboard_voice"
       ]
     },
     "thumbs-up": {
@@ -500,6 +1411,9 @@
       "emoji": [
         "👍",
         "👌"
+      ],
+      "material": [
+        "thumb_up"
       ]
     },
     "thumbs-down": {
@@ -508,6 +1422,9 @@
       "use": "dislike, reject, bad answer",
       "emoji": [
         "👎"
+      ],
+      "material": [
+        "thumb_down"
       ]
     }
   }

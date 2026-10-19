@@ -1,8 +1,8 @@
 """ForgeUI: the ThemeForge design system as a pure-data Python package.
 
 The wheel carries the drop-in ``ui-theme/`` bundle (tokens, themes, base and
-component CSS, the runtime and the component helpers) as package data, plus
-three helpers and a vendoring tool. Standard library only; FastAPI/Starlette
+component CSS, the runtime, the component helpers and the icons) as package data,
+plus a few helpers and a vendoring tool. Standard library only; FastAPI/Starlette
 and NiceGUI are imported lazily by :func:`mount` when you call it.
 
     import forgeui
@@ -11,6 +11,7 @@ and NiceGUI are imported lazily by :func:`mount` when you call it.
     forgeui.head_html(themes=["glacier", "paper"], default="glacier",
                       storage_key="myapp.theme")   # the <head> tags, in order
     forgeui.mount(app)                    # serve the bundle at /theme
+    forgeui.quasar_icon("trash")          # 'svguse:/theme/icons.svg#trash' for NiceGUI icon=
 
     python -m forgeui vendor              # copy the bundle into this repo (forgeui.json)
 
@@ -31,7 +32,7 @@ from typing import Any, Iterable, Optional, Sequence
 from ._version import __version__
 
 __all__ = ["__version__", "static_dir", "bundle_version", "registry", "core_themes", "head_html",
-           "head_html_from_manifest", "mount"]
+           "head_html_from_manifest", "mount", "quasar_icon"]
 
 #: The folder name the bundle has had since 1.0.0 (part of the public contract).
 BUNDLE_DIR = "ui-theme"
@@ -61,6 +62,32 @@ def registry(folder: Optional[Path] = None) -> dict:
 def core_themes(folder: Optional[Path] = None) -> "list[str]":
     """The slugs of the core set: what an app offers when it does not choose."""
     return [t["slug"] for t in registry(folder)["themes"] if t.get("set") == "core"]
+
+
+@functools.lru_cache(maxsize=None)
+def _icon_names(folder: str) -> "dict[str, str]":
+    """Every name quasar_icon() takes -> the icon it draws: each icon's own name, and
+    the Material Icons names it lists (the build keeps the two kinds from colliding)."""
+    icons = json.loads((Path(folder) / "icons.json").read_text(encoding="utf-8"))["icons"]
+    names = {name: name for name in icons}
+    for name, entry in icons.items():
+        names.update((m, name) for m in entry.get("material", []))
+    return names
+
+
+def quasar_icon(name: str, prefix: str = "/theme", folder: Optional[Path] = None) -> str:
+    """The Quasar icon string that draws a bundle icon from ``icons.svg``, for NiceGUI's
+    ``icon=`` arguments: ``ui.button(icon=forgeui.quasar_icon("trash"))``.
+
+    ``name`` is an icon name (``ui-theme/icons.json``) or a Material Icons name an icon
+    lists, so ``"delete_forever"`` draws ``trash``. ``prefix`` is the URL the bundle is
+    served under (see :func:`mount`)."""
+    names = _icon_names(str(Path(folder) if folder else static_dir()))
+    if name not in names:
+        raise ValueError(f"no icon {name!r}: the names, and the Material names each takes, are in "
+                         "ui-theme/icons.json (docs/ICONS.md)")
+    base = "/" + prefix.strip("/") if prefix.strip("/") else ""
+    return f"svguse:{base}/icons.svg#{names[name]}"
 
 
 @functools.lru_cache(maxsize=None)

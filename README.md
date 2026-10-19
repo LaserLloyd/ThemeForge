@@ -15,7 +15,7 @@
 ThemeForge is a drop-in CSS theme system for web apps that an AI coding agent installs in
 one step: thirteen colour themes (dark, OLED black, light, a neutral default and a high-contrast
 pair, with automatic dark mode from the OS setting), a theme picker, design tokens, a base element layer, text standards,
-ready-made component classes and 48 outline icons that take the theme's colours, MIT licensed. Plain CSS and a small script in one folder,
+ready-made component classes and 105 outline icons that take the theme's colours, MIT licensed. Plain CSS and a small script in one folder,
 `ui-theme/`. No build step, no dependencies, any framework. The package is called **ForgeUI**
 (a wheel, `forgeui`, installed from the git release tag); the repository, the `ui-theme/` folder and every token and class keep
 the ThemeForge names, so nothing an app depends on changes with the name.
@@ -35,21 +35,23 @@ Tell it: "Unzip ThemeForge.zip and add the theme to this app following its AGENT
 
 ## Icons, not emoji
 
-Emoji used as icons look cheap and ignore the theme. The folder carries 48 outline icons
-([Lucide](https://lucide.dev), ISC) in one 15 KB sprite (3 KB gzipped). They draw in the text
-colour and the theme's stroke weight, so every theme has the same set in its own colours, and the
-high-contrast pair draws them heavier:
+Emoji used as icons look cheap and ignore the theme. The folder carries 105 outline icons
+([Lucide](https://lucide.dev), ISC) in one 33 KB sprite (5 KB gzipped): the ones the LaserLloyd
+apps (DisPatch, MailForge, StudioForge, ChatForge, CrucibleForge and the rest) use. They take the
+text colour and the theme's stroke weight, so every theme has the same set in its own colours,
+and the high-contrast pair draws them heavier:
 
-![The 48 icons](docs/images/icons.svg)
+![The 105 icons](docs/images/icons.svg)
 
 ```html
 <button class="ui-btn"><svg class="ui-icon" aria-hidden="true"><use href="/static/ui-theme/icons.svg#trash"/></svg>Delete</button>
 ```
 
-`UIComponents.iconFor('🗑️')` returns `'trash'`: 164 emoji and symbols are mapped, so an app that
-used emoji can switch mechanically. Emoji people type stay emoji, drawn one of three ways: as
-the icon (`emojify(el, 'icon')`), in the text colour (`'text'`), or in their own colours
-(`'color'`). Names, the emoji map and the styles: [`docs/ICONS.md`](docs/ICONS.md).
+`UIComponents.iconFor('🗑️')` returns `'trash'`: 263 emoji and symbols are mapped, so an app that
+used emoji can switch mechanically. NiceGUI apps keep their Material names (223 are mapped):
+`ui.button(icon=forgeui.quasar_icon('delete_forever'))` draws `trash`. Emoji people type stay
+emoji, drawn one of three ways: as the icon (`emojify(el, 'icon')`), in the text colour (`'text'`),
+or in their own colours (`'color'`). Names, both maps and the styles: [`docs/ICONS.md`](docs/ICONS.md).
 
 ## Install
 
@@ -91,7 +93,7 @@ winget install --id Python.Python.3.12 -e --source winget
 # close and reopen PowerShell, then:
 cd C:\path\to\your\app
 py -3 -m venv .venv
-.\.venv\Scripts\python.exe -m pip install "forgeui @ git+https://github.com/LaserLloyd/ThemeForge@v1.3.0"
+.\.venv\Scripts\python.exe -m pip install "forgeui @ git+https://github.com/LaserLloyd/ThemeForge@v1.4.0"
 .\.venv\Scripts\python.exe -m forgeui init --dest static/ui-theme    # writes forgeui.json
 .\.venv\Scripts\python.exe -m forgeui vendor                         # copies the folder, verified
 .\.venv\Scripts\python.exe -m forgeui vendor --check                 # prints ok, exit 0
@@ -101,7 +103,7 @@ py -3 -m venv .venv
 |---|---|
 | `forgeui.json` records version, themes and overlays in your repo | Needs git and a venv |
 | `vendor --check` exits 1 on drift: use it in CI or a unit test | Not on PyPI yet, so the install line is a long git URL |
-| Python helpers: `forgeui.mount(app, ...)`, `head_html_from_manifest(...)` | The tag must exist: if pip reports it cannot find `v1.3.0`, use the `update.py` route until the release is tagged |
+| Python helpers: `forgeui.mount(app, ...)`, `head_html_from_manifest(...)` | The tag must exist: if pip reports it cannot find `v1.4.0`, use the `update.py` route until the release is tagged |
 
 #### 3. `uv`, no venv to manage
 
@@ -112,7 +114,7 @@ winget install --id Git.Git -e --source winget
 winget install --id astral-sh.uv -e --source winget
 # close and reopen PowerShell, then:
 cd C:\path\to\your\app
-$f = "forgeui @ git+https://github.com/LaserLloyd/ThemeForge@v1.3.0"
+$f = "forgeui @ git+https://github.com/LaserLloyd/ThemeForge@v1.4.0"
 uvx --from $f forgeui init --dest static/ui-theme
 uvx --from $f forgeui vendor
 uvx --from $f forgeui vendor --check
@@ -173,7 +175,7 @@ sudo apt-get update && sudo apt-get install -y git curl ca-certificates
 curl -LsSf https://astral.sh/uv/install.sh | sh
 source $HOME/.local/bin/env
 cd /path/to/your/app
-F="forgeui @ git+https://github.com/LaserLloyd/ThemeForge@v1.3.0"
+F="forgeui @ git+https://github.com/LaserLloyd/ThemeForge@v1.4.0"
 uvx --from "$F" forgeui init --dest static/ui-theme
 uvx --from "$F" forgeui vendor
 uvx --from "$F" forgeui vendor --check     # prints ok, exit 0
@@ -193,7 +195,7 @@ Choose this when you cannot install uv. Ubuntu 24.04 refuses a bare `pip install
 sudo apt-get update && sudo apt-get install -y git python3-venv
 cd /path/to/your/app
 python3 -m venv .venv
-.venv/bin/pip install "forgeui @ git+https://github.com/LaserLloyd/ThemeForge@v1.3.0"
+.venv/bin/pip install "forgeui @ git+https://github.com/LaserLloyd/ThemeForge@v1.4.0"
 .venv/bin/python -m forgeui init --dest static/ui-theme
 .venv/bin/python -m forgeui vendor
 .venv/bin/python -m forgeui vendor --check     # prints ok, exit 0
@@ -202,7 +204,7 @@ python3 -m venv .venv
 | Pros | Cons |
 |---|---|
 | Only the standard tools; the venv is also where `forgeui.mount()` runs | Most steps of the three; needs git and `python3-venv` |
-| Same manifest and drift check as method 2 | If pip cannot find tag `v1.3.0`, use method 1 until the release is tagged |
+| Same manifest and drift check as method 2 | If pip cannot find tag `v1.4.0`, use method 1 until the release is tagged |
 
 #### 4. Docker Compose, specimen preview only
 
@@ -248,7 +250,7 @@ xcode-select --install     # skip if git already works
 curl -LsSf https://astral.sh/uv/install.sh | sh
 source $HOME/.local/bin/env
 cd /path/to/your/app
-F="forgeui @ git+https://github.com/LaserLloyd/ThemeForge@v1.3.0"
+F="forgeui @ git+https://github.com/LaserLloyd/ThemeForge@v1.4.0"
 uvx --from "$F" forgeui init --dest static/ui-theme
 uvx --from "$F" forgeui vendor
 uvx --from "$F" forgeui vendor --check     # prints ok, exit 0
@@ -294,7 +296,7 @@ its `ui-theme/` folder. If you were handed `ThemeForge.zip` (the release zip), u
 
 - **`update.py` route:** `python3 static/ui-theme/update.py` updates; `--check` reports only (exit 1 when an update exists);
   `--ref vX.Y.Z` pins a release. To uninstall, delete the `static/ui-theme` folder and the two lines in your pages.
-- **ForgeUI route:** raise the tag in the install line (for example `@v1.3.0` to a later release), then run `vendor` again;
+- **ForgeUI route:** raise the tag in the install line (for example `@v1.4.0` to a later release), then run `vendor` again;
   `vendor --check` confirms the copy. A hand-edited bundle file is refused unless you pass `--force`, so keep edits in overlays
   (`extra_files`). To uninstall, delete the vendored folder and `forgeui.json`, and `.venv` if you made one for this.
 - **Docker preview:** `git pull && docker compose -f deploy/compose/compose.yml up -d --build` updates it;
@@ -303,7 +305,7 @@ its `ui-theme/` folder. If you were handed `ThemeForge.zip` (the release zip), u
 Preview settings (optional, in `deploy/compose/.env`): `HOST_PORT` (8185), `BIND_ADDR` (127.0.0.1; `0.0.0.0` publishes to your
 network), `IMAGE`, `VERSION`, `MEM_LIMIT` (64m), `CPU_LIMIT` (0.5). More in [docs/deploy/docker.md](docs/deploy/docker.md);
 updating details in [docs/UPDATING.md](docs/UPDATING.md). Without installing anything, a prototype can load the files from
-jsDelivr: `https://cdn.jsdelivr.net/gh/LaserLloyd/ThemeForge@v1.3.0/ui-theme/ui-theme.js` (and the same path for each CSS file).
+jsDelivr: `https://cdn.jsdelivr.net/gh/LaserLloyd/ThemeForge@v1.4.0/ui-theme/ui-theme.js` (and the same path for each CSS file).
 
 ## Add it to your pages
 
@@ -369,7 +371,7 @@ states read by shape as well as colour in every theme. More in
 | `ui-components.css` | buttons, fields, checkboxes, radios, switches, cards, badges, callouts, tabs, segmented controls, tables, dialogs, menus, tooltips, toasts, progress, code blocks, an app shell |
 | `ui-theme.css` | the tokens of all thirteen themes (about 20 KB gzipped) |
 | `ui-components.js` | optional: themed `confirm()`, `alert()`, `prompt()` and toasts, copy-to-clipboard, inline validation, settings rows, icon and emoji helpers, translatable words (`locales/`) |
-| `icons.svg`, `icons.json` | 48 outline icons in one sprite, and their names, labels and the emoji each replaces (license in `icons-LICENSE.txt`) |
+| `icons.svg`, `icons.json` | 105 outline icons in one sprite, and their names, labels, and the emoji and Material Icons names each replaces (license in `icons-LICENSE.txt`) |
 | `locales/` | the words `ui-components.js` shows, in English and Japanese |
 | `adapters/` | NiceGUI/Quasar, Tailwind CSS v4 and v3 |
 | `update.py` | installs and updates the folder, checking every file (apps without pip); `python -m forgeui vendor` does the same from a manifest |
