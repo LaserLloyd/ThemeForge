@@ -147,8 +147,9 @@ class IconTests(unittest.TestCase):
         self.icons = sync.load_icons()
         self.bundle = sync.bundle_files(sync.load_registry())
 
-    def test_the_set_stays_small(self):
-        self.assertLessEqual(len(self.icons["icons"]), 49)
+    def test_the_set_stays_curated(self):
+        self.assertLessEqual(len(self.icons["icons"]), sync.ICON_LIMIT)
+        self.assertLessEqual(sync.ICON_LIMIT, 120)
 
     def test_sprite_has_one_symbol_per_icon_and_no_colour(self):
         sprite = self.bundle["icons.svg"]
@@ -202,11 +203,23 @@ class IconTests(unittest.TestCase):
         msg = self._broken(lambda d, f: d["icons"].pop("bell"))
         self.assertIn("bell", msg)
 
-    def test_more_than_49_icons_is_refused(self):
+    def test_more_than_the_cap_is_refused(self):
         def grow(d, f):
-            for i in range(50):
-                d["icons"][f"extra-{i}"] = dict(d["icons"]["bell"], emoji=[])
-        self.assertIn("49", self._broken(grow))
+            for i in range(sync.ICON_LIMIT + 1):
+                d["icons"][f"extra-{i}"] = dict(d["icons"]["bell"], emoji=[], material=[])
+        self.assertIn(str(sync.ICON_LIMIT), self._broken(grow))
+
+    def test_a_material_name_under_two_icons_is_refused(self):
+        msg = self._broken(lambda d, f: d["icons"]["bell"]["material"].append("delete_forever"))
+        self.assertIn("trash", msg)
+
+    def test_a_material_name_that_names_another_icon_is_refused(self):
+        msg = self._broken(lambda d, f: d["icons"]["plug"]["material"].append("power"))
+        self.assertIn("another icon", msg)
+
+    def test_the_public_registry_carries_material_names(self):
+        icons = json.loads(self.bundle["icons.json"])["icons"]
+        self.assertIn("delete_forever", icons["trash"]["material"])
 
     def test_a_filled_or_styled_source_is_refused(self):
         def fill(d, f):

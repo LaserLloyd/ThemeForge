@@ -740,7 +740,7 @@
       '<button id="eb" class="ui-btn ui-btn--icon" aria-label="Close">✕</button>');
     const w = f.contentWindow, d = f.contentDocument, U = w.UIComponents;
     check('icons: API', ['icon', 'iconFor', 'icons', 'emojify'].map((k) => typeof U[k]), Array(4).fill('function'));
-    check('icons: the set is under 50 and in display order', [U.icons().length < 50, U.icons()[0], U.icons().includes('settings')], [true, 'plus', true]);
+    check('icons: the set is curated (at most 120) and in display order', [U.icons().length <= 120, U.icons()[0], U.icons().includes('settings')], [true, 'plus', true]);
     const svg = U.icon('trash');
     d.getElementById('ic').append(svg);
     check('icons: icon() is a decorative .ui-icon using the sprite next to the script',

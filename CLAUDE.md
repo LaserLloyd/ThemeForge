@@ -24,8 +24,10 @@
 - Components and the base layer use tokens only (no colour literals; `tools/lint_colors.py`
   checks) and never name a theme slug or `[data-palette]`.
 - Never rename or remove a token or an icon in a minor release; their names are the public API.
-- Icons: `src/icons/icons.json` plus the unchanged Lucide source in `src/icons/lucide/`. Keep the
-  set under 50 (`build` refuses more); components never put emoji in chrome.
+- Icons: `src/icons/icons.json` plus the unchanged Lucide source in `src/icons/lucide/`. The set is
+  what the LaserLloyd apps draw, not a library: add an icon only when an app needs one and no icon
+  (or its emoji and Material names) already means it; `build` refuses more than 120. Components
+  never put emoji in chrome.
 - Version: `src/themes.json` `version` is the single source; `build` stamps it everywhere.
   Add a `CHANGELOG.md` entry for every release, and keep pinned URLs in the docs on the
   current version (`check` fails otherwise). Merging a new version to `main` is the release:

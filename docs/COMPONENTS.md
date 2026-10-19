@@ -85,7 +85,7 @@ Sizes `--sm`, `--lg`; `--block` for full width. Works on `<a>` too.
 <span class="ui-emoji--color">🎉</span>                             <!-- keeps its colours -->
 ```
 
-48 outline icons in `icons.svg`, drawn in `currentColor` with the theme's `--icon-stroke`.
+105 outline icons in `icons.svg`, drawn in `currentColor` with the theme's `--icon-stroke`.
 `.ui-icon` is 1.25em; `--sm` 16px, `--md` 20px, `--lg` 24px; colour `--muted`, `--accent`,
 `--success`, `--warning`, `--danger`, `--info`. Script: `UIComponents.icon(name, {label, size})`,
 `iconFor(emoji)`, `icons()`, `emojify(element, 'icon' | 'text' | 'color')`. The names, the emoji

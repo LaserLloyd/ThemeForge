@@ -74,6 +74,21 @@ class PackageTests(Base):
         self.assertIn("purple", core)
         self.assertNotIn("night-red", core)
 
+    def test_quasar_icon_takes_icon_and_material_names(self):
+        self.assertEqual(forgeui.quasar_icon("trash"), "svguse:/theme/icons.svg#trash")
+        self.assertEqual(forgeui.quasar_icon("delete_forever"), "svguse:/theme/icons.svg#trash")
+        self.assertEqual(forgeui.quasar_icon("settings", prefix="/static/ui-theme/"),
+                         "svguse:/static/ui-theme/icons.svg#settings")
+        self.assertEqual(forgeui.quasar_icon("menu", prefix=""), "svguse:/icons.svg#menu")
+        with self.assertRaises(ValueError):
+            forgeui.quasar_icon("no_such_icon")
+        sprite = (forgeui.static_dir() / "icons.svg").read_text(encoding="utf-8")
+        icons = json.loads((forgeui.static_dir() / "icons.json").read_text(encoding="utf-8"))["icons"]
+        for entry in icons.values():
+            for material in entry.get("material", []):
+                drawn = forgeui.quasar_icon(material).rsplit("#", 1)[1]
+                self.assertIn(f'<symbol id="{drawn}"', sprite, material)
+
     def test_head_html_order_and_attributes(self):
         head = forgeui.head_html(themes=["glacier", "paper"], default="glacier", storage_key="x.theme")
         lines = head.strip().splitlines()

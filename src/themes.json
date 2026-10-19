@@ -1,6 +1,6 @@
 {
   "name": "ThemeForge",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "notes": [
     "One entry per theme. css = the file in src/css that holds the theme's [data-palette] block; Purple has none because it is the :root base inside theme-base.css.",
     "ground is oled | dark | light. The runtime derives <html data-theme> from it: oled -> amoled, dark -> dark, light -> light.",

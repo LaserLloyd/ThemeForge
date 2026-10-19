@@ -240,7 +240,7 @@
 
 /* ---- Icons and emoji ----------------------------------------------------------
    <svg class="ui-icon" aria-hidden="true"><use href="/static/ui-theme/icons.svg#settings"/></svg>
-   48 outline icons (names in docs/ICONS.md). They draw in currentColor, so they take
+   105 outline icons (names in docs/ICONS.md). They draw in currentColor, so they take
    the colour of their text, and with the theme's --icon-stroke. 1.25em by default;
    --sm 16px, --md 20px, --lg 24px, or set --ui-icon-size. A button whose only content
    is an icon needs an aria-label.
