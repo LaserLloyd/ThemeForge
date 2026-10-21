@@ -423,7 +423,7 @@ def icon_symbol(name: str) -> str:
 
 def icon_sprite(icons: dict, version: str) -> str:
     src = icons["source"]
-    lines = [f'<svg xmlns="http://www.w3.org/2000/svg">',
+    lines = ['<svg xmlns="http://www.w3.org/2000/svg">',
              f"<!-- GENERATED: {NAME} {version} icons ({len(icons['icons'])}), drawn for {src['name']}, "
              f"{src['license']}: use them any way you like, no notice needed. "
              f"Use: <svg class=\"ui-icon\"><use href=\"icons.svg#name\"/></svg> -->"]

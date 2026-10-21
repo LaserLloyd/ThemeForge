@@ -1,7 +1,7 @@
 /* GENERATED theme tokens: ThemeForge 1.5.0, drop-in bundle (ui-theme/).
    https://github.com/LaserLloyd/ThemeForge . Do not edit this copy: update the whole
    folder (python ui-theme/update.py) and keep app styles in the app.
-   body sha256: b3c7cdeba2be3d70 */
+   body sha256: d754fedd1b0171fe */
 /* ============================================================================
    theme-base.css — the token contract, Purple (the base theme), and the
    theme-agnostic element layer.
@@ -2640,6 +2640,15 @@
 :lang(ja) h1, :lang(ja) h2, :lang(ja) h3, :lang(ja) h4,
 :lang(zh) h1, :lang(zh) h2, :lang(zh) h3, :lang(zh) h4 {
   letter-spacing: normal;
+}
+/* Arabic is joined script: any tracking pulls the letters of a word apart,
+   so every tracked role sets solid. Inter has no Arabic, so the system face draws it. */
+:lang(ar) {
+  --font-sans: 'Inter', 'Noto Sans Arabic', 'Segoe UI', 'Geeza Pro', Tahoma, sans-serif;
+  --font-display: var(--font-sans);
+  --ls-tight: 0;
+  --ls-snug: 0;
+  --ls-label: 0;
 }
 
 /* ---- More contrast — every theme ----

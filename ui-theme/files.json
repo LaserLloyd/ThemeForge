@@ -1,11 +1,11 @@
 {
   "name": "ThemeForge",
   "version": "1.5.0",
-  "hash": "4080da5526bb",
+  "hash": "546bce3e3fec",
   "repo": "LaserLloyd/ThemeForge",
   "files": {
     "README.md": "a58cca99fe81487d1e2879416d5b9eda27a769c8c216e9295a07be3664d7246e",
-    "VERSION": "1ca79cb4e14ef62e5197a8d297694edc59c841d156ebd8bd90c8c23b9d96fc56",
+    "VERSION": "6db5ad44e00766ca2d32bc77f78f796e5212a42c956bb508201152af4d735694",
     "adapters/quasar.css": "db304be2619bfd669d3511a2cdb6b4afea7e6fbff989ef7d08ea9efee9857ba5",
     "adapters/quasar.js": "3e926808f183838f0dda5f07b212615d79c32394e5d8fcdd0075f623585340f8",
     "adapters/tailwind-v3.preset.js": "1e5542b9e79dd0624a4eaf0f249164a9f0b8031fcba50217f5a18f4dd905a5fe",
@@ -25,7 +25,7 @@
     "ui-components.css": "00d35251f636e28288792cef4563d4355bef4288df833cc978a19b2e2c9a7383",
     "ui-components.js": "871e58c270b179f0e24fda18545b8731ddfaf6db469357774b0a9390a015c062",
     "ui-theme-base.css": "2c18cdf95ec3e394968171c36fca3f1cb86e00e11a00e6617a57b3b893977fc3",
-    "ui-theme.css": "f92ba1eb6ffbc2c905818855b3a4bc511f2126d9bfb67c50a48dfe440f228b9b",
+    "ui-theme.css": "ab739c415eaad430902fa506cad3d9e4b4dbd4020280d759b9b65e0c0358773e",
     "ui-theme.d.ts": "fedcc3bc98b73adce101c8d9bcb75f1c862b3d493f2a26a831d9d77d0f112df4",
     "ui-theme.js": "94eca13378449ebe76f52e219b713a90ce14630191d3c334cdf3bc059cac6362",
     "update.py": "4b44b8bf0a6956dc1c778114cdf984decd3f280daf0fe82334514bac623aab89"

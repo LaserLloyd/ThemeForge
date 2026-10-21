@@ -132,7 +132,7 @@ Versions follow [Semantic Versioning](https://semver.org/):
 
 | Release | What may change |
 |---|---|
-| **Major** | Renaming or removing a token, class, API, file, theme slug, icon or locale key; changing what a token means; an incompatible `forgeui.json` change; dropping a supported Python version. Also the point where deprecated things are removed, and where the `ThemeForge` stamp in `VERSION` may become `ForgeUI`. |
+| **Major** | Renaming or removing a token, class, API, file, theme slug, icon or locale key; changing what a token means; an incompatible `forgeui.json` change; dropping a supported Python version. Also the point where deprecated things are removed. |
 | **Minor** | Adding a token (defined in every theme), a theme, a component class, an icon, an emoji mapping, a string key, a command or flag, an adapter. Nothing an app uses changes. |
 | **Patch** | Fixes, value tweaks that keep every contrast floor passing, documentation. |
 

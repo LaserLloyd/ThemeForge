@@ -897,6 +897,10 @@
     const btns = Array.from(dlg.querySelectorAll('.ui-dialog__actions button'));
     check('rtl: dialog actions run right to left (OK is the leftmost last)', rect(btns[0]).left > rect(btns[1]).left, true);
     dlg.remove();
+    // Joined script: tracking would pull each word apart, so Arabic sets every tracked role solid.
+    d.getElementById('stage').insertAdjacentHTML('beforeend', '<h1 id="rh">عنوان</h1><div class="ui-kicker" id="rk">الحالة</div>');
+    check('rtl: Arabic headings and kickers are not tracked',
+          ['rh', 'rk'].map((id) => parseFloat(w.getComputedStyle(d.getElementById(id)).letterSpacing) || 0), [0, 0]);
   }
 
   // 43l. Sortable table headers: the button, the icon and the sorted and numeric states.
