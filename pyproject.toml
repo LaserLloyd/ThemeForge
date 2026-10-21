@@ -11,8 +11,8 @@ dynamic = ["version"]
 description = "ForgeUI: design tokens, themes, components and a vendoring tool for web UIs (the ThemeForge bundle as a pure-data wheel, standard library only)"
 readme = "README.md"
 requires-python = ">=3.9"
-license = "MIT AND ISC"
-license-files = ["LICENSE", "ui-theme/icons-LICENSE.txt"]
+license = "MIT-0"
+license-files = ["LICENSE"]
 keywords = ["design-tokens", "css", "themes", "dark-mode", "nicegui", "fastapi", "accessibility"]
 classifiers = [
     "Development Status :: 5 - Production/Stable",

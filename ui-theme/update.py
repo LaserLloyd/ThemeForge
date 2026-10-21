@@ -3,7 +3,7 @@
 
     python ui-theme/update.py                    update this folder to the latest release
     python ui-theme/update.py --check            report only; exit 1 if an update exists
-    python ui-theme/update.py --ref v1.4.0       pin a release tag (or a branch or commit)
+    python ui-theme/update.py --ref v1.5.0       pin a release tag (or a branch or commit)
     python update.py --dest static/ui-theme      first install: create the folder there
 
 It is a command-line tool; nothing loads it in a page. Python 3.9 or newer,

@@ -1,15 +1,13 @@
 {
   "notes": [
-    "The icon set: one entry per icon, grouped. Each name is a Lucide icon whose source file is src/icons/lucide/<name>.svg, copied unchanged from the package below (history is Lucide's rotate-ccw-clock under its older name). tools/sync_theme.py build turns them into ui-theme/icons.svg (one <symbol id=\"<name>\"> each).",
+    "The icon set: one entry per icon, grouped. Each icon's source is src/icons/svg/<name>.svg, drawn for ThemeForge on a 24px grid with a 2px round stroke, and MIT-0 like the rest of the repository. tools/sync_theme.py build turns them into ui-theme/icons.svg (one <symbol id=\"<name>\"> each). Draw new icons yourself; never copy one from another icon set.",
     "The set holds the icons the LaserLloyd apps draw, not a library: add one when an app needs it and nothing here means the same thing. Icon names are public API like token names: never rename or remove one in a minor release.",
     "label is the English name to use for aria-label or a tooltip. use says what the icon stands for. emoji lists the emoji and text symbols apps reach for when they mean this icon; UIComponents.iconFor() and emojify() read them (variation selectors and skin tones are ignored). material lists the Material Icons names (NiceGUI, Quasar) that mean the same thing. An emoji or a Material name may appear under one icon only."
   ],
   "source": {
-    "name": "Lucide",
-    "package": "lucide-static",
-    "version": "1.50.0",
-    "license": "ISC",
-    "url": "https://lucide.dev"
+    "name": "ThemeForge",
+    "license": "MIT-0",
+    "url": "https://github.com/LaserLloyd/ThemeForge"
   },
   "icons": {
     "plus": {

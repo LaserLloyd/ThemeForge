@@ -4,6 +4,22 @@ Versions follow [Semantic Versioning](https://semver.org/). A release is a git t
 `ui-theme/VERSION` and `UITheme.version` carry the same number. Token names are the public
 API: removing or renaming one is a major version.
 
+## 1.5.0
+
+**License: MIT-0.** ThemeForge is now [MIT No Attribution](LICENSE): apps can use, copy, change and
+ship any of it with no conditions, and nothing has to be credited or kept. Up to 1.4.0 it was MIT,
+which asks every copy to keep the notice, and 1.3.0 and 1.4.0 also carried Lucide's icons under ISC
+(with a notice of its own and Feather's MIT notice for some icons).
+
+- **The icons are ThemeForge's own.** All 105 are redrawn for ThemeForge on the same 24px grid with
+  a 2px round stroke, under the same names, so every `icons.svg#name`, `UIComponents.icon()`,
+  `iconFor()` and `forgeui.quasar_icon()` call keeps working; the drawings change, the API does not.
+  The sources live in `src/icons/svg/`; the Lucide files are gone.
+- `ui-theme/icons-LICENSE.txt` stays (it is a bundle file) and now says the icons are MIT-0 like the
+  rest, with no conditions. `pyproject.toml` declares `MIT-0`, and the Docker image label too.
+- A test fails the build if an icon source looks copied from another set, and `docs/ICONS.md` says
+  how to draw a new one.
+
 ## 1.4.0
 
 The icon set grows from 48 to 105 so it covers what the LaserLloyd apps draw today. An audit of

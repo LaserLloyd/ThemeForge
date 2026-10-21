@@ -56,7 +56,7 @@ its `ui-theme/` folder. If you were handed `ThemeForge.zip` (the release zip), u
 
 Other ways (pip for Python apps; the rest when Python is not available):
 
-- **pip (Python apps):** `pip install "forgeui @ git+https://github.com/LaserLloyd/ThemeForge@v1.4.0"`
+- **pip (Python apps):** `pip install "forgeui @ git+https://github.com/LaserLloyd/ThemeForge@v1.5.0"`
   (the wheel is not on PyPI; that name belongs to an unrelated project), then
   `python -m forgeui init --dest static/ui-theme`,
   edit the `forgeui.json` it writes (themes, default, storage key), and `python -m forgeui vendor`.
@@ -65,9 +65,9 @@ Other ways (pip for Python apps; the rest when Python is not available):
   and write the head block for FastAPI and NiceGUI. Details: `docs/THEME_SYSTEM.md`.
 - **git:** `git clone --depth 1 https://github.com/LaserLloyd/ThemeForge.git ut-tmp`, copy
   `ut-tmp/ui-theme` into the app, delete `ut-tmp`.
-- **Node:** `npx degit LaserLloyd/ThemeForge/ui-theme#v1.4.0 static/ui-theme`.
+- **Node:** `npx degit LaserLloyd/ThemeForge/ui-theme#v1.5.0 static/ui-theme`.
 - **No install (prototypes, single HTML files):** load the files from jsDelivr, pinned to a
-  release: `https://cdn.jsdelivr.net/gh/LaserLloyd/ThemeForge@v1.4.0/ui-theme/ui-theme.js`
+  release: `https://cdn.jsdelivr.net/gh/LaserLloyd/ThemeForge@v1.5.0/ui-theme/ui-theme.js`
   (and the same path for each CSS file). Never pin `@main`; the CDN caches it for up to
   12 hours. A CDN page updates by changing the pinned version; `update.py` and steps 8.5, 9
   and 10 below do not apply to it.
@@ -308,7 +308,7 @@ Add this line to the app's own `AGENTS.md` or `CLAUDE.md` (create one if missing
 agent working on the app keeps using the theme:
 
 ```
-UI styling uses ThemeForge 1.4.0 in static/ui-theme/ (read static/ui-theme/README.md before
+UI styling uses ThemeForge 1.5.0 in static/ui-theme/ (read static/ui-theme/README.md before
 writing CSS). Every page head carries the theme block from the base template: ui-theme.js first
 and blocking, ui-theme-base.css + ui-components.css before the app's CSS, ui-theme.css after it.
 Build from its tokens and ui-* classes, never write colour literals, never edit that folder;
@@ -321,7 +321,7 @@ never emoji; update it with `python3 static/ui-theme/update.py`.
 ## 10. Updating later
 
 `python3 static/ui-theme/update.py` installs the latest release (`--check` only reports;
-`--ref v1.4.0` pins a version); an app with a `forgeui.json` raises its `forgeui` pin and runs
+`--ref v1.5.0` pins a version); an app with a `forgeui.json` raises its `forgeui` pin and runs
 `python -m forgeui vendor` instead. It replaces only the files it owns, leaves the app's own
 files in the folder alone, and refuses to overwrite a file that was edited by hand (move the
 edit into the app's CSS). Read `CHANGELOG.md` in this repository for what changed, then repeat

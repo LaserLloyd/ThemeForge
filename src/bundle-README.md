@@ -18,7 +18,7 @@ app's own styles in your app's own CSS files.
 | `ui-theme.css` | the colour tokens of every theme | `<link>` **after** your CSS |
 | `ui-components.js` | optional: themed `confirm()`/`alert()`/`prompt()` dialogs and toasts, copy-to-clipboard, inline field validation, settings-row wiring, icon and emoji helpers, translatable words | `<script defer>` anywhere |
 | `icons.svg` | 105 outline icons, one `<symbol>` each, drawn in the text colour | `<svg class="ui-icon"><use href=".../icons.svg#settings"/></svg>` |
-| `icons.json`, `icons-LICENSE.txt` | the icon names, labels, and the emoji and Material Icons names each replaces; the icons' license (Lucide, ISC) | not loaded; keep the license with the folder |
+| `icons.json`, `icons-LICENSE.txt` | the icon names, labels, and the emoji and Material Icons names each replaces; the license (MIT-0: no conditions) | not loaded; keep the license with the folder |
 | `locales/en.json`, `locales/ja.json` | the words `ui-components.js` puts on the page, per language | `UIComponents.loadLocale('ja')` or `data-locale="auto"` on its script tag |
 | `adapters/quasar.js`, `adapters/quasar.css` | NiceGUI / Quasar apps only | JS right after `ui-theme.js`, CSS right after `ui-theme.css` |
 | `adapters/tailwind.css` | Tailwind CSS v4 apps: `bg-surface-2`, `text-fg`, ... | `@import` it after `tailwindcss` |

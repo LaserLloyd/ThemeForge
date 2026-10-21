@@ -170,9 +170,15 @@ class IconTests(unittest.TestCase):
         for name in self.icons["icons"]:
             self.assertIn(f"'{name}'", dts)
 
-    def test_license_ships_with_the_sprite(self):
-        self.assertIn("ISC License", self.bundle["icons-LICENSE.txt"])
-        self.assertIn("icons-LICENSE.txt", self.bundle["icons.svg"])
+    def test_the_icons_are_mit0_and_our_own(self):
+        self.assertIn("MIT No Attribution", self.bundle["icons-LICENSE.txt"])
+        self.assertNotIn("ISC", self.bundle["icons-LICENSE.txt"])
+        self.assertIn("MIT-0", self.bundle["icons.svg"])
+        self.assertEqual(self.icons["source"]["license"], "MIT-0")
+        for path in sorted((sync.ICONS / "svg").glob("*.svg")):
+            text = path.read_text(encoding="utf-8").lower()
+            for mark in ("lucide", "tabler", "feather", "@license", "<!--"):
+                self.assertNotIn(mark, text, f"{path.name} looks copied from another icon set")
 
     def _broken(self, change):
         tmp = tempfile.TemporaryDirectory()
@@ -196,7 +202,7 @@ class IconTests(unittest.TestCase):
         self.assertIn("settings", msg)
 
     def test_an_icon_without_a_source_is_refused(self):
-        msg = self._broken(lambda d, f: (f / "lucide" / "bell.svg").unlink())
+        msg = self._broken(lambda d, f: (f / "svg" / "bell.svg").unlink())
         self.assertIn("bell", msg)
 
     def test_a_source_nobody_lists_is_refused(self):
@@ -223,7 +229,7 @@ class IconTests(unittest.TestCase):
 
     def test_a_filled_or_styled_source_is_refused(self):
         def fill(d, f):
-            path = f / "lucide" / "bell.svg"
+            path = f / "svg" / "bell.svg"
             path.write_text(path.read_text(encoding="utf-8").replace('fill="none"', 'fill="red"'), encoding="utf-8")
         self.assertIn("bell.svg", self._broken(fill))
 

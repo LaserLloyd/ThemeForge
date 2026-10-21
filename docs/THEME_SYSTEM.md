@@ -25,7 +25,7 @@ When a page disagrees with the source in the second column, the source wins and 
 ## The themes
 
 <!-- themes:start -->
-Release **1.4.0**: 13 themes sharing 277 tokens (the contract, counting the shared geometry, type and motion tokens).
+Release **1.5.0**: 13 themes sharing 277 tokens (the contract, counting the shared geometry, type and motion tokens).
 
 | Slug | Name | Ground | Set | Family | Contrast profile |
 |---|---|---|---|---|---|
@@ -76,7 +76,9 @@ for each theme, and how to add one, are in [THEMES.md](THEMES.md).
 8. **Icons, not emoji, in app chrome.** A button, tab, menu or status line draws an icon from
    `ui-theme/icons.svg` (`currentColor`, so it takes the theme); emoji are for what people type.
    The set is what the apps draw (an icon is added when an app needs one and nothing already
-   means it; the build caps it at 120); an icon name is public API like a token name.
+   means it; the build caps it at 120); an icon name is public API like a token name. The icons
+   are ThemeForge's own drawings, so nothing in the bundle carries a third-party license: all of it
+   is [MIT-0](../LICENSE), with no conditions on the apps that use it.
 9. **Contrast is a gate, not a goal.** Every theme passes every row of its profile in
    `check_contrast.py` before it ships; CI fails otherwise. The floors are listed at the top of
    [TOKENS.md](TOKENS.md).
@@ -143,9 +145,9 @@ One folder is the whole contract, so every route ends in "this folder, byte for 
 | Route | For | How |
 |---|---|---|
 | **`forgeui` wheel** (primary) | Python apps (FastAPI, NiceGUI, Flask, Django) and any repo that can run `pip` in dev | `pip install` from a release tag (not PyPI; see Procedure); `python -m forgeui vendor` copies the folder into the repo; `forgeui.head_html()` and `forgeui.mount(app)` wire it |
-| **Release zip** | AI agents, offline machines, CI caches | Every [GitHub release](https://github.com/LaserLloyd/ThemeForge/releases) carries `ThemeForge-<version>.zip` (the bundle, `AGENTS.md`, the docs, tokens and examples); [`releases/latest/download/ThemeForge.zip`](https://github.com/LaserLloyd/ThemeForge/releases/latest/download/ThemeForge.zip) is always the newest. `python -m forgeui vendor --source ThemeForge-1.4.0.zip` vendors from it (it also takes a wheel, a repo archive or an unpacked folder) |
+| **Release zip** | AI agents, offline machines, CI caches | Every [GitHub release](https://github.com/LaserLloyd/ThemeForge/releases) carries `ThemeForge-<version>.zip` (the bundle, `AGENTS.md`, the docs, tokens and examples); [`releases/latest/download/ThemeForge.zip`](https://github.com/LaserLloyd/ThemeForge/releases/latest/download/ThemeForge.zip) is always the newest. `python -m forgeui vendor --source ThemeForge-1.5.0.zip` vendors from it (it also takes a wheel, a repo archive or an unpacked folder) |
 | **`ui-theme/update.py`** | Apps with no `pip` | `python ui-theme/update.py` fetches the latest release from GitHub |
-| **jsDelivr** | Prototypes, single HTML files | `https://cdn.jsdelivr.net/gh/LaserLloyd/ThemeForge@v1.4.0/ui-theme/ui-theme.css`, pinned, never `@main` |
+| **jsDelivr** | Prototypes, single HTML files | `https://cdn.jsdelivr.net/gh/LaserLloyd/ThemeForge@v1.5.0/ui-theme/ui-theme.css`, pinned, never `@main` |
 
 There is no JavaScript build step in any route. Releasing is merging: when `src/themes.json` on
 `main` names a version with no tag yet, `.github/workflows/release.yml` runs the checks, builds
@@ -176,7 +178,7 @@ theme choice lives (it replaces the same list copied into Python, HTML and JavaS
 
 ### Procedure
 
-1. Install: `pip install "forgeui @ git+https://github.com/LaserLloyd/ThemeForge@v1.4.0"` (a dev dependency is
+1. Install: `pip install "forgeui @ git+https://github.com/LaserLloyd/ThemeForge@v1.5.0"` (a dev dependency is
    enough; pin it in the lockfile). The wheel is not on PyPI: the name `forgeui` there belongs to an
    unrelated project, so never run a bare `pip install forgeui`.
 2. `python -m forgeui init --dest static/ui-theme`, then edit `forgeui.json`.

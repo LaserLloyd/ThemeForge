@@ -27,7 +27,7 @@ What build writes into ui-theme/:
   ui-theme.d.ts       TypeScript declarations for the two globals (src/ui-theme.d.ts + icon names)
   icons.svg           the icon sprite, one <symbol> per icon (src/icons)
   icons.json          the icon names, labels and the emoji each stands for
-  icons-LICENSE.txt   the icons' license (Lucide, ISC)
+  icons-LICENSE.txt   the icons' license: MIT-0 like the rest, no conditions (the repository LICENSE)
   ui-theme.css        tokens: Purple's :root, every theme block, locale overrides
   adapters/           framework adapters (adapters/*.css, *.js)
   locales/            words ui-components.js puts on the page, one JSON file per language (src/locales)
@@ -365,8 +365,8 @@ def header(kind: str, body: str, version: str) -> str:
 
 # ---------------------------------------------------------------- icons
 #
-# src/icons/icons.json lists the icon set; src/icons/lucide/<name>.svg is each
-# icon's source, copied unchanged from the Lucide package the file names. The
+# src/icons/icons.json lists the icon set; src/icons/svg/<name>.svg is each
+# icon's source, drawn for ThemeForge on a 24px grid (MIT-0, like the rest). The
 # build writes one sprite (ui-theme/icons.svg, a <symbol id="<name>"> per icon)
 # and puts the emoji each icon stands for into ui-components.js.
 
@@ -381,7 +381,7 @@ ICON_NAMES_RE = re.compile(r"/\*@icon-names\*/.*?/\*@end-icon-names\*/", re.S)
 SVG_ROOT = re.compile(r"<svg\b([^>]*)>(.*)</svg>", re.S)
 XML_COMMENT = re.compile(r"<!--.*?-->", re.S)
 #: What every source icon's root element must say: the shape the sprite and .ui-icon assume.
-LUCIDE_ROOT = {"viewBox": "0 0 24 24", "fill": "none", "stroke": "currentColor", "stroke-width": "2",
+ICON_ROOT = {"viewBox": "0 0 24 24", "fill": "none", "stroke": "currentColor", "stroke-width": "2",
                "stroke-linecap": "round", "stroke-linejoin": "round"}
 
 
@@ -400,8 +400,8 @@ def load_icons() -> dict:
     for name, entry in icons.items():
         if not ICON_NAME.match(name):
             raise SyncError(f"src/icons/icons.json: {name!r} is not a lower-case-kebab icon name")
-        if not (ICONS / "lucide" / f"{name}.svg").is_file():
-            raise SyncError(f"src/icons/icons.json: {name} has no source file src/icons/lucide/{name}.svg")
+        if not (ICONS / "svg" / f"{name}.svg").is_file():
+            raise SyncError(f"src/icons/icons.json: {name} has no source file src/icons/svg/{name}.svg")
         if entry.get("group") not in ICON_GROUPS or not entry.get("label") or not entry.get("use"):
             raise SyncError(f"src/icons/icons.json: {name} needs a group ({', '.join(ICON_GROUPS)}), a label and a use")
         for emoji in entry.get("emoji", []):
@@ -419,9 +419,9 @@ def load_icons() -> dict:
                 raise SyncError(f"src/icons/icons.json: Material name {material} is listed under "
                                 f"{owner['material:' + material]} and {name}")
             owner["material:" + material] = name
-    extra = sorted(p.stem for p in (ICONS / "lucide").glob("*.svg") if p.stem not in icons)
+    extra = sorted(p.stem for p in (ICONS / "svg").glob("*.svg") if p.stem not in icons)
     if extra:
-        raise SyncError(f"src/icons/lucide/ holds {', '.join(extra)}, which icons.json does not list")
+        raise SyncError(f"src/icons/svg/ holds {', '.join(extra)}, which icons.json does not list")
     return data
 
 
@@ -429,15 +429,16 @@ def icon_symbol(name: str) -> str:
     """One icon as a sprite <symbol>: the source's shapes, its root attributes
     moved onto the symbol, and the stroke weight read from --icon-stroke (a custom
     property inherits into a <use>, so every theme can set its own)."""
-    text = XML_COMMENT.sub("", read(ICONS / "lucide" / f"{name}.svg"))
+    text = XML_COMMENT.sub("", read(ICONS / "svg" / f"{name}.svg"))
     m = SVG_ROOT.search(text)
     attrs = dict(re.findall(r'([\w:-]+)="([^"]*)"', m.group(1))) if m else {}
-    wrong = [k for k, v in LUCIDE_ROOT.items() if attrs.get(k) != v]
+    wrong = [k for k, v in ICON_ROOT.items() if attrs.get(k) != v]
     if not m or wrong:
-        raise SyncError(f"src/icons/lucide/{name}.svg: not a Lucide 24px outline icon ({', '.join(wrong) or 'no <svg>'})")
+        raise SyncError(f"src/icons/svg/{name}.svg: not a 24px outline icon with a 2px round stroke "
+                        f"({', '.join(wrong) or 'no <svg>'})")
     body = re.sub(r"\s+/>", "/>", re.sub(r">\s+<", "><", m.group(2).strip()))
     if re.search(r"<(?!/?(?:path|circle|rect|line|polyline|polygon|ellipse)\b)", body) or "style=" in body:
-        raise SyncError(f"src/icons/lucide/{name}.svg: only plain shapes are allowed in an icon")
+        raise SyncError(f"src/icons/svg/{name}.svg: only plain shapes are allowed in an icon")
     return (f'<symbol id="{name}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" '
             f'stroke-linejoin="round" style="stroke-width:var(--icon-stroke,2)">{body}</symbol>')
 
@@ -445,8 +446,9 @@ def icon_symbol(name: str) -> str:
 def icon_sprite(icons: dict, version: str) -> str:
     src = icons["source"]
     lines = [f'<svg xmlns="http://www.w3.org/2000/svg">',
-             f"<!-- GENERATED: {NAME} {version} icons ({len(icons['icons'])}), from {src['name']} {src['version']} "
-             f"({src['license']}; notice in icons-LICENSE.txt). Use: <svg class=\"ui-icon\"><use href=\"icons.svg#name\"/></svg> -->"]
+             f"<!-- GENERATED: {NAME} {version} icons ({len(icons['icons'])}), drawn for {src['name']}, "
+             f"{src['license']}: use them any way you like, no notice needed. "
+             f"Use: <svg class=\"ui-icon\"><use href=\"icons.svg#name\"/></svg> -->"]
     lines += [icon_symbol(name) for name in icons["icons"]]
     return "\n".join(lines) + "\n</svg>\n"
 
@@ -459,8 +461,10 @@ def icon_registry(icons: dict, version: str) -> str:
 
 def icon_license(icons: dict) -> str:
     src = icons["source"]
-    return (f"The icons in icons.svg are {src['name']} icons ({src['url']}), from the {src['package']} "
-            f"{src['version']} package, used under the license below.\n\n" + read(ICONS / "LICENSE"))
+    return (f"The icons in icons.svg were drawn for {src['name']} ({src['url']}) and, like everything in\n"
+            f"this folder, are released under {src['license']} (MIT No Attribution): use, copy, change and\n"
+            "ship them however you like. Nothing has to be kept or credited, including this file.\n\n"
+            + read(ROOT / "LICENSE"))
 
 
 def render_components(icons: dict) -> str:
@@ -771,15 +775,19 @@ def icons_doc(data: dict, icons: dict) -> str:
         "",
         f"The set holds what the apps draw, and the build refuses more than {ICON_LIMIT}: add an icon when an app",
         "needs one and nothing here means the same thing (a Material name or an emoji can usually join an",
-        "existing icon instead). To add one, copy the icon's file from the",
-        f"`{src['package']}` {src['version']} package (`icons/<name>.svg`, unchanged) into `src/icons/lucide/`, add",
-        "an entry to `src/icons/icons.json`, and run `python tools/sync_theme.py build`. Icon names are public",
-        "API, like token names: never rename or remove one in a minor release.",
+        "existing icon instead). To add one, draw it as `src/icons/svg/<name>.svg` on the same grid as the",
+        "others: `viewBox=\"0 0 24 24\"`, `fill=\"none\"`, `stroke=\"currentColor\"`, `stroke-width=\"2\"`, round",
+        "caps and joins, plain shapes only (`path`, `circle`, `rect`, `line`, `polyline`, `polygon`, `ellipse`),",
+        "kept inside 2 to 22 on both axes. Draw it yourself; never copy an icon from another set, so the set",
+        "stays free of anyone else's license. Then add an entry to `src/icons/icons.json` and run",
+        "`python tools/sync_theme.py build`. Icon names are public API, like token names: never rename or",
+        "remove one in a minor release.",
         "",
         "## License",
         "",
-        f"The icons are [{src['name']}]({src['url']}) {src['version']}, {src['license']} license (some derived from",
-        "Feather, MIT). The notice ships beside the sprite as `ui-theme/icons-LICENSE.txt`; keep it with any copy.",
+        f"The icons were drawn for {src['name']} and are {src['license']} (MIT No Attribution), like everything",
+        "else in the repository: use, copy, change and ship them however you like, with nothing to credit or",
+        "keep.",
         "",
     ]
     return "\n".join(lines)

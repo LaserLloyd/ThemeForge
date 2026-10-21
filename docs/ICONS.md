@@ -1,6 +1,6 @@
 # Icons
 
-Generated from `src/icons/icons.json` by `tools/sync_theme.py build` (ThemeForge 1.4.0).
+Generated from `src/icons/icons.json` by `tools/sync_theme.py build` (ThemeForge 1.5.0).
 
 105 outline icons for app chrome, one sprite (`ui-theme/icons.svg`). They draw in
 `currentColor` with the theme's `--icon-stroke`, so every theme colours them and the
@@ -180,12 +180,16 @@ Noto Emoji web font, which `--font-emoji` names first, e.g.
 
 The set holds what the apps draw, and the build refuses more than 120: add an icon when an app
 needs one and nothing here means the same thing (a Material name or an emoji can usually join an
-existing icon instead). To add one, copy the icon's file from the
-`lucide-static` 1.50.0 package (`icons/<name>.svg`, unchanged) into `src/icons/lucide/`, add
-an entry to `src/icons/icons.json`, and run `python tools/sync_theme.py build`. Icon names are public
-API, like token names: never rename or remove one in a minor release.
+existing icon instead). To add one, draw it as `src/icons/svg/<name>.svg` on the same grid as the
+others: `viewBox="0 0 24 24"`, `fill="none"`, `stroke="currentColor"`, `stroke-width="2"`, round
+caps and joins, plain shapes only (`path`, `circle`, `rect`, `line`, `polyline`, `polygon`, `ellipse`),
+kept inside 2 to 22 on both axes. Draw it yourself; never copy an icon from another set, so the set
+stays free of anyone else's license. Then add an entry to `src/icons/icons.json` and run
+`python tools/sync_theme.py build`. Icon names are public API, like token names: never rename or
+remove one in a minor release.
 
 ## License
 
-The icons are [Lucide](https://lucide.dev) 1.50.0, ISC license (some derived from
-Feather, MIT). The notice ships beside the sprite as `ui-theme/icons-LICENSE.txt`; keep it with any copy.
+The icons were drawn for ThemeForge and are MIT-0 (MIT No Attribution), like everything
+else in the repository: use, copy, change and ship them however you like, with nothing to credit or
+keep.
