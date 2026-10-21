@@ -780,6 +780,43 @@
     }
   }
 
+  // 43k. Copy buttons keep their icon (#15); loadLocale calls do not race (#14).
+  {
+    const SPRITE = new URL('../ui-theme/icons.svg', location.href).href;
+    const ICON = `<svg class="ui-icon" aria-hidden="true"><use href="${SPRITE}#copy"/></svg>`;
+    const f = await comp(
+      `<div class="ui-copy"><code class="ui-copy__value">abc</code><button class="ui-btn ui-btn--icon ui-copy__button" id="ib" type="button">${ICON}</button></div>` +
+      `<div class="ui-copy"><code class="ui-copy__value">def</code><button class="ui-btn ui-copy__button" id="tb" type="button">${ICON}Copy</button></div>`);
+    const w = f.contentWindow, d = f.contentDocument, U = w.UIComponents;
+    Object.defineProperty(w.navigator, 'clipboard', { configurable: true,
+      value: { writeText: () => Promise.resolve() } });
+    const ib = d.getElementById('ib'), tb = d.getElementById('tb');
+    check('copy: an icon-only button keeps its icon and is named Copy',
+          [!!ib.querySelector('svg'), ib.textContent.trim(), ib.getAttribute('aria-label')], [true, '', 'Copy']);
+    U.setStrings({ copy: 'Kopieren' });
+    U.init(d);
+    check('copy: the icon-only button is renamed with the table', ib.getAttribute('aria-label'), 'Kopieren');
+    U.resetStrings();
+    tb.click();
+    await tick(60);
+    check('copy: feedback swaps the word and keeps the icon', [!!tb.querySelector('svg'), tb.textContent.trim()], [true, 'Copied']);
+    ib.click();
+    await tick(60);
+    check('copy: an icon-only button is marked, not emptied', [!!ib.querySelector('svg'), ib.getAttribute('data-copied')], [true, 'true']);
+    await tick(1900);
+    check('copy: after the feedback the word and the icon are both back', [!!tb.querySelector('svg'), tb.textContent.trim(), tb.hasAttribute('data-copied')], [true, 'Copy', false]);
+
+    const late = U.loadLocale('ja');
+    await U.loadLocale('en');
+    await late;
+    check('loadLocale: the newest call wins over a slower earlier one', U.t('cancel'), 'Cancel');
+    await U.loadLocale('ja');
+    const ja = U.t('copy');
+    await U.loadLocale('fr', 'data:application/json,' + encodeURIComponent(JSON.stringify({ cancel: 'Annuler' })));
+    check('loadLocale: a new language file drops the words of the previous one', [ja, U.t('cancel'), U.t('copy')], ['コピー', 'Annuler', 'Copy']);
+    await U.loadLocale('en');
+  }
+
   // 43h. Pseudo-locale: every built-in word at 2-3x length must not break the layout.
   {
     const accent = { a: 'à', e: 'é', i: 'î', o: 'ö', u: 'ü', A: 'Å', E: 'É', I: 'Î', O: 'Ö', U: 'Û' };

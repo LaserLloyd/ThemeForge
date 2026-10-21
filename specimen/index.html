@@ -31,10 +31,16 @@
     <h1 class="spec-brand">Specimen</h1>
   </div>
   <div role="tablist" aria-label="Theme" id="theme-tablist" class="spec-tabs"><!-- built by specimen.js --></div>
-  <div class="spec-readout">
-    <span>data-palette=<b id="readout-palette"></b></span>
-    <span>data-theme=<b id="readout-theme"></b></span>
-    <span id="readout-set"></span>
+  <div class="spec-side">
+    <select class="ui-select ui-input--sm spec-lang" id="spec-lang" aria-label="Language">
+      <option value="en">English</option>
+      <option value="ja" lang="ja">日本語</option>
+    </select>
+    <div class="spec-readout">
+      <span>data-palette=<b id="readout-palette"></b></span>
+      <span>data-theme=<b id="readout-theme"></b></span>
+      <span id="readout-set"></span>
+    </div>
   </div>
 </header>
 
@@ -173,7 +179,7 @@
 
   <section class="spec-section">
     <h2 class="ui-heading">Data</h2>
-    <div class="ui-table-wrap">
+    <div class="ui-table-wrap" tabindex="0" role="region" aria-label="Jobs">
       <table class="ui-table ui-table--hover">
         <thead><tr><th>Job</th><th>State</th><th class="num">Minutes</th></tr></thead>
         <tbody>

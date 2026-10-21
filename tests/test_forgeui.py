@@ -105,6 +105,19 @@ class PackageTests(Base):
         self.assertIn(f"/theme/ui-theme.css?v={want}", head)
         self.assertNotIn("?v=", forgeui.head_html(version_query=False))
 
+    def test_head_html_sees_a_copy_vendored_again_under_a_running_process(self):
+        copy = Path(self.tmp.name) / "copy"
+        shutil.copytree(BUNDLE, copy)
+        first = forgeui.head_html(folder=copy)
+        manifest = json.loads((copy / "files.json").read_text(encoding="utf-8"))
+        manifest["files"]["ui-theme.css"] = "f" * 64
+        (copy / "files.json").write_text(json.dumps(manifest), encoding="utf-8")
+        stat = (copy / "files.json").stat()
+        os.utime(copy / "files.json", ns=(stat.st_atime_ns, stat.st_mtime_ns + 1_000_000_000))
+        second = forgeui.head_html(folder=copy)
+        self.assertNotIn("ui-theme.css?v=ffffffffff", first)
+        self.assertIn("ui-theme.css?v=ffffffffff", second)
+
     def test_head_html_adapters_components_and_overlays(self):
         head = forgeui.head_html(themes=["glacier"], adapters=["quasar"], components=True,
                                  extra_css=["adapters/app-extra.css"], app_css=["/static/app.css"],

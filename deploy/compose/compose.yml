@@ -9,6 +9,8 @@
 #   BIND_ADDR   host interface       default 127.0.0.1 (this machine only)
 #   IMAGE       image reference      default themeforge-preview:local
 #   VERSION     image version label  default dev
+#   REVISION    git commit label     default unknown   (REVISION=$(git rev-parse HEAD))
+#   CREATED     build time label     default empty     (CREATED=$(date -u +%Y-%m-%dT%H:%M:%SZ))
 #   MEM_LIMIT / CPU_LIMIT            default 64m / 0.5
 name: themeforge
 
@@ -20,6 +22,8 @@ services:
       dockerfile: Dockerfile
       args:
         VERSION: ${VERSION:-dev}
+        REVISION: ${REVISION:-unknown}
+        CREATED: ${CREATED:-}
     container_name: themeforge-specimen
     restart: unless-stopped
     init: true

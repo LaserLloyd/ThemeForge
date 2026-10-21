@@ -1,11 +1,11 @@
 {
   "name": "ThemeForge",
   "version": "1.5.0",
-  "hash": "d0511e3fa246",
+  "hash": "ccbdba3c4827",
   "repo": "LaserLloyd/ThemeForge",
   "files": {
     "README.md": "67552a236f6cb79cbee697c07a230eb4c4c828792bd85ac6ff6727aa89837750",
-    "VERSION": "5ed0427e5cbc57789b67c0b38aea9a463ab50c4864f60be2e4ca4787fba0ba42",
+    "VERSION": "cbe9dfcbdc51bdf56c8c4b1267c8059c0e79d284b6ccd498ae5ab33e577265f9",
     "adapters/quasar.css": "db304be2619bfd669d3511a2cdb6b4afea7e6fbff989ef7d08ea9efee9857ba5",
     "adapters/quasar.js": "3e926808f183838f0dda5f07b212615d79c32394e5d8fcdd0075f623585340f8",
     "adapters/tailwind-v3.preset.js": "1e5542b9e79dd0624a4eaf0f249164a9f0b8031fcba50217f5a18f4dd905a5fe",
@@ -17,11 +17,11 @@
     "locales/ja.json": "ceaae4a407a4976561c52a3f9ffb791916c54ed1acc7c68b402467998dd06e26",
     "themes.json": "f12cebc1cbebb7ba431b76c719897ee1ead8499defc66d883a29c84c08b076cd",
     "ui-components.css": "924df0174ea774bdbbd8bfc28976d2fd3b13f7ffc27f512c6d5a3e6da14750af",
-    "ui-components.js": "25085daeb997c2644e2dafac6c526d2ec276442b5d99aaff766a4ee2cf2b90ab",
+    "ui-components.js": "aebf8fcfb3dcb684c5257551c8fa63bc7cc464b63fba9cb741ddeaa8d170f24e",
     "ui-theme-base.css": "2c18cdf95ec3e394968171c36fca3f1cb86e00e11a00e6617a57b3b893977fc3",
     "ui-theme.css": "f92ba1eb6ffbc2c905818855b3a4bc511f2126d9bfb67c50a48dfe440f228b9b",
     "ui-theme.d.ts": "fedcc3bc98b73adce101c8d9bcb75f1c862b3d493f2a26a831d9d77d0f112df4",
     "ui-theme.js": "94eca13378449ebe76f52e219b713a90ce14630191d3c334cdf3bc059cac6362",
-    "update.py": "06eaf81629c048e39ac379b7f7e719f71c9a2ccd83779b1d584e982375494818"
+    "update.py": "4b44b8bf0a6956dc1c778114cdf984decd3f280daf0fe82334514bac623aab89"
   }
 }

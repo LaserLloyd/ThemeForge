@@ -248,10 +248,10 @@ class DocGateTests(unittest.TestCase):
 
     def test_used_by_section_ends_at_the_next_heading(self):
         text = ("## Used by\n\n- https://github.com/LaserLloyd/StudioForge\n\n"
-                "## License\n\nhttps://github.com/LaserLloyd/ClawForge\n")
+                "## License\n\nhttps://github.com/LaserLloyd/MailForge\n")
         problems = sync.repo_link_problems(text, "README.md")
         self.assertEqual(len(problems), 1)
-        self.assertIn("ClawForge", problems[0])
+        self.assertIn("MailForge", problems[0])
 
     def test_used_by_may_not_link_the_archived_repository(self):
         text = "## Used by\n\n- https://github.com/LaserLloyd/UnifyingTheme\n"
@@ -679,6 +679,24 @@ class UpdateTests(unittest.TestCase):
             self.assertEqual(code, 2, out)
             self.assertIn("unsafe path", out)
             self.assertTrue(victim.is_file(), extra)
+
+    @unittest.skipIf(sys.platform == "win32", "symlinks need privileges on Windows")
+    def test_a_linked_subfolder_is_not_written_through(self):
+        # An older copy that had no locales/ yet, whose locales folder is a link out: the
+        # new bundle's locale files are new to it, so only the write itself can catch this.
+        self.run_update()
+        manifest = json.loads((self.dest / "files.json").read_text(encoding="utf-8"))
+        manifest["files"] = {k: v for k, v in manifest["files"].items() if not k.startswith("locales/")}
+        manifest["hash"] = "000000000000"
+        (self.dest / "files.json").write_text(json.dumps(manifest), encoding="utf-8")
+        outside = self.base / "elsewhere"
+        outside.mkdir()
+        shutil.rmtree(self.dest / "locales")
+        (self.dest / "locales").symlink_to(outside, target_is_directory=True)
+        code, out = self.run_update()
+        self.assertEqual(code, 2, out)
+        self.assertIn("unsafe path", out)
+        self.assertEqual(list(outside.iterdir()), [])
 
     @unittest.skipIf(sys.platform == "win32", "POSIX permission bits")
     def test_written_files_are_readable_by_other_users(self):

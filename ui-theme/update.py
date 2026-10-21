@@ -290,13 +290,16 @@ def apply(folder: Path, files: dict, old_manifest, new_manifest) -> list:
     bundle owned and the new one does not. Returns the changed paths."""
     old = old_manifest["files"] if old_manifest else {}
     owned = set(old) | set(new_manifest["files"])
+    # Every target is checked before anything is touched: a subfolder that is a link to
+    # somewhere else is refused, not written through, and the copy is left as it was.
+    targets = {rel: inside(folder, rel, "the new bundle") for rel in [*new_manifest["files"], MANIFEST]}
     for path in folder.rglob(".*") if folder.exists() else []:
         rel = path.relative_to(folder).as_posix()
         if path.is_file() and leftover_temp(rel, owned):
             path.unlink()
     changed = []
     for rel in sorted(new_manifest["files"]):
-        target = folder / rel
+        target = targets[rel]
         if old.get(rel) == new_manifest["files"][rel] and target.is_file() \
                 and digest(target.read_bytes()) == new_manifest["files"][rel]:
             continue
@@ -306,7 +309,7 @@ def apply(folder: Path, files: dict, old_manifest, new_manifest) -> list:
         if rel not in new_manifest["files"] and (folder / rel).is_file():
             (folder / rel).unlink()
             changed.append(f"{rel} (removed)")
-    write_file(folder / MANIFEST, files[MANIFEST])
+    write_file(targets[MANIFEST], files[MANIFEST])
     return changed
 
 
@@ -383,6 +386,9 @@ def main(argv=None) -> int:
         return 1
     try:
         changed = apply(target, files, current, new)
+    except UpdateError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 2
     except OSError as exc:
         print(f"error: could not write {target}: {exc}. Close anything holding the files and rerun: "
               "the update resumes where it stopped.", file=sys.stderr)

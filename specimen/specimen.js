@@ -78,6 +78,13 @@
     window.UIComponents.toast('Settings saved', { kind: 'success' });
   });
 
+  // The words ui-components.js puts on the page, in English or Japanese (locales/), and
+  // <html lang> with them, so the Japanese font stacks apply too.
+  document.getElementById('spec-lang').addEventListener('change', function (e) {
+    document.documentElement.lang = e.target.value;
+    window.UIComponents.loadLocale(e.target.value);
+  });
+
   // The icon grid. ui-components.js is deferred, so it has run by DOMContentLoaded.
   document.addEventListener('DOMContentLoaded', function () {
     var grid = document.getElementById('spec-icons');

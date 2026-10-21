@@ -36,6 +36,8 @@ Optional environment (for example in a `deploy/compose/.env` next to
 | `BIND_ADDR` | `127.0.0.1` | host interface; `0.0.0.0` publishes to your network |
 | `IMAGE` | `themeforge-preview:local` | image reference |
 | `VERSION` | `dev` | version label baked into the image |
+| `REVISION` | `unknown` | git commit label, e.g. `REVISION=$(git rev-parse HEAD)` |
+| `CREATED` | empty | build time label, e.g. `CREATED=$(date -u +%Y-%m-%dT%H:%M:%SZ)` |
 | `MEM_LIMIT` / `CPU_LIMIT` | `64m` / `0.5` | resource limits |
 
 No volumes: the page is static and the image is stateless.

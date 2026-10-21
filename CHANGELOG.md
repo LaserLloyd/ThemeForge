@@ -20,11 +20,30 @@ which asks every copy to keep the notice, and 1.3.0 and 1.4.0 also carried Lucid
 - A test fails the build if an icon source looks copied from another set, and `docs/ICONS.md` says
   how to draw a new one.
 
+**Fixes**
+
+- A copy button that is only an icon keeps it: `init()` names it with `aria-label` instead of
+  replacing the icon with the word "Copy", and the "Copied" feedback swaps only a button's word,
+  never its icon (#15).
+- `loadLocale()`: only the newest call applies, so `data-locale="auto"` and an app's own
+  `loadLocale('ja')` no longer race, and a new language file's words replace the previous file's
+  instead of mixing with them (#14).
+- `update.py` checks every path it will write before writing anything, so a subfolder that is a
+  link to somewhere else is refused rather than written through (#13).
+- `forgeui.head_html()` and `forgeui.quasar_icon()` notice a copy vendored again under a running
+  server: their caches follow the files' modification times (#16).
+- The specimen preview image runs on nginx 1.30 (the 1.28 base it used stopped getting updates in
+  February), pinned by digest; it listens on IPv4 only, so it starts on hosts with IPv6 turned off;
+  and compose passes `REVISION` and `CREATED` into its labels (#7).
+- Docs: scrollable table wrappers take `tabindex="0"`, `role="region"` and a label (#4); the
+  specimen has an English/Japanese switch (#5); the README's head example includes the
+  high-contrast pair and says how to roll back (#8).
+
 ## 1.4.0
 
 The icon set grows from 48 to 105 so it covers what the LaserLloyd apps draw today. An audit of
-DisPatch (Chat and Voice), MailForge, StudioForge, ChatForge, CrucibleForge, ClawForge,
-SpeechForge, InfoForge and TransForge found 57 icons they use (as emoji, Material Icons names or
+DisPatch (Chat and Voice), MailForge, StudioForge, ChatForge, CrucibleForge, SpeechForge,
+InfoForge and TransForge found 57 icons they use (as emoji, Material Icons names or
 hand-drawn SVG) that the set did not have. Nothing is removed or renamed.
 
 - **57 icons added**, all Lucide 1.50.0: `activity` `archive` `arrow-down` `arrow-right`

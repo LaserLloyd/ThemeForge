@@ -124,10 +124,18 @@
   // (so earlier setStrings() calls for keys the file lacks survive). Tries the full tag
   // (pt-BR) then the language (pt). English is built in: loadLocale('en') restores it.
   // Resolves true when a file was applied.
+  // Only the newest loadLocale() call applies (an app's loadLocale('ja') and
+  // data-locale="auto" may both be in flight), and a language file's words replace the
+  // previous file's: a word the new file lacks goes back to English.
+  var localeCall = 0;
+  var localeWords = [];
+
   function loadLocale(lang, url) {
+    var call = ++localeCall;
     lang = String(lang || locale()).toLowerCase().replace(/_/g, '-');
     if (!url && /^en(-|$)/.test(lang)) {  // English is built in
       resetStrings();
+      localeWords = [];
       init(doc);
       return Promise.resolve(true);
     }
@@ -140,10 +148,19 @@
         if (!r.ok) throw new Error('HTTP ' + r.status);
         return r.json();
       }).then(function (map) {
+        if (call !== localeCall) return false;  // a later call won
+        for (var w = 0; w < localeWords.length; w++) {
+          var key = localeWords[w];
+          if (!Object.prototype.hasOwnProperty.call(map, key)) {
+            if (Object.prototype.hasOwnProperty.call(DEFAULTS, key)) table[key] = DEFAULTS[key];
+            else delete table[key];
+          }
+        }
         setStrings(map);
+        localeWords = Object.keys(map).filter(function (k) { return k.charAt(0) !== '$' && typeof map[k] === 'string'; });
         init(doc);
         return true;
-      }).catch(function () { return attempt(i + 1); });
+      }).catch(function () { return call === localeCall ? attempt(i + 1) : false; });
     }
     return attempt(0);
   }
@@ -378,18 +395,34 @@
     return Promise.resolve(legacyCopy(text, node));
   }
 
+  // The text node that holds a button's word, so feedback swaps the word and leaves an
+  // icon beside it alone; null for an icon-only button.
+  function labelText(button) {
+    var walker = doc.createTreeWalker(button, 4 /* NodeFilter.SHOW_TEXT */);
+    var found = null;
+    var node;
+    while ((node = walker.nextNode())) {
+      if (node.nodeValue.trim() && !(node.parentElement && node.parentElement.closest('svg'))) found = node;
+    }
+    return found;
+  }
+
   function copyFeedback(button, ok) {
     if (!button || !button.matches || !button.matches('button, [role="button"]')) return;
     var word = ok ? t('copied', button) : t('copyFailed', button);
-    var hasText = button.textContent.replace(/\s+/g, '') !== '';
-    if (hasText && button.__uiCopyLabel === undefined) button.__uiCopyLabel = button.textContent;
+    var label = button.__uiCopyNode || labelText(button);
+    if (label && button.__uiCopyLabel === undefined) {
+      button.__uiCopyNode = label;
+      button.__uiCopyLabel = label.nodeValue;
+    }
     button.setAttribute('data-copied', ok ? 'true' : 'failed');
-    if (hasText) button.textContent = word;
+    if (label) label.nodeValue = word;
     announce(word, button);
     global.clearTimeout(button.__uiCopyTimer);
     button.__uiCopyTimer = global.setTimeout(function () {
       button.removeAttribute('data-copied');
-      if (button.__uiCopyLabel !== undefined) button.textContent = button.__uiCopyLabel;
+      if (button.__uiCopyNode) button.__uiCopyNode.nodeValue = button.__uiCopyLabel;
+      button.__uiCopyNode = undefined;
       button.__uiCopyLabel = undefined;
     }, 1800);
   }
@@ -479,10 +512,20 @@
   // Put the string table's words into the empty parts of a row: the level marker,
   // the "set by environment" badge and the reset button (with a name of its own, so
   // twenty of them are not twenty identical buttons). Parts the app filled stay.
+  // Put a word from the table in an empty element. An element that holds only an icon
+  // keeps it: the word becomes its accessible name instead.
   function fill(node, key, vars) {
     if (!node) return;
+    var word = t(key, node, vars);
+    if (node.firstElementChild && !node.textContent.trim()) {
+      if (!node.hasAttribute('aria-label') || node.__uiWord) {
+        node.setAttribute('aria-label', word);
+        node.__uiWord = true;
+      }
+      return;
+    }
     if (!node.textContent.trim() || node.__uiWord) {
-      node.textContent = t(key, node, vars);
+      node.textContent = word;
       node.__uiWord = true;
     }
   }
@@ -496,7 +539,8 @@
     var reset = row.querySelector('.ui-setting__reset');
     if (reset) {
       fill(reset, 'reset');
-      if (!reset.hasAttribute('aria-label') || reset.__uiAutoLabel) {
+      var iconOnly = reset.__uiWord && !reset.textContent.trim();  // fill() named it; name it fully
+      if (!reset.hasAttribute('aria-label') || reset.__uiAutoLabel || iconOnly) {
         reset.setAttribute('aria-label', t('resetNamed', reset, { name: name }));
         reset.__uiAutoLabel = true;
       }
@@ -730,7 +774,7 @@
     for (var a = 0; a < areas.length; a++) emojify(areas[a], areas[a].getAttribute('data-ui-emoji'));
     var buttons = root.querySelectorAll ? root.querySelectorAll(COPY_BUTTON) : [];
     for (var i = 0; i < buttons.length; i++) {
-      if (!buttons[i].hasAttribute('aria-label')) fill(buttons[i], 'copy');
+      if (!buttons[i].hasAttribute('aria-label') || buttons[i].__uiWord) fill(buttons[i], 'copy');
     }
     var rows = root.querySelectorAll ? root.querySelectorAll('.ui-setting') : [];
     for (var j = 0; j < rows.length; j++) {

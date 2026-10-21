@@ -295,9 +295,11 @@ its `ui-theme/` folder. If you were handed `ThemeForge.zip` (the release zip), u
 <!-- install:end -->
 
 - **`update.py` route:** `python3 static/ui-theme/update.py` updates; `--check` reports only (exit 1 when an update exists);
-  `--ref vX.Y.Z` pins a release. To uninstall, delete the `static/ui-theme` folder and the two lines in your pages.
+  `--ref vX.Y.Z` pins a release. To roll back, run it again with `--ref` set to the release you had (the
+  `VERSION` file of a copy names it). To uninstall, delete the `static/ui-theme` folder and the theme lines in your pages.
 - **ForgeUI route:** raise the tag in the install line (for example `@v1.5.0` to a later release), then run `vendor` again;
-  `vendor --check` confirms the copy. A hand-edited bundle file is refused unless you pass `--force`, so keep edits in overlays
+  `vendor --check` confirms the copy. To roll back, install the earlier tag, set `forgeui.json`'s `version` to it, and
+  `vendor` again. A hand-edited bundle file is refused unless you pass `--force`, so keep edits in overlays
   (`extra_files`). To uninstall, delete the vendored folder and `forgeui.json`, and `.venv` if you made one for this.
 - **Docker preview:** `git pull && docker compose -f deploy/compose/compose.yml up -d --build` updates it;
   `docker compose -f deploy/compose/compose.yml down` removes it. Nothing is stored, so there is no data to back up.
@@ -313,7 +315,7 @@ In every page's `<head>` (change `/static/ui-theme` to the folder you chose):
 
 ```html
 <script src="/static/ui-theme/ui-theme.js"
-        data-themes="purple,midnight-gold,glacier,forest,paper,daylight"
+        data-themes="purple,midnight-gold,glacier,forest,paper,daylight,high-contrast,high-contrast-light"
         data-default="auto" data-default-dark="midnight-gold" data-default-light="daylight"
         data-storage-key="myapp.theme"></script>
 <link rel="stylesheet" href="/static/ui-theme/ui-theme-base.css">
@@ -400,8 +402,6 @@ Open [`specimen/index.html`](specimen/index.html) through any local web server
 
 - [StudioForge](https://github.com/LaserLloyd/StudioForge): a GPU LLM server over llama.cpp
   with an OpenAI-compatible API and a web dashboard
-- [ClawForge](https://github.com/LaserLloyd/ClawForge): an image-generation gateway that puts
-  a local ComfyUI behind an MCP server and a web GUI
 - [DisPatch](https://github.com/LaserLloyd/DisPatch_Chat): self-hosted chat for a household
   and its AI agents
 

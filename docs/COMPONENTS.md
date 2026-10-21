@@ -254,7 +254,7 @@ Variants `--info`, `--success`, `--warning`, `--danger` (use `role="alert"` for 
 ## Tables and lists
 
 ```html
-<div class="ui-table-wrap">
+<div class="ui-table-wrap" tabindex="0" role="region" aria-label="Jobs">
   <table class="ui-table ui-table--hover">
     <thead><tr><th>Job</th><th class="num">Minutes</th></tr></thead>
     <tbody><tr aria-selected="true"><td>render</td><td class="num">12.4</td></tr></tbody>
@@ -470,10 +470,15 @@ Details elements with the same `name` open one at a time.
   <input class="ui-input" type="file">
 </fieldset>
 
-<div class="ui-table-wrap ui-table-wrap--scroll" style="--ui-table-max-h: 320px">
+<div class="ui-table-wrap ui-table-wrap--scroll" tabindex="0" role="region" aria-label="Log"
+     style="--ui-table-max-h: 320px">
   <table class="ui-table ui-table--sticky">…</table>     <!-- the header row stays put -->
 </div>
 ```
+
+A wrapper that can scroll (sideways on a phone, or `--scroll`) takes `tabindex="0"`, `role="region"`
+and an `aria-label`: keyboard users can then focus it and scroll with the arrow keys, and screen
+readers announce what it holds.
 
 ## Printing and high contrast
 
