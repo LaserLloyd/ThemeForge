@@ -10,7 +10,7 @@
   "copied": "Copiado",
   "copyFailed": "Falha ao copiar",
   "reset": "Repor valor predefinido",
-  "resetNamed": "Repor {name} para o valor predefinido",
+  "resetNamed": "Repor o valor predefinido de {name}",
   "basic": "Básico",
   "advanced": "Avançado",
   "setByEnv": "Definido pelo ambiente"

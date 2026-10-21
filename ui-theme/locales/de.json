@@ -13,5 +13,5 @@
   "resetNamed": "{name} auf Standard zurücksetzen",
   "basic": "Einfach",
   "advanced": "Erweitert",
-  "setByEnv": "Durch Umgebung festgelegt"
+  "setByEnv": "Von der Umgebung festgelegt"
 }

@@ -199,8 +199,10 @@ theme choice lives (it replaces the same list copied into Python, HTML and JavaS
    this for FastAPI and NiceGUI (without `folder` it serves the installed package, which lacks your overlays).
 5. Guard it: run `python -m forgeui vendor --check` in CI and in a unit test. It exits 1 when the
    version, a file or an overlay drifted, or when the settings name a theme the bundle lacks.
-6. Update: raise the pin, `python -m forgeui vendor`, read the diff and the
-   [CHANGELOG](../CHANGELOG.md), run the app's tests, commit.
+6. Update: raise the pin (`"version"` in `forgeui.json`, and the tag in the install line; the 2.0
+   move also renamed the requirement to `themeforge`, see [UPDATING.md](UPDATING.md)), then
+   `python -m forgeui vendor`, read the diff and the [CHANGELOG](../CHANGELOG.md), run the app's
+   tests, commit.
 
 Rules the tool enforces: a bundle file edited by hand is never overwritten without `--force`
 (the bundle is replaced whole; move the edit into the app's own CSS first); overlays are files of

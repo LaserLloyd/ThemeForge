@@ -53,8 +53,9 @@ used emoji can switch mechanically. NiceGUI apps keep their Material names (223 
 `ui.button(icon=forgeui.quasar_icon('delete_forever'))` draws `trash`. Emoji people type stay
 emoji, drawn one of three ways: as the icon (`emojify(el, 'icon')`), in the text colour (`'text'`),
 or in their own colours (`'color'`). Names, both maps and the styles: [`docs/ICONS.md`](docs/ICONS.md).
-`python -m forgeui icons src/ --check` lists the emoji and Material names an app still uses, line by line,
-and fails CI while any is left.
+With the `themeforge` package installed, `python -m forgeui icons src/` lists the emoji and Material names
+an app still draws, one line each, as candidates. Replace the ones in buttons, tabs, menus and status
+lines; leave comments, regexes and text processing alone.
 
 ## Install
 
@@ -88,7 +89,7 @@ Get-Content static\ui-theme\VERSION     # prints: ThemeForge <version> <hash>
 #### 2. Python package, `forgeui.json` + `python -m forgeui vendor`
 
 Choose this for a Python app (FastAPI, NiceGUI, Flask, Django) or when CI should fail if the copy drifts. The `themeforge` package installs from the
-git release tag until it is published on PyPI. It needs git.
+git release tag until it is published on PyPI: `pip install forgeui` from PyPI is a different project, so do not use it. It needs git.
 
 ```powershell
 winget install --id Git.Git -e --source winget

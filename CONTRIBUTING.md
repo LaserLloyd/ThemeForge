@@ -113,6 +113,6 @@ machine-local app registry (`sync_theme.py install`) was removed in 2.0.
 
 ## Python version
 
-`ui-theme/update.py` and the `forgeui` package run on Python 3.9 or newer (CI runs the `forgeui`
+`ui-theme/update.py` and the `themeforge` package (import name `forgeui`) run on Python 3.9 or newer (CI runs the `forgeui`
 tests on 3.9); the tools in `tools/` need 3.11. Mind `Path.write_text(newline=)` and other 3.10+
 conveniences in `forgeui/`.

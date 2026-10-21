@@ -10,7 +10,7 @@
   "copied": "已复制",
   "copyFailed": "复制失败",
   "reset": "重置为默认值",
-  "resetNamed": "将 {name} 重置为默认值",
+  "resetNamed": "将“{name}”重置为默认值",
   "basic": "基本",
   "advanced": "高级",
   "setByEnv": "由环境设置"

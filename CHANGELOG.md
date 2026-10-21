@@ -12,11 +12,18 @@ token, class, icon, theme slug or locale key is renamed or removed.
 
 **Upgrading from 1.x**
 
-- Install lines name `themeforge`: `pip install "themeforge @ git+https://github.com/LaserLloyd/ThemeForge@v2.0.0"`.
-  Uninstall the old one first (`pip uninstall forgeui`); `import forgeui` and `python -m forgeui`
-  are unchanged, and a `themeforge` command joins `forgeui`.
-- An app's `forgeui.json` raises `"version"` to `"2.0"`; `vendor` refuses a 2.0 bundle for a `1.x`
-  pin, as it should for any major.
+- The two edits go together: the install requirement becomes
+  `themeforge @ git+https://github.com/LaserLloyd/ThemeForge@v2.0.0` (it was `forgeui @ git+…`), and
+  an app's `forgeui.json` raises `"version"` to `"2.0"` (a `1.x` pin refuses a 2.0 bundle, as it should
+  for any major). Keeping the old name with the new tag fails with
+  `Package metadata name 'themeforge' does not match given name 'forgeui'` (uv) or
+  `.dist-info directory 'themeforge-2.0.0.dist-info' does not start with 'forgeui'` (pip). That error
+  means rename the requirement; it does not mean the tag is broken.
+- Uninstall the old package first (`pip uninstall forgeui`); `import forgeui` and `python -m forgeui`
+  are unchanged, and a `themeforge` command joins `forgeui`. If `forgeui` was uninstalled after
+  `themeforge` was installed, the files both packages share are gone and `python -m forgeui` fails
+  with `No module named forgeui.__main__`; reinstall with
+  `pip install --force-reinstall "themeforge @ git+https://github.com/LaserLloyd/ThemeForge@v2.0.0"`.
 - Apps still registered with `sync_theme.py install` vendor with `python -m forgeui vendor`
   instead ([docs/UPDATING.md](docs/UPDATING.md)); `UI_THEME_APPS` is no longer read.
 
@@ -41,22 +48,34 @@ which asks every copy to keep the notice, and 1.3.0 and 1.4.0 also carried Lucid
   (Simplified). `pt-BR` and `zh-TW` fall back to `pt` and `zh`. Arabic sets solid (tracking pulled
   its joined letters apart) and falls through Inter to the system's Arabic face. The specimen's
   language switch lists all eight and turns right-to-left for Arabic.
-- **Sortable table headers:** a `.ui-table__sort` button in a `th` with `aria-sort` shows a quiet
-  `arrow-up-down` until sorted, then the primary-text semibold label with `arrow-up` or
-  `arrow-down`; numeric columns keep it right-aligned. The app sorts and sets `aria-sort`.
+- **Sortable table headers:** a `.ui-table__sort` button in a `th`, with its arrow as a
+  `.ui-table__sort-icon` (`arrow-up-down` until sorted, then `arrow-up` or `arrow-down`). The app sorts
+  and sets `aria-sort`; the CSS draws the state: `none` leaves the arrow in tertiary text, and
+  `ascending` or `descending` make the label primary text and semibold, with the arrow in the same
+  colour. In a `th.num` the button fills the cell and sits at the inline end.
 - **PyPI-ready:** `docs/PYPI.md` is the package page, the release builds an sdist next to the
   wheel, and an opt-in `pypi` job publishes with trusted publishing once the maintainer turns it on
   ([CONTRIBUTING.md](CONTRIBUTING.md), "Publishing to PyPI") (#2, #6).
-- **`python -m forgeui icons PATH...`** finds the emoji and Material icon names an app should draw
-  with the bundle's icons, one `path:line: what -> icon` line each, the way `iconFor()` reads them;
-  `--check` fails CI while any are left, `--json` is for tools, and a line marked
-  `forgeui: allow-icons` keeps its emoji. AGENTS.md runs it as a step, and `docs/ICONS.md` says how
-  to move an app over. `×` now maps to `x` as well, since it is the usual hand-typed close glyph
-  (alone only: `3 × 4` stays a sign).
+- **`python -m forgeui icons PATH...`** lists the emoji and Material icon names an app should draw
+  with the bundle's icons, one `path:line: what -> icon` line each, the way `iconFor()` reads them.
+  It is advisory: `--check` is an optional CI gate for an app that is already clean, `--json` is for
+  tools, and a line marked `forgeui: allow-icons` keeps its emoji. It skips comments, docstrings and
+  `test`/`tests` folders, and reports `…` and `×` only as the whole text of an element, never inside a
+  quoted string. AGENTS.md lists it as an advisory step, and `docs/ICONS.md` says how to move an app
+  over. `×` now maps to `x` as well, since it is the usual hand-typed close glyph (alone only:
+  `3 × 4` stays a sign).
 - **Before/after screenshots on pull requests:** CI renders the specimen in every theme for the PR
   and its base branch and uploads both as the `specimen-screenshots` artifact.
 - `--text-disabled` is documented as what it is: a 3:1 floor for disabled controls only (WCAG
   1.4.3 exempts them); every other quiet text uses `--text-tertiary` at 4.5:1 (#9).
+
+**Changed**
+
+- Every icon's drawing changed. The names and the API stay the same (`icons.svg#name`,
+  `UIComponents.icon()`, `iconFor()`, `forgeui.quasar_icon()`), but the redrawn icons sit slightly
+  inside the old 2..22 box, so they read a touch smaller at 24px. A screenshot test will see every
+  icon move.
+- The sortable header's arrow has its own class, `.ui-table__sort-icon`, next to `.ui-table__sort`.
 
 **Removed**
 

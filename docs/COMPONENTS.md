@@ -319,12 +319,16 @@ Every word `ui-components.js` puts on the page (Cancel, OK, Copy, Copied, Reset 
 comes from a string table. `ui-theme/locales/en.json` lists the keys and the English defaults.
 Seven more ship beside it, one per language (`ar`, `de`, `es`, `fr`, `ja`, `pt`, `zh`), each with
 every key. `pt` is European Portuguese and `zh` is Simplified Chinese, so a `pt-BR` or `zh-TW`
-page falls back to them.
+page falls back to them. An app that needs Traditional Chinese can ship `locales/zh-tw.json` as an
+`extra_files` overlay in `forgeui.json`, since `loadLocale('zh-TW')` looks for `zh-tw.json` before `zh.json`.
 
 ```js
 UIComponents.setStrings({ cancel: 'Annuler', ok: 'OK' });   // merge your own words
 await UIComponents.loadLocale('ja');                         // fetch locales/ja.json (true if applied)
 ```
+
+`loadLocale()` changes the words only. It does not set `lang` or `dir`, so an Arabic page sets
+`<html lang="ar" dir="rtl">` itself; the `:lang(ar)` rules and the right-to-left layout need both.
 
 ```html
 <script src="/static/ui-theme/ui-components.js" data-locale="auto" defer></script>  <!-- follows <html lang> -->

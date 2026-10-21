@@ -5,9 +5,10 @@ picker, dark mode or a consistent look. This file is everything you need: follow
 bottom. It takes about five minutes.
 
 **Names.** Repository and product `LaserLloyd/ThemeForge`; its Python package is the `themeforge`
-distribution (import name `forgeui`), which carries the same folder. What you copy into the app is one folder,
-`ui-theme/`. The script defines `window.UITheme`. Every component class starts with `ui-` (the
-base layer also keeps a few unprefixed helpers for older apps, listed in `docs/COMPONENTS.md`).
+distribution (import name `forgeui`), which carries the same folder. Never `pip install forgeui`:
+that name on PyPI is an unrelated project. What you copy into the app is one folder, `ui-theme/`.
+The script defines `window.UITheme`. Every component class starts with `ui-` (the base layer also
+keeps a few unprefixed helpers for older apps, listed in `docs/COMPONENTS.md`).
 There is no npm package and no build step: plain CSS files and two small scripts. The rules
 and the versioning policy are in `docs/THEME_SYSTEM.md`.
 
@@ -198,7 +199,7 @@ Buttons `.ui-btn` + `--primary` `--ghost` `--outline` `--danger` `--cta` `--sm` 
 `.ui-switch-state`; `.ui-card` (`__header` `__title` `__footer`) `.ui-well` `.ui-stat`;
 `.ui-badge` (`--success` `--warning` `--danger` `--info` `--live` `--accent`...) `.ui-dot`
 `.ui-count`; `.ui-callout` (`--info` `--success` `--warning` `--danger`); `.ui-tabs` +
-`.ui-tab`; `.ui-segmented`; `.ui-table-wrap` + `.ui-table` (`--hover` `--compact`, `td.num`) and `.ui-table__sort` for sortable headers;
+`.ui-tab`; `.ui-segmented`; `.ui-table-wrap` + `.ui-table` (`--hover` `--compact`, `td.num`) and `.ui-table__sort` (+ `.ui-table__sort-icon`) for sortable headers;
 `.ui-dialog`; `.ui-drawer` (side sheet); `.ui-menu` + `.ui-menu__item`; `[data-ui-tooltip]`
 (`data-ui-tooltip-side="bottom"` near the top); `.ui-progress` `.ui-spinner` `.ui-skeleton`;
 `.ui-breadcrumbs`; `.ui-pagination`; `.ui-avatar`; `.ui-chip` (+ `__remove`); `.ui-details`
@@ -300,14 +301,16 @@ Icons: use `icons.svg` (section 5). An inline SVG of the app's own: `fill="curre
    ```
    It should print nothing, or only comments. (`tools/lint_colors.py` in this repository is the
    thorough version.)
-5. Search the app's own code for emoji and Material icon names an icon replaces (Python apps
-   with the `forgeui` package; list the app's template, script and Python folders at the end):
+5. **Icons (advisory, not a pass or fail).** If the `themeforge` package is installed (Python apps;
+   import name `forgeui`), run `python -m forgeui icons <the app's template, script and Python folders>`,
+   for example:
    ```
-   python -m forgeui icons templates static src --check
+   python -m forgeui icons templates static src
    ```
-   It exits 0 when no emoji is left in buttons, tabs, menus or status lines; otherwise it prints
-   `file:line: 🗑 -> trash` for each, and `docs/ICONS.md` ("Moving an app over") explains the rest.
-   An emoji kept on purpose carries `forgeui: allow-icons` on its line.
+   It lists candidates, one per line: `file:line: 🗑 -> trash`. Replace the ones in the UI (buttons,
+   tabs, menus, status lines) with icons; leave comments, regexes and text processing alone, and mark
+   an emoji kept on purpose with `forgeui: allow-icons`. It skips comments, docstrings and `test`/`tests`
+   folders. `docs/ICONS.md` ("Moving an app over") explains the rest.
 6. `python3 static/ui-theme/update.py --check` prints "up to date".
 
 ## 9. Keep the convention in the app
@@ -329,11 +332,23 @@ never emoji; update it with `python3 static/ui-theme/update.py`.
 ## 10. Updating later
 
 `python3 static/ui-theme/update.py` installs the latest release (`--check` only reports;
-`--ref v2.0.0` pins a version); an app with a `forgeui.json` raises its `forgeui` pin and runs
-`python -m forgeui vendor` instead. It replaces only the files it owns, leaves the app's own
-files in the folder alone, and refuses to overwrite a file that was edited by hand (move the
-edit into the app's CSS). Read `CHANGELOG.md` in this repository for what changed, then repeat
-step 8. More in `docs/UPDATING.md`.
+`--ref v2.0.0` pins a version). From 2.0 it stops before a major release unless you pass `--ref`
+or `--source`, which is the deliberate yes. An app with a `forgeui.json` raises `"version"` there and, for a
+major, renames its requirement to `themeforge` in the same edit (the old name with the new tag
+fails), then runs `python -m forgeui vendor` instead. It replaces only the files it owns, leaves
+the app's own files in the folder alone, and refuses to overwrite a file that was edited by hand
+(move the edit into the app's CSS). Read `CHANGELOG.md` in this repository for what changed, then
+repeat step 8. More in `docs/UPDATING.md`.
+
+**An app already on 1.x**, on its first 2.0 update:
+
+1. `forgeui.json` apps: set `"version"` to `"2.0"`, rename the requirement to `themeforge` (the
+   install line in section 2), then `python -m forgeui vendor`. `update.py` apps:
+   `python3 static/ui-theme/update.py --ref v2.0.0`.
+2. A service worker or offline cache list: add `icons.svg` and the `locales/` files to it.
+3. Swap the UI emoji for icons (section 8, step 5): `<svg class="ui-icon"><use href=".../icons.svg#name"/></svg>`.
+4. Where the app picks its language, call `UIComponents.loadLocale(lang)`, or put `data-locale="auto"`
+   on the `ui-components.js` script tag.
 
 ## 11. Troubleshooting
 
@@ -350,6 +365,8 @@ step 8. More in `docs/UPDATING.md`.
 | Tailwind `rounded-md` / `font-sans` changed | Expected: the theme defines `--radius-*` and `--font-*`, and its values win. |
 | A library reacts to `data-theme` | The runtime sets `<html data-theme>`; see section 3. |
 | `update.py` says "edited by hand" | Something changed a file in `ui-theme/`. Move the change into app CSS, then rerun with `--force`. |
+| `update.py` says "is a major release" | Expected from 2.0: read `CHANGELOG.md`, then rerun with `--ref v<new>`. |
+| `does not match given name 'forgeui'` (uv), `does not start with 'forgeui'` (pip) | The requirement still says `forgeui` and the tag is 2.0. Rename it to `themeforge`; the tag is fine. |
 
 ## 12. Reference
 
