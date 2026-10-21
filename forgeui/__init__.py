@@ -15,6 +15,7 @@ and NiceGUI are imported lazily by :func:`mount` when you call it.
     forgeui.quasar_icon("trash")          # 'svguse:/theme/icons.svg#trash' for NiceGUI icon=
 
     python -m forgeui vendor              # copy the bundle into this repo (forgeui.json)
+    python -m forgeui icons src/ --check  # find the emoji and Material names an icon replaces (CI gate)
 
 The shipped contract does not depend on the package name: the ``ui-theme/``
 folder, ``window.UITheme``, the ``--token`` names and the ``ui-*`` classes are

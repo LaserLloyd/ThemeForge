@@ -66,12 +66,38 @@ Noto Emoji web font, which `--font-emoji` names first, e.g.
 `data-fonts-href="https://fonts.googleapis.com/css2?family=Noto+Emoji&display=swap"` on the
 `ui-theme.js` tag.
 
+## Moving an app over
+
+`python -m forgeui icons` finds every emoji and Material Icons name in an app that one of these
+icons replaces, so the move is mechanical (it needs the `forgeui` package and nothing else):
+
+```
+python -m forgeui icons src/            # list what to replace, exit 0
+python -m forgeui icons src/ --check    # the same, and exit 1 while any is left (CI)
+```
+
+Each finding is a line of file, line and icon: `src/app.js:12: 🗑 -> trash`, or in NiceGUI code
+`src/ui.py:40: delete_forever -> trash (forgeui.quasar_icon('delete_forever'))`. A Material name
+with no icon is listed as `(no ThemeForge icon)`, and neither it nor an emoji with no icon fails
+`--check`; `--all` also lists those emoji, which can stay as content. `--json` prints the report
+for other tools, and `--folder static/ui-theme` reads `icons.json` from the app's vendored copy
+instead of the installed package. It reads `.html`, `.js`, `.ts`, `.vue`, `.py`, `.css` and the like
+(and `.json` inside a `locales`, `i18n` or `lang` folder), skips `node_modules`, `vendor`, `dist`,
+`build` and copies of this bundle, and counts an arrow or symbol (→ ✓ ✕ ▸ …) only when it is the
+whole text of a string or an element, never inside a sentence.
+
+An emoji that should stay (a reaction, say) carries the marker in a comment, and its line is skipped:
+
+```python
+ui.label('Done ✅')  # forgeui: allow-icons
+```
+
 ## The set
 
 | Icon | Label | Use for | Emoji and symbols it replaces | Material Icons names |
 |---|---|---|---|---|
 | `plus` | Add | add, new, create | ➕ ＋ ✚ | `add`, `add_circle` |
-| `x` | Close | close, remove, dismiss | ✕ ✖ ✗ ✘ ❎ | `close`, `clear` |
+| `x` | Close | close, remove, dismiss | ✕ × ✖ ✗ ✘ ❎ | `close`, `clear` |
 | `check` | Done | done, confirm, selected | ✓ ✔ ☑ | `check`, `done` |
 | `pencil` | Edit | edit, rename, write | ✏ 📝 ✒ 🖊 🖋 | `edit`, `edit_note`, `mode_edit` |
 | `trash` | Delete | delete, discard | 🗑 | `delete`, `delete_forever`, `delete_outline`, `delete_sweep` |

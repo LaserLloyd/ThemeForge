@@ -300,7 +300,15 @@ Icons: use `icons.svg` (section 5). An inline SVG of the app's own: `fill="curre
    ```
    It should print nothing, or only comments. (`tools/lint_colors.py` in this repository is the
    thorough version.)
-5. `python3 static/ui-theme/update.py --check` prints "up to date".
+5. Search the app's own code for emoji and Material icon names an icon replaces (Python apps
+   with the `forgeui` package; list the app's template, script and Python folders at the end):
+   ```
+   python -m forgeui icons templates static src --check
+   ```
+   It exits 0 when no emoji is left in buttons, tabs, menus or status lines; otherwise it prints
+   `file:line: 🗑 -> trash` for each, and `docs/ICONS.md` ("Moving an app over") explains the rest.
+   An emoji kept on purpose carries `forgeui: allow-icons` on its line.
+6. `python3 static/ui-theme/update.py --check` prints "up to date".
 
 ## 9. Keep the convention in the app
 

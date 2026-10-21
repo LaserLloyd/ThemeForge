@@ -47,6 +47,12 @@ which asks every copy to keep the notice, and 1.3.0 and 1.4.0 also carried Lucid
 - **PyPI-ready:** `docs/PYPI.md` is the package page, the release builds an sdist next to the
   wheel, and an opt-in `pypi` job publishes with trusted publishing once the maintainer turns it on
   ([CONTRIBUTING.md](CONTRIBUTING.md), "Publishing to PyPI") (#2, #6).
+- **`python -m forgeui icons PATH...`** finds the emoji and Material icon names an app should draw
+  with the bundle's icons, one `path:line: what -> icon` line each, the way `iconFor()` reads them;
+  `--check` fails CI while any are left, `--json` is for tools, and a line marked
+  `forgeui: allow-icons` keeps its emoji. AGENTS.md runs it as a step, and `docs/ICONS.md` says how
+  to move an app over. `×` now maps to `x` as well, since it is the usual hand-typed close glyph
+  (alone only: `3 × 4` stays a sign).
 - **Before/after screenshots on pull requests:** CI renders the specimen in every theme for the PR
   and its base branch and uploads both as the `specimen-screenshots` artifact.
 - `--text-disabled` is documented as what it is: a 3:1 floor for disabled controls only (WCAG

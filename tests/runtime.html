@@ -771,6 +771,9 @@
     check('emojify: running it again changes nothing', U.emojify(e1, 'icon') + U.emojify(d.getElementById('e2'), 'text'), 0);
     check('emojify: a button that is one mapped symbol gets the icon',
           [U.emojify(d.getElementById('eb')), d.querySelector('#eb use').getAttribute('href').split('#')[1]], [1, 'x']);
+    d.getElementById('ic').insertAdjacentHTML('afterend', '<button id="ex" class="ui-btn ui-btn--icon" aria-label="Close">×</button><p id="em">3 × 4</p>');
+    check('emojify: a lone × is the close icon, a × in a sum stays a sign',
+          [U.emojify(d.getElementById('ex')), U.emojify(d.getElementById('em')), d.getElementById('em').textContent], [1, 0, '3 × 4']);
     const other = `http://localhost:${location.port}/ui-theme/icons.svg`;
     const fx = await comp('', { scriptAttrs: `data-icons="${other}"` });
     check('icons: a sprite on another origin is referenced in the page (it is fetched and inlined)',

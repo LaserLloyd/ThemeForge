@@ -30,6 +30,7 @@
       "use": "close, remove, dismiss",
       "emoji": [
         "✕",
+        "×",
         "✖",
         "✗",
         "✘",

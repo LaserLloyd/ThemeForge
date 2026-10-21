@@ -3,6 +3,7 @@
     python -m forgeui vendor [--check] [--force] [--version X] [--source S] [--manifest M]
     python -m forgeui init --dest static/ui-theme   write a starter forgeui.json
     python -m forgeui head [--manifest M] [--prefix /theme]   the <head> tags for the manifest's settings
+    python -m forgeui icons PATH... [--check] [--json] [--all]   find emoji and Material names an icon replaces
     python -m forgeui path                          the folder inside the installed package
     python -m forgeui --version
 
@@ -17,7 +18,7 @@ from pathlib import Path
 from typing import List, Optional
 
 from . import __version__, bundle_version, head_html_from_manifest, static_dir
-from . import vendor
+from . import icons, vendor
 
 
 def main(argv: Optional[List[str]] = None) -> int:
@@ -43,12 +44,18 @@ def main(argv: Optional[List[str]] = None) -> int:
     p = sub.add_parser("head", help="print the <head> tags for the manifest's settings")
     p.add_argument("--manifest", default=vendor.MANIFEST_NAME)
     p.add_argument("--prefix", default="/theme", help="the URL the folder is served under")
+    icons.build_parser(sub.add_parser("icons", help="find the emoji and Material icon names the bundle's icons replace",
+                                      description=icons.__doc__,
+                                      formatter_class=argparse.RawDescriptionHelpFormatter))
     sub.add_parser("path", help="print the bundle folder inside the installed package")
     args = parser.parse_args(argv)
 
     if args.cmd == "vendor":
         return vendor.run(Path(args.manifest), source=args.source, version=args.version, check=args.check,
                           force=args.force)
+    if args.cmd == "icons":
+        return icons.run(args.paths, folder=args.folder, check=args.check, as_json=args.as_json,
+                         show_all=args.show_all)
     try:
         if args.cmd == "init":
             vendor.init_manifest(Path(args.manifest), args.dest, args.force)

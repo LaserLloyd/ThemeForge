@@ -48,11 +48,13 @@ and the high-contrast pair draws them heavier:
 <button class="ui-btn"><svg class="ui-icon" aria-hidden="true"><use href="/static/ui-theme/icons.svg#trash"/></svg>Delete</button>
 ```
 
-`UIComponents.iconFor('🗑️')` returns `'trash'`: 263 emoji and symbols are mapped, so an app that
+`UIComponents.iconFor('🗑️')` returns `'trash'`: 264 emoji and symbols are mapped, so an app that
 used emoji can switch mechanically. NiceGUI apps keep their Material names (223 are mapped):
 `ui.button(icon=forgeui.quasar_icon('delete_forever'))` draws `trash`. Emoji people type stay
 emoji, drawn one of three ways: as the icon (`emojify(el, 'icon')`), in the text colour (`'text'`),
 or in their own colours (`'color'`). Names, both maps and the styles: [`docs/ICONS.md`](docs/ICONS.md).
+`python -m forgeui icons src/ --check` lists the emoji and Material names an app still uses, line by line,
+and fails CI while any is left.
 
 ## Install
 

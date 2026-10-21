@@ -25,6 +25,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 import forgeui  # noqa: E402
+from forgeui import icons as iconlint  # noqa: E402
 from forgeui import vendor  # noqa: E402
 from forgeui import __main__ as cli  # noqa: E402
 
@@ -681,6 +682,219 @@ class CliTests(Base):
                               text=True, timeout=60)
         self.assertEqual(proc.returncode, 0, proc.stderr)
         self.assertEqual(Path(proc.stdout.strip()), BUNDLE)
+
+
+class IconLintTests(Base):
+    """``python -m forgeui icons``: emoji and Material names an app should draw with the bundle's icons."""
+
+    FILES = {
+        "templates/index.html": (
+            '<button class="ui-btn">\u2699\ufe0f Settings</button>\n'
+            "<p>Go from A \u2192 B, then C \u2026 D.</p>\n"
+            "<button>\u2715</button>\n"
+            "<span>\U0001f98a fox</span>\n"
+            "<span>\U0001f5d1 kept</span> <!-- forgeui: allow-icons -->\n"),
+        "static/app.js": "const close = '\u2715';\nconst sentence = \"A \u2192 B\";\n",
+        "static/locales/en.json": '{"close": "\u2715", "sentence": "A \u2192 B"}\n',
+        "app.py": ("from nicegui import ui\n"
+                   "ui.button(icon='delete_forever')\n"
+                   "ui.button(icon='account_tree')\n"
+                   "ui.button(icon=forgeui.quasar_icon('trash'))\n"
+                   "ui.icon('home')  # forgeui: allow-icons\n"),
+        "node_modules/x.js": "const a = '\U0001f5d1';\n",
+        "static/ui-theme/ui-components.js": "const a = '\U0001f5d1';\n",
+        "static/ui-theme/files.json": "{}\n",
+        "static/ui-theme/VERSION": "ThemeForge 1.0.0\n",
+        "data/other.json": '{"x": "\U0001f5d1"}\n',
+        "notes.md": "\U0001f5d1\n",
+    }
+
+    def setUp(self):
+        super().setUp()
+        for rel, text in self.FILES.items():
+            path = self.repo / rel
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(text.encode("utf-8"))
+        self.catalog = iconlint.load_catalog()
+
+    def call(self, *argv):
+        out, err = io.StringIO(), io.StringIO()
+        with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+            try:
+                code = cli.main(["icons", *argv])
+            except SystemExit as exc:
+                code = exc.code
+        return code, out.getvalue().replace(self.repo.as_posix() + "/", ""), err.getvalue()
+
+    def scan(self, text, **kwargs):
+        return [(f.line, f.text, f.icon) for f in iconlint.scan_text(text, self.catalog, **kwargs)]
+
+    def test_text_report(self):
+        code, out, err = self.call(str(self.repo))
+        self.assertEqual((code, err), (0, ""))
+        self.assertEqual(out.splitlines(), [
+            "app.py:2: delete_forever -> trash (forgeui.quasar_icon('delete_forever'))",
+            "app.py:3: account_tree (no ThemeForge icon)",
+            "static/app.js:1: \u2715 -> x",
+            "static/locales/en.json:1: \u2715 -> x",
+            "templates/index.html:1: \u2699\ufe0f -> settings",
+            "templates/index.html:3: \u2715 -> x",
+            "5 to replace (4 emoji, 1 Material), 1 Material name with no icon",
+        ])
+
+    def test_prose_markers_and_skipped_folders_are_left_alone(self):
+        out = self.call(str(self.repo))[1]
+        self.assertNotIn("\u2192", out)                       # A -> B, in a sentence and in a string
+        self.assertNotIn("index.html:2", out)                 # the ellipsis inside a sentence
+        self.assertNotIn("index.html:5", out)                 # forgeui: allow-icons
+        self.assertNotIn("app.py:5", out)
+        self.assertNotIn("app.py:4", out)                     # already forgeui.quasar_icon(...)
+        for skipped in ("node_modules", "ui-theme", "other.json", "notes.md"):
+            self.assertNotIn(skipped, out)
+
+    def test_check_exit_codes(self):
+        self.assertEqual(self.call(str(self.repo), "--check")[0], 1)
+        self.assertEqual(self.call(str(self.repo))[0], 0)
+        # Material names with no icon and emoji with no icon never fail --check.
+        quiet = self.repo / "quiet"
+        quiet.mkdir()
+        (quiet / "a.py").write_text("ui.icon('account_tree')\nx = '\U0001f98a'\n", encoding="utf-8")
+        code, out, _ = self.call(str(quiet), "--check", "--all")
+        self.assertEqual(code, 0, out)
+        self.assertIn("0 to replace (0 emoji, 0 Material), 1 Material name with no icon, 1 emoji with no icon", out)
+        (quiet / "a.py").write_text("print('hello')\n", encoding="utf-8")
+        self.assertEqual(self.call(str(quiet), "--check")[0], 0)
+
+    def test_all_lists_emoji_without_an_icon(self):
+        fox = "templates/index.html:4: \U0001f98a (no icon; fine as content)"
+        self.assertNotIn(fox, self.call(str(self.repo))[1])
+        code, out, _ = self.call(str(self.repo), "--all")
+        self.assertEqual(code, 0)
+        self.assertIn(fox, out.splitlines())
+
+    def test_json_report(self):
+        code, out, err = self.call(str(self.repo), "--json", "--check")
+        self.assertEqual((code, err), (1, ""))                # still honours --check
+        report = json.loads(out)
+        self.assertEqual(set(report), {"findings", "summary"})
+        self.assertEqual([(f["path"], f["line"], f["text"], f["kind"], f["icon"]) for f in report["findings"]], [
+            ("app.py", 2, "delete_forever", "material", "trash"),
+            ("app.py", 3, "account_tree", "material", None),
+            ("static/app.js", 1, "\u2715", "emoji", "x"),
+            ("static/locales/en.json", 1, "\u2715", "emoji", "x"),
+            ("templates/index.html", 1, "\u2699\ufe0f", "emoji", "settings"),
+            ("templates/index.html", 3, "\u2715", "emoji", "x"),
+        ])
+        self.assertEqual({k: report["summary"][k] for k in ("to_replace", "emoji", "material", "material_no_icon")},
+                         {"to_replace": 5, "emoji": 4, "material": 1, "material_no_icon": 1})
+        self.assertEqual(self.call(str(self.repo), "--json")[0], 0)
+
+    def test_usage_errors_exit_2(self):
+        code, out, err = self.call(str(self.repo / "nope"))
+        self.assertEqual(code, 2)
+        self.assertIn("nope", err)
+        self.assertEqual(out, "")
+        self.assertEqual(self.call()[0], 2)                   # no PATH
+        self.assertEqual(self.call(str(self.repo), "--folder", str(self.repo / "nope"))[0], 2)
+
+    def test_folder_reads_a_vendored_icons_json(self):
+        folder = self.repo / "copy"
+        folder.mkdir()
+        (folder / "icons.json").write_text(
+            json.dumps({"icons": {"fox": {"emoji": ["\U0001f98a"], "material": ["pets"]}}}), encoding="utf-8")
+        code, out, _ = self.call(str(self.repo / "templates"), "--folder", str(folder))
+        self.assertEqual(code, 0)
+        self.assertEqual(out.splitlines(), ["templates/index.html:4: \U0001f98a -> fox",
+                                            "1 to replace (1 emoji, 0 Material)"])
+
+    def test_a_file_named_twice_is_read_once_and_a_named_file_is_always_read(self):
+        page = str(self.repo / "templates" / "index.html")
+        out = self.call(page, str(self.repo / "templates"))[1]
+        self.assertEqual(out.count("index.html:1:"), 1)
+        out = self.call(str(self.repo / "notes.md"))[1]
+        self.assertIn("notes.md:1: \U0001f5d1 -> trash", out)
+
+    def test_python_dash_m_prints_utf8(self):
+        import subprocess
+        proc = subprocess.run([sys.executable, "-m", "forgeui", "icons", str(self.repo / "static"), "--check"],
+                              cwd=ROOT, capture_output=True, encoding="utf-8", timeout=60)
+        self.assertEqual(proc.returncode, 1, proc.stderr)
+        self.assertIn("\u2715 -> x", proc.stdout)
+
+    # -- the emoji lookup, as UIComponents.iconFor()
+
+    def test_every_mapped_symbol_is_found_and_maps_to_its_icon(self):
+        icons = json.loads((BUNDLE / "icons.json").read_text(encoding="utf-8"))["icons"]
+        expected = {}
+        for name, entry in icons.items():
+            for symbol in entry["emoji"]:
+                expected[symbol] = name
+        self.assertGreater(len(expected), 200)
+        for symbol, name in expected.items():
+            with self.subTest(symbol=symbol):
+                self.assertEqual(self.scan("x = '%s'\n" % symbol), [(1, symbol, name)])
+
+    def test_variation_selectors_skin_tones_and_zwj_sequences(self):
+        self.assertEqual(self.scan("\U0001f5d1\ufe0f"), [(1, "\U0001f5d1\ufe0f", "trash")])
+        self.assertEqual(self.scan("a \U0001f44d\U0001f3fd b"), [(1, "\U0001f44d\U0001f3fd", "thumbs-up")])
+        self.assertEqual(self.scan("\U0001f9d1\u200d\U0001f4bb"), [(1, "\U0001f9d1\u200d\U0001f4bb", "user")])
+        rainbow = "\U0001f3f3\ufe0f\u200d\U0001f308"
+        self.assertEqual(self.scan(rainbow), [(1, rainbow, "flag")])
+        flag = "\U0001f1fa\U0001f1f8"                          # a flag is one emoji, with no icon
+        self.assertEqual(self.scan(flag), [])
+        self.assertEqual(self.scan(flag, show_all=True), [(1, flag, None)])
+        self.assertEqual(self.scan("1\ufe0f\u20e3", show_all=True), [(1, "1\ufe0f\u20e3", None)])
+
+    def test_pictographs_count_anywhere_but_symbols_only_alone(self):
+        self.assertEqual(self.scan("Saved \u2705 just now"), [(1, "\u2705", "circle-check")])
+        self.assertEqual(self.scan("\u2699 Settings"), [(1, "\u2699", "settings")])
+        self.assertEqual(self.scan("Open \u2197\ufe0f in a tab"), [(1, "\u2197\ufe0f", "external-link")])
+        prose = "A \u2192 B \u2713 ok \u2026 more \u25b8 \u25be \u2630 3 \u00d7 4 \u21d2 \u2122"
+        self.assertEqual(self.scan(prose), [])
+        self.assertEqual(self.scan(prose, show_all=True), [])  # not alone, so not even listed
+        for alone in ("'\u2192'", '"\u25b8"', "`\u2026`", "<b>\u2713</b>", "<i> \u2630 </i>"):
+            with self.subTest(alone=alone):
+                self.assertEqual(len(self.scan(alone)), 1)
+        self.assertEqual(self.scan("<button>\n  \u2715\n</button>"), [(2, "\u2715", "x")])
+        self.assertEqual(self.scan("<button>\u00d7</button>"), [(1, "\u00d7", "x")])  # the usual close glyph
+
+    def test_material_name_forms(self):
+        text = "\n".join([
+            "ui.button(icon='delete_forever')",
+            'ui.button("Go", icon="refresh")',
+            "ui.icon('settings', size='sm')",
+            "ui.button('x').props('flat round icon=close')",
+            "ui.button('x').props(\"icon='delete'\")",
+            "tabs = [{'icon': 'folder_open', 'label': 'Files'}, {\"icon\": \"account_tree\"}]",
+            "const tabs = [{ icon: 'search' }];",
+            '<q-icon name="delete_outline" size="sm" />',
+            '<q-btn icon="mic" icon-right="close" />',
+        ])
+        self.assertEqual(self.scan(text), [
+            (1, "delete_forever", "trash"), (2, "refresh", "refresh-cw"), (3, "settings", "settings"),
+            (4, "close", "x"), (5, "delete", "trash"), (6, "folder_open", "folder"),
+            (6, "account_tree", None), (7, "search", "search"), (8, "delete_outline", "trash"),
+            (9, "mic", "mic"), (9, "close", "x")])
+
+    def test_material_lookalikes_are_left_alone(self):
+        text = "\n".join([
+            "ui.button(icon='svguse:/theme/icons.svg#trash')",
+            "ui.button(icon='img:/static/logo.png')",
+            "ui.button(icon=forgeui.quasar_icon('delete_forever'))",
+            "ui.button(icon=icon_name)",
+            "ui.button(icon='mdi-delete')",
+            "ui.button(icon='fa-solid fa-trash')",
+            "<q-btn :icon=\"expr\" prepend-icon=\"close\" my_icon=\"close\">",
+            "{'icon': 'trash', 'label': 'Delete'}",             # one of the bundle's own names
+            "ui.button(icon='delete_forever')  # forgeui: allow-icons",
+            "if icon == 'close': pass",
+        ])
+        self.assertEqual(self.scan(text), [])
+
+    def test_the_module_stays_python_39_syntax(self):
+        import ast
+        source = (ROOT / "forgeui" / "icons.py").read_text(encoding="utf-8")
+        ast.parse(source, feature_version=(3, 9))
 
 
 class ExamplesSelfTest(unittest.TestCase):
