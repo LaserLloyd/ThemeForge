@@ -79,3 +79,33 @@ jobs:
           python ui-theme/update.py --source /tmp/repo.tar.gz --dest /tmp/app/static/ui-theme | grep "already up to date"
       - name: forgeui (vendor, head_html, mount) on the oldest supported Python
         run: python -m unittest discover -s tests -p "test_forgeui.py" -v
+
+  screenshots:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install the fonts the specimen uses, and Pillow for the gallery
+        run: |
+          sudo apt-get update && sudo apt-get install -y fonts-inter fonts-jetbrains-mono fonts-space-grotesk fonts-noto-cjk
+          python -m pip install pillow
+      - name: Screenshots of the pull request
+        run: |
+          python tools/screenshots.py --browser "$(command -v google-chrome)" --out shots/after
+          cp docs/images/gallery.png shots/after/gallery.png
+      - name: Screenshots of the base branch, with the base's own script
+        run: |
+          git worktree add ../base "origin/${{ github.base_ref }}"
+          python ../base/tools/screenshots.py --browser "$(command -v google-chrome)" --out "$PWD/shots/before"
+          cp ../base/docs/images/gallery.png shots/before/gallery.png
+      - uses: actions/upload-artifact@v4
+        with:
+          name: specimen-screenshots
+          path: shots/
+          if-no-files-found: error
+          retention-days: 14

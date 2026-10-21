@@ -46,6 +46,8 @@ python -m http.server 8000                      # then /specimen/ and /tests/run
 ```
 
 CI runs the same checks on every push and pull request, and builds the wheel on Linux and Windows.
+Each pull request also uploads a `specimen-screenshots` artifact: `shots/before/` (the base branch) and
+`shots/after/` (the pull request), each with every theme's PNG and a `gallery.png`, to compare by eye.
 
 ## Adding a theme
 
