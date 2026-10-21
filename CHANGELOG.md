@@ -4,7 +4,21 @@ Versions follow [Semantic Versioning](https://semver.org/). A release is a git t
 `ui-theme/VERSION` and `UITheme.version` carry the same number. Token names are the public
 API: removing or renaming one is a major version.
 
-## 1.5.0
+## 2.0.0
+
+A major release because two things an app may lean on change names or go away: the Python
+distribution is now `themeforge`, and `sync_theme.py install` with its app registry is gone. No
+token, class, icon, theme slug or locale key is renamed or removed.
+
+**Upgrading from 1.x**
+
+- Install lines name `themeforge`: `pip install "themeforge @ git+https://github.com/LaserLloyd/ThemeForge@v2.0.0"`.
+  Uninstall the old one first (`pip uninstall forgeui`); `import forgeui` and `python -m forgeui`
+  are unchanged, and a `themeforge` command joins `forgeui`.
+- An app's `forgeui.json` raises `"version"` to `"2.0"`; `vendor` refuses a 2.0 bundle for a `1.x`
+  pin, as it should for any major.
+- Apps still registered with `sync_theme.py install` vendor with `python -m forgeui vendor`
+  instead ([docs/UPDATING.md](docs/UPDATING.md)); `UI_THEME_APPS` is no longer read.
 
 **License: MIT-0.** ThemeForge is now [MIT No Attribution](LICENSE): apps can use, copy, change and
 ship any of it with no conditions, and nothing has to be credited or kept. Up to 1.4.0 it was MIT,
@@ -19,6 +33,29 @@ which asks every copy to keep the notice, and 1.3.0 and 1.4.0 also carried Lucid
   rest, with no conditions. `pyproject.toml` declares `MIT-0`, and the Docker image label too.
 - A test fails the build if an icon source looks copied from another set, and `docs/ICONS.md` says
   how to draw a new one.
+
+**New**
+
+- **Eight languages.** The string table ships in every language laserlloyd.com offers: English,
+  Arabic, German, Spanish, French, Japanese, Portuguese (European, as DisPatch uses) and Chinese
+  (Simplified). `pt-BR` and `zh-TW` fall back to `pt` and `zh`. Arabic sets solid (tracking pulled
+  its joined letters apart) and falls through Inter to the system's Arabic face. The specimen's
+  language switch lists all eight and turns right-to-left for Arabic.
+- **Sortable table headers:** a `.ui-table__sort` button in a `th` with `aria-sort` shows a quiet
+  `arrow-up-down` until sorted, then the primary-text semibold label with `arrow-up` or
+  `arrow-down`; numeric columns keep it right-aligned. The app sorts and sets `aria-sort`.
+- **PyPI-ready:** `docs/PYPI.md` is the package page, the release builds an sdist next to the
+  wheel, and an opt-in `pypi` job publishes with trusted publishing once the maintainer turns it on
+  ([CONTRIBUTING.md](CONTRIBUTING.md), "Publishing to PyPI") (#2, #6).
+- **Before/after screenshots on pull requests:** CI renders the specimen in every theme for the PR
+  and its base branch and uploads both as the `specimen-screenshots` artifact.
+- `--text-disabled` is documented as what it is: a 3:1 floor for disabled controls only (WCAG
+  1.4.3 exempts them); every other quiet text uses `--text-tertiary` at 4.5:1 (#9).
+
+**Removed**
+
+- `sync_theme.py install`, the machine-local app registry and `UI_THEME_APPS`, deprecated since
+  1.2.0 (#11).
 
 **Fixes**
 
@@ -36,7 +73,7 @@ which asks every copy to keep the notice, and 1.3.0 and 1.4.0 also carried Lucid
   February), pinned by digest; it listens on IPv4 only, so it starts on hosts with IPv6 turned off;
   and compose passes `REVISION` and `CREATED` into its labels (#7).
 - Docs: scrollable table wrappers take `tabindex="0"`, `role="region"` and a label (#4); the
-  specimen has an English/Japanese switch (#5); the README's head example includes the
+  specimen has a language switch (#5); the README's head example includes the
   high-contrast pair and says how to roll back (#8).
 
 ## 1.4.0

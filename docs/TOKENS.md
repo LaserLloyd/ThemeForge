@@ -1,6 +1,6 @@
 # Tokens
 
-Generated from `src/css/theme-base.css` by `tools/sync_theme.py build` (ThemeForge 1.5.0).
+Generated from `src/css/theme-base.css` by `tools/sync_theme.py build` (ThemeForge 2.0.0).
 Every theme resolves every token below: a theme sets the colours, and the rest are
 shared or derived. The values shown are Purple's (the `:root` base).
 `tokens/<theme>.json` holds each theme's resolved values in the W3C design tokens format.

@@ -94,7 +94,7 @@ winget install --id Python.Python.3.12 -e --source winget
 # close and reopen PowerShell, then:
 cd C:\path\to\your\app
 py -3 -m venv .venv
-.\.venv\Scripts\python.exe -m pip install "themeforge @ git+https://github.com/LaserLloyd/ThemeForge@v1.5.0"
+.\.venv\Scripts\python.exe -m pip install "themeforge @ git+https://github.com/LaserLloyd/ThemeForge@v2.0.0"
 .\.venv\Scripts\python.exe -m forgeui init --dest static/ui-theme    # writes forgeui.json
 .\.venv\Scripts\python.exe -m forgeui vendor                         # copies the folder, verified
 .\.venv\Scripts\python.exe -m forgeui vendor --check                 # prints ok, exit 0
@@ -104,7 +104,7 @@ py -3 -m venv .venv
 |---|---|
 | `forgeui.json` records version, themes and overlays in your repo | Needs git and a venv |
 | `vendor --check` exits 1 on drift: use it in CI or a unit test | Not on PyPI yet, so the install line is a long git URL |
-| Python helpers: `forgeui.mount(app, ...)`, `head_html_from_manifest(...)` | The tag must exist: if pip reports it cannot find `v1.5.0`, use the `update.py` route until the release is tagged |
+| Python helpers: `forgeui.mount(app, ...)`, `head_html_from_manifest(...)` | The tag must exist: if pip reports it cannot find `v2.0.0`, use the `update.py` route until the release is tagged |
 
 #### 3. `uv`, no venv to manage
 
@@ -115,7 +115,7 @@ winget install --id Git.Git -e --source winget
 winget install --id astral-sh.uv -e --source winget
 # close and reopen PowerShell, then:
 cd C:\path\to\your\app
-$f = "themeforge @ git+https://github.com/LaserLloyd/ThemeForge@v1.5.0"
+$f = "themeforge @ git+https://github.com/LaserLloyd/ThemeForge@v2.0.0"
 uvx --from $f forgeui init --dest static/ui-theme
 uvx --from $f forgeui vendor
 uvx --from $f forgeui vendor --check
@@ -176,7 +176,7 @@ sudo apt-get update && sudo apt-get install -y git curl ca-certificates
 curl -LsSf https://astral.sh/uv/install.sh | sh
 source $HOME/.local/bin/env
 cd /path/to/your/app
-F="themeforge @ git+https://github.com/LaserLloyd/ThemeForge@v1.5.0"
+F="themeforge @ git+https://github.com/LaserLloyd/ThemeForge@v2.0.0"
 uvx --from "$F" forgeui init --dest static/ui-theme
 uvx --from "$F" forgeui vendor
 uvx --from "$F" forgeui vendor --check     # prints ok, exit 0
@@ -196,7 +196,7 @@ Choose this when you cannot install uv. Ubuntu 24.04 refuses a bare `pip install
 sudo apt-get update && sudo apt-get install -y git python3-venv
 cd /path/to/your/app
 python3 -m venv .venv
-.venv/bin/pip install "themeforge @ git+https://github.com/LaserLloyd/ThemeForge@v1.5.0"
+.venv/bin/pip install "themeforge @ git+https://github.com/LaserLloyd/ThemeForge@v2.0.0"
 .venv/bin/python -m forgeui init --dest static/ui-theme
 .venv/bin/python -m forgeui vendor
 .venv/bin/python -m forgeui vendor --check     # prints ok, exit 0
@@ -205,7 +205,7 @@ python3 -m venv .venv
 | Pros | Cons |
 |---|---|
 | Only the standard tools; the venv is also where `forgeui.mount()` runs | Most steps of the three; needs git and `python3-venv` |
-| Same manifest and drift check as method 2 | If pip cannot find tag `v1.5.0`, use method 1 until the release is tagged |
+| Same manifest and drift check as method 2 | If pip cannot find tag `v2.0.0`, use method 1 until the release is tagged |
 
 #### 4. Docker Compose, specimen preview only
 
@@ -251,7 +251,7 @@ xcode-select --install     # skip if git already works
 curl -LsSf https://astral.sh/uv/install.sh | sh
 source $HOME/.local/bin/env
 cd /path/to/your/app
-F="themeforge @ git+https://github.com/LaserLloyd/ThemeForge@v1.5.0"
+F="themeforge @ git+https://github.com/LaserLloyd/ThemeForge@v2.0.0"
 uvx --from "$F" forgeui init --dest static/ui-theme
 uvx --from "$F" forgeui vendor
 uvx --from "$F" forgeui vendor --check     # prints ok, exit 0
@@ -298,7 +298,7 @@ its `ui-theme/` folder. If you were handed `ThemeForge.zip` (the release zip), u
 - **`update.py` route:** `python3 static/ui-theme/update.py` updates; `--check` reports only (exit 1 when an update exists);
   `--ref vX.Y.Z` pins a release. To roll back, run it again with `--ref` set to the release you had (the
   `VERSION` file of a copy names it). To uninstall, delete the `static/ui-theme` folder and the theme lines in your pages.
-- **Python package route:** raise the tag in the install line (for example `@v1.5.0` to a later release), then run `vendor` again;
+- **Python package route:** raise the tag in the install line (for example `@v2.0.0` to a later release), then run `vendor` again;
   `vendor --check` confirms the copy. To roll back, install the earlier tag, set `forgeui.json`'s `version` to it, and
   `vendor` again. A hand-edited bundle file is refused unless you pass `--force`, so keep edits in overlays
   (`extra_files`). To uninstall, delete the vendored folder and `forgeui.json`, and `.venv` if you made one for this.
@@ -308,7 +308,7 @@ its `ui-theme/` folder. If you were handed `ThemeForge.zip` (the release zip), u
 Preview settings (optional, in `deploy/compose/.env`): `HOST_PORT` (8185), `BIND_ADDR` (127.0.0.1; `0.0.0.0` publishes to your
 network), `IMAGE`, `VERSION`, `MEM_LIMIT` (64m), `CPU_LIMIT` (0.5). More in [docs/deploy/docker.md](docs/deploy/docker.md);
 updating details in [docs/UPDATING.md](docs/UPDATING.md). Without installing anything, a prototype can load the files from
-jsDelivr: `https://cdn.jsdelivr.net/gh/LaserLloyd/ThemeForge@v1.5.0/ui-theme/ui-theme.js` (and the same path for each CSS file).
+jsDelivr: `https://cdn.jsdelivr.net/gh/LaserLloyd/ThemeForge@v2.0.0/ui-theme/ui-theme.js` (and the same path for each CSS file).
 
 ## Add it to your pages
 
