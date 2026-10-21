@@ -24,7 +24,10 @@
 - Components and the base layer use tokens only (no colour literals; `tools/lint_colors.py`
   checks) and never name a theme slug or `[data-palette]`.
 - Never rename or remove a token or an icon in a minor release; their names are the public API.
-- Icons: `src/icons/icons.json` plus the unchanged Lucide source in `src/icons/lucide/`. The set is
+- License: MIT-0, no conditions. Keep it that way: nothing third-party with a notice or attribution
+  requirement goes into the bundle (no copied icons, fonts or snippets).
+- Icons: `src/icons/icons.json` plus ThemeForge's own drawings in `src/icons/svg/` (24px grid, 2px
+  round stroke; draw new ones, never copy from another set). The set is
   what the LaserLloyd apps draw, not a library: add an icon only when an app needs one and no icon
   (or its emoji and Material names) already means it; `build` refuses more than 120. Components
   never put emoji in chrome.
@@ -32,7 +35,11 @@
   Add a `CHANGELOG.md` entry for every release, and keep pinned URLs in the docs on the
   current version (`check` fails otherwise). Merging a new version to `main` is the release:
   `.github/workflows/release.yml` tags it and publishes the zip and wheel.
-- Apps vendor the bundle with `python -m forgeui vendor` (a `forgeui.json` in their own repo);
-  `sync_theme.py install` and its machine-local registry are deprecated. Never run either against
-  a folder you were not asked to change.
+- Apps vendor the bundle with `python -m forgeui vendor` (a `forgeui.json` in their own repo).
+  `sync_theme.py install` and the machine-local app registry were removed in 2.0. Never run
+  `vendor` against a folder you were not asked to change.
+- The Python distribution is `themeforge` (the name `forgeui` on PyPI is another project); the
+  import package and `python -m` module stay `forgeui`. `docs/PYPI.md` is the PyPI long
+  description (absolute links only); the `pypi` job in `release.yml` is opt-in
+  (`CONTRIBUTING.md`, "Publishing to PyPI").
 - `docs/THEME_SYSTEM.md` is the index and the contract rules; keep it true when the policy changes.

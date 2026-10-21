@@ -25,6 +25,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 import forgeui  # noqa: E402
+from forgeui import icons as iconlint  # noqa: E402
 from forgeui import vendor  # noqa: E402
 from forgeui import __main__ as cli  # noqa: E402
 
@@ -104,6 +105,33 @@ class PackageTests(Base):
         want = json.loads((BUNDLE / "files.json").read_text(encoding="utf-8"))["files"]["ui-theme.css"][:10]
         self.assertIn(f"/theme/ui-theme.css?v={want}", head)
         self.assertNotIn("?v=", forgeui.head_html(version_query=False))
+
+    def test_head_html_sees_a_copy_vendored_again_under_a_running_process(self):
+        copy = Path(self.tmp.name) / "copy"
+        shutil.copytree(BUNDLE, copy)
+        first = forgeui.head_html(folder=copy)
+        manifest = json.loads((copy / "files.json").read_text(encoding="utf-8"))
+        manifest["files"]["ui-theme.css"] = "f" * 64
+        (copy / "files.json").write_text(json.dumps(manifest), encoding="utf-8")
+        stat = (copy / "files.json").stat()
+        os.utime(copy / "files.json", ns=(stat.st_atime_ns, stat.st_mtime_ns + 1_000_000_000))
+        second = forgeui.head_html(folder=copy)
+        self.assertNotIn("ui-theme.css?v=ffffffffff", first)
+        self.assertIn("ui-theme.css?v=ffffffffff", second)
+
+    def test_quasar_icon_sees_a_copy_vendored_again_under_a_running_process(self):
+        copy = Path(self.tmp.name) / "copy"
+        shutil.copytree(BUNDLE, copy)
+        self.assertEqual(forgeui.quasar_icon("trash", folder=copy), "svguse:/theme/icons.svg#trash")
+        with self.assertRaises(ValueError):
+            forgeui.quasar_icon("delete_sweep_zz", folder=copy)
+        path = copy / "icons.json"
+        data = json.loads(path.read_text(encoding="utf-8"))
+        data["icons"]["trash"]["material"].append("delete_sweep_zz")
+        path.write_text(json.dumps(data), encoding="utf-8")
+        stat = path.stat()
+        os.utime(path, ns=(stat.st_atime_ns, stat.st_mtime_ns + 1_000_000_000))
+        self.assertEqual(forgeui.quasar_icon("delete_sweep_zz", folder=copy), "svguse:/theme/icons.svg#trash")
 
     def test_head_html_adapters_components_and_overlays(self):
         head = forgeui.head_html(themes=["glacier"], adapters=["quasar"], components=True,
@@ -569,7 +597,7 @@ class VendorTests(Base):
         with zipfile.ZipFile(zpath, "w") as zf:
             for p in files:
                 zf.write(p, f"ui-theme/{p.relative_to(BUNDLE).as_posix()}")
-        wheel = Path(self.tmp.name) / "forgeui-x-py3-none-any.whl"
+        wheel = Path(self.tmp.name) / "themeforge-x-py3-none-any.whl"
         with zipfile.ZipFile(wheel, "w") as zf:
             zf.writestr("forgeui-x.dist-info/METADATA", "Name: forgeui\n")
             for p in files:
@@ -634,7 +662,7 @@ class CliTests(Base):
     def test_version_and_path(self):
         code, out = self.call("--version")
         self.assertEqual(code, 0)
-        self.assertIn(forgeui.__version__, out)
+        self.assertEqual(out.strip(), f"themeforge {forgeui.__version__} (bundle {forgeui.bundle_version()})")
         code, out = self.call("path")
         self.assertEqual((code, out.strip()), (0, str(BUNDLE)))
 
@@ -668,6 +696,359 @@ class CliTests(Base):
                               text=True, timeout=60)
         self.assertEqual(proc.returncode, 0, proc.stderr)
         self.assertEqual(Path(proc.stdout.strip()), BUNDLE)
+
+
+class IconLintTests(Base):
+    """``python -m forgeui icons``: emoji and Material names an app should draw with the bundle's icons."""
+
+    FILES = {
+        "templates/index.html": (
+            '<button class="ui-btn">\u2699\ufe0f Settings</button>\n'
+            "<p>Go from A \u2192 B, then C \u2026 D.</p>\n"
+            "<button>\u2715</button>\n"
+            "<span>\U0001f98a fox</span>\n"
+            "<span>\U0001f5d1 kept</span> <!-- forgeui: allow-icons -->\n"),
+        "static/app.js": "const close = '\u2715';\nconst sentence = \"A \u2192 B\";\n",
+        "static/locales/en.json": '{"close": "\u2715", "sentence": "A \u2192 B"}\n',
+        "app.py": ("from nicegui import ui\n"
+                   "ui.button(icon='delete_forever')\n"
+                   "ui.button(icon='account_tree')\n"
+                   "ui.button(icon=forgeui.quasar_icon('trash'))\n"
+                   "ui.icon('home')  # forgeui: allow-icons\n"),
+        "node_modules/x.js": "const a = '\U0001f5d1';\n",
+        "static/ui-theme/ui-components.js": "const a = '\U0001f5d1';\n",
+        "static/ui-theme/files.json": "{}\n",
+        "static/ui-theme/VERSION": "ThemeForge 1.0.0\n",
+        "data/other.json": '{"x": "\U0001f5d1"}\n',
+        "notes.md": "\U0001f5d1\n",
+    }
+
+    def setUp(self):
+        super().setUp()
+        for rel, text in self.FILES.items():
+            path = self.repo / rel
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(text.encode("utf-8"))
+        self.catalog = iconlint.load_catalog()
+
+    def call(self, *argv):
+        out, err = io.StringIO(), io.StringIO()
+        with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+            try:
+                code = cli.main(["icons", *argv])
+            except SystemExit as exc:
+                code = exc.code
+        here = self.repo.as_posix() + "/"
+        return code, out.getvalue().replace(here, ""), err.getvalue().replace(here, "")
+
+    def tree(self, files):
+        """Write ``files`` (relative path -> text) under a fresh folder inside the repo; return the folder."""
+        root = self.repo / "case"
+        for rel, text in files.items():
+            path = root / rel
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(text.encode("utf-8"))
+        return root
+
+    def scan(self, text, **kwargs):
+        return [(f.line, f.text, f.icon) for f in iconlint.scan_text(text, self.catalog, **kwargs)]
+
+    def test_text_report(self):
+        code, out, err = self.call(str(self.repo))
+        self.assertEqual((code, err), (0, ""))
+        self.assertEqual(out.splitlines(), [
+            "app.py:2: delete_forever -> trash (forgeui.quasar_icon('delete_forever'))",
+            "app.py:3: account_tree (no ThemeForge icon)",
+            "static/app.js:1: \u2715 -> x",
+            "static/locales/en.json:1: \u2715 -> x",
+            "templates/index.html:1: \u2699\ufe0f -> settings",
+            "templates/index.html:3: \u2715 -> x",
+            "5 to replace (4 emoji, 1 Material), 1 Material name with no icon",
+        ])
+
+    def test_prose_markers_and_skipped_folders_are_left_alone(self):
+        out = self.call(str(self.repo))[1]
+        self.assertNotIn("\u2192", out)                       # A -> B, in a sentence and in a string
+        self.assertNotIn("index.html:2", out)                 # the ellipsis inside a sentence
+        self.assertNotIn("index.html:5", out)                 # forgeui: allow-icons
+        self.assertNotIn("app.py:5", out)
+        self.assertNotIn("app.py:4", out)                     # already forgeui.quasar_icon(...)
+        for skipped in ("node_modules", "ui-theme", "other.json", "notes.md"):
+            self.assertNotIn(skipped, out)
+
+    def test_check_exit_codes(self):
+        self.assertEqual(self.call(str(self.repo), "--check")[0], 1)
+        self.assertEqual(self.call(str(self.repo))[0], 0)
+        # Material names with no icon and emoji with no icon never fail --check.
+        quiet = self.repo / "quiet"
+        quiet.mkdir()
+        (quiet / "a.py").write_text("ui.icon('account_tree')\nx = '\U0001f98a'\n", encoding="utf-8")
+        code, out, _ = self.call(str(quiet), "--check", "--all")
+        self.assertEqual(code, 0, out)
+        self.assertIn("0 to replace (0 emoji, 0 Material), 1 Material name with no icon, 1 emoji with no icon", out)
+        (quiet / "a.py").write_text("print('hello')\n", encoding="utf-8")
+        self.assertEqual(self.call(str(quiet), "--check")[0], 0)
+
+    def test_all_lists_emoji_without_an_icon(self):
+        fox = "templates/index.html:4: \U0001f98a (no icon; fine as content)"
+        self.assertNotIn(fox, self.call(str(self.repo))[1])
+        code, out, _ = self.call(str(self.repo), "--all")
+        self.assertEqual(code, 0)
+        self.assertIn(fox, out.splitlines())
+
+    def test_json_report(self):
+        code, out, err = self.call(str(self.repo), "--json", "--check")
+        self.assertEqual((code, err), (1, ""))                # still honours --check
+        report = json.loads(out)
+        self.assertEqual(set(report), {"findings", "skipped", "summary"})
+        self.assertEqual(report["skipped"], [])
+        self.assertEqual([(f["path"], f["line"], f["text"], f["kind"], f["icon"]) for f in report["findings"]], [
+            ("app.py", 2, "delete_forever", "material", "trash"),
+            ("app.py", 3, "account_tree", "material", None),
+            ("static/app.js", 1, "\u2715", "emoji", "x"),
+            ("static/locales/en.json", 1, "\u2715", "emoji", "x"),
+            ("templates/index.html", 1, "\u2699\ufe0f", "emoji", "settings"),
+            ("templates/index.html", 3, "\u2715", "emoji", "x"),
+        ])
+        self.assertEqual({k: report["summary"][k] for k in ("to_replace", "emoji", "material", "material_no_icon")},
+                         {"to_replace": 5, "emoji": 4, "material": 1, "material_no_icon": 1})
+        self.assertEqual(self.call(str(self.repo), "--json")[0], 0)
+
+    def test_usage_errors_exit_2(self):
+        code, out, err = self.call(str(self.repo / "nope"))
+        self.assertEqual(code, 2)
+        self.assertIn("nope", err)
+        self.assertEqual(out, "")
+        self.assertEqual(self.call()[0], 2)                   # no PATH
+        self.assertEqual(self.call(str(self.repo), "--folder", str(self.repo / "nope"))[0], 2)
+
+    def test_folder_reads_a_vendored_icons_json(self):
+        folder = self.repo / "copy"
+        folder.mkdir()
+        (folder / "icons.json").write_text(
+            json.dumps({"icons": {"fox": {"emoji": ["\U0001f98a"], "material": ["pets"]}}}), encoding="utf-8")
+        code, out, _ = self.call(str(self.repo / "templates"), "--folder", str(folder))
+        self.assertEqual(code, 0)
+        self.assertEqual(out.splitlines(), ["templates/index.html:4: \U0001f98a -> fox",
+                                            "1 to replace (1 emoji, 0 Material)"])
+
+    def test_a_file_named_twice_is_read_once_and_a_named_file_is_always_read(self):
+        page = str(self.repo / "templates" / "index.html")
+        out = self.call(page, str(self.repo / "templates"))[1]
+        self.assertEqual(out.count("index.html:1:"), 1)
+        out = self.call(str(self.repo / "notes.md"))[1]
+        self.assertIn("notes.md:1: \U0001f5d1 -> trash", out)
+
+    def test_tests_and_build_folders_are_skipped_with_a_note(self):
+        gear = "<b>\u2699</b>\n"
+        root = self.tree({
+            "app/ui.html": gear,
+            # Tests sits in another folder from tests: on Windows and macOS they would be one folder.
+            "app/tests/t.html": gear, "app/pkg/Tests/t.html": gear, "app/test/t.html": gear,
+            "app/__tests__/t.js": gear,
+            "app/pkg/build/b.html": gear, "app/pkg/vendor/v.html": gear, "app/dist/d.html": gear,
+            # skipped without a word
+            "app/.hidden/h.html": gear, "app/node_modules/n.html": gear, "app/__pycache__/p.html": gear,
+            "app/venv/v.html": gear, "app/copy/files.json": "{}", "app/copy/VERSION": "ThemeForge 1.0.0\n",
+            "app/copy/c.html": gear,
+        })
+        code, out, err = self.call(str(root / "app"))
+        self.assertEqual(code, 0)
+        self.assertEqual([line.split(" ")[0] for line in out.splitlines()[:-1]], ["case/app/ui.html:1:"])
+        self.assertEqual(err.splitlines(), [
+            "note: skipped case/app/__tests__", "note: skipped case/app/dist", "note: skipped case/app/pkg/Tests",
+            "note: skipped case/app/pkg/build", "note: skipped case/app/pkg/vendor", "note: skipped case/app/test",
+            "note: skipped case/app/tests"])
+        code, out, err = self.call(str(root / "app"), "--json")
+        report = json.loads(out)
+        self.assertEqual(report["skipped"], [line.split("skipped ")[1] for line in err.splitlines()])
+        self.assertEqual([f["path"] for f in report["findings"]], ["case/app/ui.html"])
+
+    def test_a_folder_named_on_the_command_line_is_always_read(self):
+        gear = "<b>\u2699</b>\n"
+        root = self.tree({"app/tests/t.html": gear, "app/tests/build/b.html": gear, "app/pkg/build/b.html": gear,
+                          "app/pkg/ui.html": gear})
+        for named in ("app/tests", "app/pkg/build"):
+            code, out, err = self.call(str(root / named))
+            self.assertEqual(out.count("\u2699 -> settings"), 1, (named, out))
+        # what is skipped below it is still said once, even when two named folders reach it
+        code, out, err = self.call(str(root / "app" / "tests"), str(root / "app" / "tests"))
+        self.assertEqual(err.splitlines(), ["note: skipped case/app/tests/build"])
+        code, out, err = self.call(str(root / "app"), str(root / "app" / "pkg"))
+        self.assertEqual(err.splitlines(), ["note: skipped case/app/pkg/build", "note: skipped case/app/tests"])
+        self.assertEqual(out.count("\u2699 -> settings"), 1, out)
+
+    def test_python_dash_m_prints_utf8(self):
+        import subprocess
+        proc = subprocess.run([sys.executable, "-m", "forgeui", "icons", str(self.repo / "static"), "--check"],
+                              cwd=ROOT, capture_output=True, encoding="utf-8", timeout=60)
+        self.assertEqual(proc.returncode, 1, proc.stderr)
+        self.assertIn("\u2715 -> x", proc.stdout)
+
+    # -- the emoji lookup, as UIComponents.iconFor()
+
+    def test_every_mapped_symbol_is_found_and_maps_to_its_icon(self):
+        icons = json.loads((BUNDLE / "icons.json").read_text(encoding="utf-8"))["icons"]
+        expected = {}
+        for name, entry in icons.items():
+            for symbol in entry["emoji"]:
+                expected[symbol] = name
+        self.assertGreater(len(expected), 200)
+        for symbol, name in expected.items():
+            with self.subTest(symbol=symbol):
+                self.assertEqual(self.scan("<b>%s</b>\n" % symbol), [(1, symbol, name)])
+
+    def test_variation_selectors_skin_tones_and_zwj_sequences(self):
+        self.assertEqual(self.scan("\U0001f5d1\ufe0f"), [(1, "\U0001f5d1\ufe0f", "trash")])
+        self.assertEqual(self.scan("a \U0001f44d\U0001f3fd b"), [(1, "\U0001f44d\U0001f3fd", "thumbs-up")])
+        self.assertEqual(self.scan("\U0001f9d1\u200d\U0001f4bb"), [(1, "\U0001f9d1\u200d\U0001f4bb", "user")])
+        rainbow = "\U0001f3f3\ufe0f\u200d\U0001f308"
+        self.assertEqual(self.scan(rainbow), [(1, rainbow, "flag")])
+        flag = "\U0001f1fa\U0001f1f8"                          # a flag is one emoji, with no icon
+        self.assertEqual(self.scan(flag), [])
+        self.assertEqual(self.scan(flag, show_all=True), [(1, flag, None)])
+        self.assertEqual(self.scan("1\ufe0f\u20e3", show_all=True), [(1, "1\ufe0f\u20e3", None)])
+
+    def test_pictographs_count_anywhere_but_symbols_only_alone(self):
+        self.assertEqual(self.scan("Saved \u2705 just now"), [(1, "\u2705", "circle-check")])
+        self.assertEqual(self.scan("\u2699 Settings"), [(1, "\u2699", "settings")])
+        self.assertEqual(self.scan("Open \u2197\ufe0f in a tab"), [(1, "\u2197\ufe0f", "external-link")])
+        prose = "A \u2192 B \u2713 ok \u2026 more \u25b8 \u25be \u2630 3 \u00d7 4 \u21d2 \u2122"
+        self.assertEqual(self.scan(prose), [])
+        self.assertEqual(self.scan(prose, show_all=True), [])  # not alone, so not even listed
+        for alone in ("'\u2192'", '"\u25b8"', "`\u2715`", "<b>\u2713</b>", "<i> \u2630 </i>", "<b>\u2026</b>"):
+            with self.subTest(alone=alone):
+                self.assertEqual(len(self.scan(alone)), 1)
+        self.assertEqual(self.scan("<button>\n  \u2715\n</button>"), [(2, "\u2715", "x")])
+        self.assertEqual(self.scan("<button>\u00d7</button>"), [(1, "\u00d7", "x")])  # the usual close glyph
+
+    def test_ellipsis_and_times_count_only_as_an_element(self):
+        # A truncation suffix and a multiplication sign are text, whatever the quotes around them.
+        for text in ('snippet = snippet[:57] + "\u2026"', "label = w + '\u00d7' + h", "assert out.endswith('\u2026')",
+                     "const times = `\u00d7`;", "{ text: '\u00d7' }", "('\u2026', '...')"):
+            with self.subTest(text=text):
+                self.assertEqual(self.scan(text), [])
+        self.assertEqual(self.scan("<span>\u2026</span>"), [(1, "\u2026", "ellipsis")])
+        self.assertEqual(self.scan("<button>\n  \u00d7\n</button>"), [(2, "\u00d7", "x")])
+        # the other symbols that count only alone still count as a string
+        self.assertEqual(self.scan("{ text: '\u2715' }"), [(1, "\u2715", "x")])
+
+    def test_comment_lines_are_skipped_by_file_type(self):
+        gear = "\u2699"
+        for path, text in [
+            ("a.py", "# {g}"), ("a.py", "x = 1\n    # {g}"), ("a.sh", "# {g}"), ("a.yml", "# {g}"),
+            ("a.js", "// {g}"), ("a.ts", "  // {g}"), ("a.py", "// {g}"),
+            ("a.js", "/* {g} */"), ("a.js", "/**\n * {g}\n */"), ("a.js", "run(); /* opened late\n * {g}\n */"),
+            ("a.css", "/*\n  {g} a block comment whose lines do not start with a star\n*/"),
+            ("a.css", "/* {g}\n   {g} */"), ("a.css", "/**/\n/* x */ /* {g} */"),
+            ("a.html", "<!-- {g} -->"), ("a.html", "<!--\n  {g}\n-->"), ("a.vue", "<!-- {g} -->"),
+        ]:
+            with self.subTest(path=path, text=text):
+                self.assertEqual(self.scan(text.format(g=gear), path=path), [])
+        # # starts a colour or an id in CSS and HTML; a comment that ends is followed by code again
+        for path, text, line in [
+            ("a.css", "#app::before {{ content: '{g}' }}", 1), ("a.html", "# {g}", 1), ("a.js", "# {g}", 1),
+            ("a.py", "x = 1  # {g}", 1), ("a.js", "run();  // {g}", 1), ("a.py", "* {g}", 1),
+            ("a.css", "/* a */\n<b>{g}</b>", 2), ("a.html", "<!-- a -->\n<b>{g}</b>", 2),
+            ("a.css", "/* a\nb */\n<b>{g}</b>", 3), ("a.md", "* {g} item\n// {g}", 1), ("", "// {g}", 1),
+        ]:
+            with self.subTest(path=path, text=text):
+                found = self.scan(text.format(g=gear), path=path)
+                self.assertEqual([f[0] for f in found][:1], [line])
+
+    def test_python_docstrings_are_skipped_but_other_strings_are_read(self):
+        lines = [
+            '"""Module {g}',
+            'over two lines {g}"""',
+            "import x",
+            "class A:",
+            '    """Class {g}."""',
+            "    def f(self):",
+            "        '''Method {g}'''",
+            '        return x.html("""<b>{g}</b>""")  # READ: NiceGUI html with an emoji in it',
+            "async def g():",
+            '    """Async {g}"""',
+            "def h():",
+            "    y = 1",
+            '    """Not a docstring {g}"""  # READ: it is not the first statement',
+            "NOTE = '''{g}'''  # READ: a module-level string that is not the docstring",
+        ]
+        text = "\n".join(lines).format(g="\u2699")
+        hits = [n for n, line in enumerate(text.split("\n"), 1) if "READ" in line]
+        self.assertEqual(len(hits), 3)
+        self.assertEqual([f[0] for f in self.scan(text, path="app.py")], hits)
+        # Not Python, or Python that does not parse: nothing is a docstring.
+        self.assertEqual(len(self.scan('"""Module \u2699"""\n', path="app.js")), 1)
+        self.assertEqual(len(self.scan('"""Module \u2699"""\ndef broken(:\n', path="app.py")), 1)
+        self.assertEqual(len(self.scan('\ufeff"""Module \u2699"""\n', path="app.py")), 0)  # a BOM is fine
+
+    def test_reading_python_raises_no_syntax_warnings(self):
+        import warnings
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter("always")
+            self.scan('"""Docstring"""\nx = re.compile("\\d+ \\.")\ny = "\\d"\n', path="app.py")
+        self.assertEqual([str(w.message) for w in caught], [])
+
+    def test_material_name_forms(self):
+        text = "\n".join([
+            "ui.button(icon='delete_forever')",
+            'ui.button("Go", icon="refresh")',
+            "ui.icon('settings', size='sm')",
+            "ui.button('x').props('flat round icon=close')",
+            "ui.button('x').props(\"icon='delete'\")",
+            "tabs = [{'icon': 'folder_open', 'label': 'Files'}, {\"icon\": \"account_tree\"}]",
+            '<q-icon name="delete_outline" size="sm" />',
+            '<q-btn icon="mic" icon-right="close" />',
+        ])
+        expected = [
+            (1, "delete_forever", "trash"), (2, "refresh", "refresh-cw"), (3, "settings", "settings"),
+            (4, "close", "x"), (5, "delete", "trash"), (6, "folder_open", "folder"),
+            (6, "account_tree", None), (7, "delete_outline", "trash"), (8, "mic", "mic"), (8, "close", "x")]
+        self.assertEqual(self.scan(text, path="app.py"), expected)
+
+    def test_the_bundles_own_icon_names_depend_on_the_file_type(self):
+        # Quasar draws icon="name" from its font, so even trash draws a missing glyph in NiceGUI and Vue.
+        quasar = "\n".join([
+            "ui.button(icon='trash')",
+            "ui.icon('circle-check')",
+            "tabs = [{'icon': 'search'}, {'icon': 'mail'}]",
+            "ui.button(icon='mdi-delete')",
+            "ui.button(icon='svguse:/theme/icons.svg#trash')",
+        ])
+        self.assertEqual(self.scan(quasar, path="app.py"), [
+            (1, "trash", "trash"), (2, "circle-check", "circle-check"), (3, "search", "search"),
+            (3, "mail", "mail")])
+        self.assertEqual(self.scan('<q-btn icon="trash" />\n<q-icon name="mail" />', path="Page.vue"),
+                         [(1, "trash", "trash"), (2, "mail", "mail")])
+        # Elsewhere they already name sprite icons, mail and search being Material names too.
+        script = "\n".join([
+            "const tabs = [{ icon: 'mail' }, { icon: 'trash' }, { icon: 'search' }, { icon: 'circle-check' }];",
+            "const more = [{ icon: 'delete_forever' }, { icon: 'account_tree' }];",
+        ])
+        for path in ("app.js", "app.ts", "app.jsx", "app.tsx", "index.html", "app.svelte", "app.css", ""):
+            with self.subTest(path=path):
+                self.assertEqual(self.scan(script, path=path),
+                                 [(2, "delete_forever", "trash"), (2, "account_tree", None)])
+
+    def test_material_lookalikes_are_left_alone(self):
+        text = "\n".join([
+            "ui.button(icon='svguse:/theme/icons.svg#trash')",
+            "ui.button(icon='img:/static/logo.png')",
+            "ui.button(icon=forgeui.quasar_icon('delete_forever'))",
+            "ui.button(icon=icon_name)",
+            "ui.button(icon='mdi-delete')",
+            "ui.button(icon='fa-solid fa-trash')",
+            "<q-btn :icon=\"expr\" prepend-icon=\"close\" my_icon=\"close\">",
+            "{'icon': 'trash', 'label': 'Delete'}",             # one of the bundle's own names (not in .py)
+            "ui.button(icon='delete_forever')  # forgeui: allow-icons",
+            "if icon == 'close': pass",
+        ])
+        self.assertEqual(self.scan(text, path="app.js"), [])
+
+    def test_the_module_stays_python_39_syntax(self):
+        import ast
+        source = (ROOT / "forgeui" / "icons.py").read_text(encoding="utf-8")
+        ast.parse(source, feature_version=(3, 9))
 
 
 class ExamplesSelfTest(unittest.TestCase):

@@ -3,16 +3,16 @@ requires = ["hatchling>=1.27"]
 build-backend = "hatchling.build"
 
 [project]
-# NOTE (2026-10-18): "forgeui" on PyPI belongs to an unrelated project, so this cannot be published
-# under this name. Rename the distribution before a PyPI release (the import name may stay); until
-# then the docs install from the git tag.
-name = "forgeui"
+# The distribution is "themeforge"; the import package stays "forgeui" (`import forgeui`,
+# `python -m forgeui`). The name "forgeui" on PyPI belongs to an unrelated project.
+name = "themeforge"
 dynamic = ["version"]
-description = "ForgeUI: design tokens, themes, components and a vendoring tool for web UIs (the ThemeForge bundle as a pure-data wheel, standard library only)"
-readme = "README.md"
+description = "ThemeForge: drop-in CSS themes, design tokens, components and icons for web apps, plus the forgeui vendoring tool (pure data, standard library only)"
+# README.md has relative links and images that break on PyPI; docs/PYPI.md is the same story with absolute links.
+readme = "docs/PYPI.md"
 requires-python = ">=3.9"
-license = "MIT AND ISC"
-license-files = ["LICENSE", "ui-theme/icons-LICENSE.txt"]
+license = "MIT-0"
+license-files = ["LICENSE"]
 keywords = ["design-tokens", "css", "themes", "dark-mode", "nicegui", "fastapi", "accessibility"]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
@@ -27,6 +27,7 @@ dependencies = []
 
 [project.scripts]
 forgeui = "forgeui.__main__:main"
+themeforge = "forgeui.__main__:main"
 
 [project.urls]
 Homepage = "https://github.com/LaserLloyd/ThemeForge"
@@ -41,6 +42,7 @@ include = [
     "/forgeui",
     "/ui-theme",
     "/README.md",
+    "/docs/PYPI.md",
     "/LICENSE",
     "/CHANGELOG.md",
     "/pyproject.toml",

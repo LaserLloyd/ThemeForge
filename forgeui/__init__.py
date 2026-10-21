@@ -1,6 +1,7 @@
-"""ForgeUI: the ThemeForge design system as a pure-data Python package.
+"""forgeui: the import package of the ``themeforge`` distribution (``pip install themeforge``).
 
-The wheel carries the drop-in ``ui-theme/`` bundle (tokens, themes, base and
+The ThemeForge design system as a pure-data Python package. The wheel carries the
+drop-in ``ui-theme/`` bundle (tokens, themes, base and
 component CSS, the runtime, the component helpers and the icons) as package data,
 plus a few helpers and a vendoring tool. Standard library only; FastAPI/Starlette
 and NiceGUI are imported lazily by :func:`mount` when you call it.
@@ -14,8 +15,9 @@ and NiceGUI are imported lazily by :func:`mount` when you call it.
     forgeui.quasar_icon("trash")          # 'svguse:/theme/icons.svg#trash' for NiceGUI icon=
 
     python -m forgeui vendor              # copy the bundle into this repo (forgeui.json)
+    python -m forgeui icons src/ --check  # find the emoji and Material names an icon replaces (CI gate)
 
-The shipped contract is unchanged by the package name: the ``ui-theme/``
+The shipped contract does not depend on the package name: the ``ui-theme/``
 folder, ``window.UITheme``, the ``--token`` names and the ``ui-*`` classes are
 the public API (docs/THEME_SYSTEM.md).
 """
@@ -64,8 +66,21 @@ def core_themes(folder: Optional[Path] = None) -> "list[str]":
     return [t["slug"] for t in registry(folder)["themes"] if t.get("set") == "core"]
 
 
-@functools.lru_cache(maxsize=None)
+def _stamp(path: Path) -> int:
+    """The file's modification time, so a cache keyed on it refreshes when
+    ``python -m forgeui vendor`` rewrites the copy under a running server."""
+    try:
+        return path.stat().st_mtime_ns
+    except OSError:
+        return -1
+
+
 def _icon_names(folder: str) -> "dict[str, str]":
+    return _icon_names_at(folder, _stamp(Path(folder) / "icons.json"))
+
+
+@functools.lru_cache(maxsize=16)
+def _icon_names_at(folder: str, stamp: int) -> "dict[str, str]":
     """Every name quasar_icon() takes -> the icon it draws: each icon's own name, and
     the Material Icons names it lists (the build keeps the two kinds from colliding)."""
     icons = json.loads((Path(folder) / "icons.json").read_text(encoding="utf-8"))["icons"]
@@ -90,8 +105,12 @@ def quasar_icon(name: str, prefix: str = "/theme", folder: Optional[Path] = None
     return f"svguse:{base}/icons.svg#{names[name]}"
 
 
-@functools.lru_cache(maxsize=None)
 def _hashes(folder: str) -> "dict[str, str]":
+    return _hashes_at(folder, _stamp(Path(folder) / "files.json"))
+
+
+@functools.lru_cache(maxsize=16)
+def _hashes_at(folder: str, stamp: int) -> "dict[str, str]":
     path = Path(folder) / "files.json"
     try:
         return dict(json.loads(path.read_text(encoding="utf-8")).get("files", {}))

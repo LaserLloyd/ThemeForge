@@ -78,6 +78,14 @@
     window.UIComponents.toast('Settings saved', { kind: 'success' });
   });
 
+  // The words ui-components.js puts on the page, in one of the eight languages (locales/), and
+  // <html lang> and <html dir> with them, so the CJK font stacks and right-to-left layout apply.
+  document.getElementById('spec-lang').addEventListener('change', function (e) {
+    document.documentElement.lang = e.target.value;
+    document.documentElement.dir = e.target.value === 'ar' ? 'rtl' : 'ltr';
+    window.UIComponents.loadLocale(e.target.value);
+  });
+
   // The icon grid. ui-components.js is deferred, so it has run by DOMContentLoaded.
   document.addEventListener('DOMContentLoaded', function () {
     var grid = document.getElementById('spec-icons');

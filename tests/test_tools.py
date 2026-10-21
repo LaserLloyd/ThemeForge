@@ -73,6 +73,15 @@ class BuildTests(unittest.TestCase):
         code, out = quiet(sync.main, ["check"])
         self.assertEqual(code, 0, out)
 
+    def test_the_app_registry_and_install_are_gone(self):
+        """Removed in 2.0: apps vendor with `python -m forgeui vendor` and a forgeui.json."""
+        for argv in (["install", "--to", "x"], ["check", "--apps", "x"], ["list", "--apps", "x"]):
+            with self.assertRaises(SystemExit) as raised, contextlib.redirect_stderr(io.StringIO()):
+                sync.main(argv)
+            self.assertEqual(raised.exception.code, 2, argv)
+        for name in ("cmd_install", "registry_dir", "load_manifest", "app_copy", "APPS_ENV"):
+            self.assertFalse(hasattr(sync, name), name)
+
     def test_bundle_is_deterministic(self):
         self.assertEqual(self.bundle, sync.bundle_files(self.data))
 
@@ -170,9 +179,15 @@ class IconTests(unittest.TestCase):
         for name in self.icons["icons"]:
             self.assertIn(f"'{name}'", dts)
 
-    def test_license_ships_with_the_sprite(self):
-        self.assertIn("ISC License", self.bundle["icons-LICENSE.txt"])
-        self.assertIn("icons-LICENSE.txt", self.bundle["icons.svg"])
+    def test_the_icons_are_mit0_and_our_own(self):
+        self.assertIn("MIT No Attribution", self.bundle["icons-LICENSE.txt"])
+        self.assertNotIn("ISC", self.bundle["icons-LICENSE.txt"])
+        self.assertIn("MIT-0", self.bundle["icons.svg"])
+        self.assertEqual(self.icons["source"]["license"], "MIT-0")
+        for path in sorted((sync.ICONS / "svg").glob("*.svg")):
+            text = path.read_text(encoding="utf-8").lower()
+            for mark in ("lucide", "tabler", "feather", "@license", "<!--"):
+                self.assertNotIn(mark, text, f"{path.name} looks copied from another icon set")
 
     def _broken(self, change):
         tmp = tempfile.TemporaryDirectory()
@@ -196,7 +211,7 @@ class IconTests(unittest.TestCase):
         self.assertIn("settings", msg)
 
     def test_an_icon_without_a_source_is_refused(self):
-        msg = self._broken(lambda d, f: (f / "lucide" / "bell.svg").unlink())
+        msg = self._broken(lambda d, f: (f / "svg" / "bell.svg").unlink())
         self.assertIn("bell", msg)
 
     def test_a_source_nobody_lists_is_refused(self):
@@ -223,7 +238,7 @@ class IconTests(unittest.TestCase):
 
     def test_a_filled_or_styled_source_is_refused(self):
         def fill(d, f):
-            path = f / "lucide" / "bell.svg"
+            path = f / "svg" / "bell.svg"
             path.write_text(path.read_text(encoding="utf-8").replace('fill="none"', 'fill="red"'), encoding="utf-8")
         self.assertIn("bell.svg", self._broken(fill))
 
@@ -242,10 +257,10 @@ class DocGateTests(unittest.TestCase):
 
     def test_used_by_section_ends_at_the_next_heading(self):
         text = ("## Used by\n\n- https://github.com/LaserLloyd/StudioForge\n\n"
-                "## License\n\nhttps://github.com/LaserLloyd/ClawForge\n")
+                "## License\n\nhttps://github.com/LaserLloyd/MailForge\n")
         problems = sync.repo_link_problems(text, "README.md")
         self.assertEqual(len(problems), 1)
-        self.assertIn("ClawForge", problems[0])
+        self.assertIn("MailForge", problems[0])
 
     def test_used_by_may_not_link_the_archived_repository(self):
         text = "## Used by\n\n- https://github.com/LaserLloyd/UnifyingTheme\n"
@@ -264,10 +279,10 @@ class LocaleTests(unittest.TestCase):
     def tables(self):
         return {p.stem: json.loads(p.read_text(encoding="utf-8")) for p in sorted((ROOT / "src" / "locales").glob("*.json"))}
 
-    def test_en_and_ja_are_shipped(self):
+    def test_all_eight_languages_ship(self):
         bundle = sync.bundle_files(sync.load_registry())
-        self.assertIn("locales/en.json", bundle)
-        self.assertIn("locales/ja.json", bundle)
+        for lang in ("en", "ar", "de", "es", "fr", "ja", "pt", "zh"):
+            self.assertIn(f"locales/{lang}.json", bundle)
 
     def test_every_language_has_exactly_the_english_keys(self):
         tables = self.tables()
@@ -359,94 +374,13 @@ class ThemeSystemDocTests(unittest.TestCase):
         self.assertTrue([p for p in problems if "theme list differs" in p], problems)
 
 
-class RegistryTests(unittest.TestCase):
+class WriteAllTests(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
         self.base = Path(self.tmp.name)
-        self.registry = self.base / "registry"
-        (self.registry / "overlays").mkdir(parents=True)
-        (self.registry / "overlays" / "legacy.css").write_text(":root { --legacy: var(--accent); }\n", encoding="utf-8")
-        (self.registry / "overlays" / "extra.css").write_text(".app-well { padding: 1px; }\n", encoding="utf-8")
-        self.app = self.base / "app"
-        (self.app / "static").mkdir(parents=True)
-        (self.registry / "demo.json").write_text(json.dumps({
-            "app": "demo", "repo": str(self.app), "bundle_dir": "static/ui-theme",
-            "extra_files": {"adapters/legacy.css": "overlays/legacy.css",
-                            "adapters/quasar.css": {"append": "overlays/extra.css"}},
-        }), encoding="utf-8")
 
     def tearDown(self):
         self.tmp.cleanup()
-
-    def test_install_then_check_with_overlays(self):
-        code, out = quiet(sync.main, ["install", "--apps", str(self.registry), "--quiet"])
-        self.assertEqual(code, 0, out)
-        copy = self.app / "static" / "ui-theme"
-        self.assertTrue((copy / "adapters" / "legacy.css").is_file())
-        self.assertIn(".app-well", (copy / "adapters" / "quasar.css").read_text(encoding="utf-8"))
-        code, out = quiet(sync.main, ["check", "--apps", str(self.registry)])
-        self.assertEqual(code, 0, out)
-        (copy / "ui-theme.css").write_text("x", encoding="utf-8")
-        code, out = quiet(sync.main, ["check", "--apps", str(self.registry)])
-        self.assertEqual(code, 1)
-        self.assertIn("stale", out)
-
-    def test_install_is_deprecated_but_still_works(self):
-        code, out = quiet(sync.main, ["install", "--apps", str(self.registry), "--quiet"])
-        self.assertEqual(code, 0, out)
-        self.assertIn("deprecated", out)
-        self.assertIn("python -m forgeui vendor", out)
-        target = self.base / "deprecated" / "ui-theme"
-        code, out = quiet(sync.main, ["install", "--to", str(target), "--quiet"])
-        self.assertEqual(code, 0, out)
-        self.assertIn("deprecated", out)
-        self.assertEqual(sync.folder_drift(target, sync.bundle_files(sync.load_registry())), [])
-
-    def test_install_to_folder(self):
-        target = self.base / "plain" / "ui-theme"
-        code, out = quiet(sync.main, ["install", "--to", str(target), "--quiet"])
-        self.assertEqual(code, 0, out)
-        self.assertEqual(sync.folder_drift(target, sync.bundle_files(sync.load_registry())), [])
-
-    def test_bad_extra_file_source(self):
-        (self.registry / "bad.json").write_text(json.dumps({
-            "app": "bad", "repo": str(self.app), "bundle_dir": "static/x",
-            "extra_files": {"adapters/nope.css": "overlays/missing.css"}}), encoding="utf-8")
-        with self.assertRaises(sync.SyncError):
-            sync.load_manifest(self.registry, "bad")
-
-    def test_install_refuses_a_folder_that_is_not_a_bundle(self):
-        static = self.base / "site" / "static"
-        static.mkdir(parents=True)
-        (static / "index.html").write_text("<p>app</p>", encoding="utf-8")
-        code, out = quiet(sync.main, ["install", "--to", str(static), "--quiet"])
-        self.assertEqual(code, 2)
-        self.assertIn("not a copy of ui-theme", out)
-        self.assertTrue((static / "index.html").is_file())
-
-    def test_install_to_a_copy_under_the_old_name(self):
-        """ThemeForge shipped as unifyingTheme: install --to accepts such a copy."""
-        target = self.base / "old" / "ui-theme"
-        target.mkdir(parents=True)
-        (target / "VERSION").write_text("unifyingTheme 1.0.0 68bd24d58a9c\n", encoding="utf-8")
-        (target / "ui-theme.css").write_text("/* old */", encoding="utf-8")
-        code, out = quiet(sync.main, ["install", "--to", str(target), "--quiet"])
-        self.assertEqual(code, 0, out)
-        self.assertTrue((target / "VERSION").read_text(encoding="utf-8").startswith("ThemeForge "))
-
-    def test_install_to_a_copy_stamped_ui_theme_date(self):
-        """Before the first release the folder's VERSION read "ui-theme <date> <hash>"."""
-        target = self.base / "older" / "ui-theme"
-        target.mkdir(parents=True)
-        (target / "VERSION").write_text("ui-theme 2026-09-24 638060cc7dc6\n", encoding="utf-8")
-        (target / "ui-theme.css").write_text("/* old */", encoding="utf-8")
-        code, out = quiet(sync.main, ["install", "--to", str(target), "--quiet"])
-        self.assertEqual(code, 0, out)
-        self.assertTrue((target / "VERSION").read_text(encoding="utf-8").startswith("ThemeForge "))
-
-    def test_install_needs_a_target(self):
-        code, out = quiet(sync.main, ["install"])
-        self.assertEqual(code, 2)
 
     def test_version_is_written_last(self):
         """A copy's VERSION line is what check and update.py trust, so it must be
@@ -468,19 +402,6 @@ class RegistryTests(unittest.TestCase):
         self.assertEqual(order[-1], "VERSION", order)
         self.assertEqual(sorted(order[:-1]), ["README.md", "adapters/z.css", "ui-theme.css"])
         self.assertEqual((target / "VERSION").read_text(encoding="utf-8"), "ThemeForge x y")
-
-    def test_skipping_every_app_is_not_success(self):
-        """Every manifest points at a repo that is not on this machine: the old
-        code printed "installed" and returned 0 after writing nothing."""
-        for name in ("demo", "other"):
-            (self.registry / f"{name}.json").write_text(json.dumps({
-                "app": name, "repo": str(self.base / "nowhere" / name), "bundle_dir": "static/ui-theme"}),
-                encoding="utf-8")
-        code, out = quiet(sync.main, ["install", "--apps", str(self.registry), "--quiet"])
-        self.assertEqual(code, 1, out)
-        self.assertIn("into 0 apps", out)
-        self.assertEqual(out.count("SKIP"), 2)
-        self.assertNotIn("into 1 app", out)
 
 
 class ContrastTests(unittest.TestCase):
@@ -674,6 +595,25 @@ class UpdateTests(unittest.TestCase):
             self.assertIn("unsafe path", out)
             self.assertTrue(victim.is_file(), extra)
 
+    @unittest.skipIf(sys.platform == "win32", "symlinks need privileges on Windows")
+    def test_a_linked_subfolder_is_not_written_through(self):
+        # An older copy that had no locales/ yet, whose locales folder is a link out: the
+        # new bundle's locale files are new to it, so only the write itself can catch this.
+        self.run_update()
+        manifest = json.loads((self.dest / "files.json").read_text(encoding="utf-8"))
+        manifest["files"] = {k: v for k, v in manifest["files"].items() if not k.startswith("locales/")}
+        manifest["hash"] = "000000000000"
+        (self.dest / "files.json").write_text(json.dumps(manifest), encoding="utf-8")
+        outside = self.base / "elsewhere"
+        outside.mkdir()
+        shutil.rmtree(self.dest / "locales")
+        (self.dest / "locales").symlink_to(outside, target_is_directory=True)
+        code, out = self.run_update()
+        self.assertEqual(code, 2, out)
+        self.assertIn(f"{self.dest.resolve() / 'locales'} is a link that leaves the folder; refusing to write through it", out)
+        self.assertNotIn("new bundle", out)                   # it is the copy's link, not the download's path
+        self.assertEqual(list(outside.iterdir()), [])
+
     @unittest.skipIf(sys.platform == "win32", "POSIX permission bits")
     def test_written_files_are_readable_by_other_users(self):
         old = os.umask(0o022)
@@ -788,6 +728,93 @@ class UpdateTests(unittest.TestCase):
         code, out = self.run_update("--check")
         self.assertEqual(code, 0, out)
         self.assertIn("up to date", out)
+
+    # -- a new major version is installed only when --ref (or --source) says so
+
+    def set_installed(self, version, hash_="000000000000"):
+        """Make the installed copy look like an older release (its files stay as they are)."""
+        manifest = json.loads((self.dest / "files.json").read_text(encoding="utf-8"))
+        manifest["version"], manifest["hash"] = version, hash_
+        (self.dest / "files.json").write_text(json.dumps(manifest), encoding="utf-8")
+
+    def run_latest(self, *extra, latest="2.0.0"):
+        """update.py against a pretend GitHub whose newest release is ``latest``. Returns (code, output,
+        the URLs fetched). The archive is this repository's bundle whatever the number says."""
+        urls = []
+        archive = self.archive.read_bytes()
+
+        def fetch(url):
+            urls.append(url)
+            return f"ThemeForge {latest} abc123def456\n".encode() if "raw.githubusercontent" in url else archive
+
+        real, update.fetch = update.fetch, fetch
+        try:
+            code, out = quiet(update.main, ["--dest", str(self.dest), *extra])
+        finally:
+            update.fetch = real
+        return code, out, urls
+
+    def test_a_new_major_is_not_installed_without_ref(self):
+        self.run_update()
+        self.set_installed("1.4.0")
+        before = {p.relative_to(self.dest).as_posix(): p.read_bytes() for p in self.dest.rglob("*") if p.is_file()}
+        code, out, urls = self.run_latest()
+        self.assertEqual(code, 1, out)
+        self.assertIn("1.4.0 -> 2.0.0 is a major release: read CHANGELOG.md "
+                      "(https://github.com/LaserLloyd/ThemeForge/blob/main/CHANGELOG.md), then rerun with --ref v2.0.0", out)
+        self.assertEqual([u for u in urls if "codeload" in u], [])             # not even downloaded
+        self.assertEqual({p.relative_to(self.dest).as_posix(): p.read_bytes()
+                          for p in self.dest.rglob("*") if p.is_file()}, before)  # nothing written
+        code, out, _ = self.run_latest("--force")                              # --force is not the yes
+        self.assertEqual(code, 1, out)
+        self.assertIn("is a major release", out)
+
+    def test_check_reports_a_major_as_an_available_update(self):
+        self.run_update()
+        self.set_installed("1.4.0")
+        code, out, urls = self.run_latest("--check")
+        self.assertEqual(code, 1, out)
+        self.assertIn("update available", out)
+        self.assertIn("1.4.0 -> 2.0.0 is a major release", out)
+        self.assertIn("--ref v2.0.0", out)
+        self.set_installed("2.0.0", "abc123def456")
+        code, out, _ = self.run_latest("--check")
+        self.assertEqual((code, "major" in out), (0, False), out)
+
+    def test_an_explicit_ref_or_source_is_the_yes_to_a_major(self):
+        self.run_update()
+        self.set_installed("1.4.0")
+        code, out, urls = self.run_latest("--ref", "v2.0.0")
+        self.assertEqual(code, 0, out)
+        self.assertNotIn("major", out)
+        self.assertTrue(any("codeload" in u and u.endswith("/v2.0.0") for u in urls), urls)
+        self.assertEqual(sync.folder_drift(self.dest, self.bundle), [])
+        self.set_installed("1.4.0")
+        code, out = self.run_update()                                          # --source
+        self.assertEqual(code, 0, out)
+        self.assertEqual(json.loads((self.dest / "files.json").read_text(encoding="utf-8"))["version"],
+                         json.loads(self.bundle["files.json"])["version"])
+
+    def test_minor_patch_and_first_installs_are_not_held_back(self):
+        self.run_update()
+        for installed, latest in (("2.0.0", "2.1.0"), ("2.0.0", "2.0.1"), ("1.2.0", "1.3.0"), ("2.0.0", "1.9.0")):
+            with self.subTest(installed=installed, latest=latest):
+                self.set_installed(installed)
+                code, out, urls = self.run_latest(latest=latest)
+                self.assertEqual(code, 0, out)
+                self.assertNotIn("major", out)
+                self.assertTrue(any("codeload" in u for u in urls), urls)
+        shutil.rmtree(self.dest)
+        code, out, _ = self.run_latest()                                       # nothing installed yet
+        self.assertEqual(code, 0, out)
+
+    def test_the_major_guard_reads_a_copy_that_has_no_files_json(self):
+        self.dest.mkdir(parents=True)
+        (self.dest / "VERSION").write_text("ThemeForge 1.1.0 abc\n", encoding="utf-8")
+        self.assertEqual(self.run_latest()[0], 1)
+        # a date-stamped copy has no major version to compare
+        (self.dest / "VERSION").write_text("ui-theme 2026-09-24 638060cc7dc6\n", encoding="utf-8")
+        self.assertEqual(self.run_latest()[0], 0)
 
 
 

@@ -31,10 +31,22 @@
     <h1 class="spec-brand">Specimen</h1>
   </div>
   <div role="tablist" aria-label="Theme" id="theme-tablist" class="spec-tabs"><!-- built by specimen.js --></div>
-  <div class="spec-readout">
-    <span>data-palette=<b id="readout-palette"></b></span>
-    <span>data-theme=<b id="readout-theme"></b></span>
-    <span id="readout-set"></span>
+  <div class="spec-side">
+    <select class="ui-select ui-input--sm spec-lang" id="spec-lang" aria-label="Language">
+      <option value="en" lang="en">English</option>
+      <option value="ar" lang="ar">العربية</option>
+      <option value="de" lang="de">Deutsch</option>
+      <option value="es" lang="es">Español</option>
+      <option value="fr" lang="fr">Français</option>
+      <option value="ja" lang="ja">日本語</option>
+      <option value="pt" lang="pt">Português</option>
+      <option value="zh" lang="zh">中文</option>
+    </select>
+    <div class="spec-readout">
+      <span>data-palette=<b id="readout-palette"></b></span>
+      <span>data-theme=<b id="readout-theme"></b></span>
+      <span id="readout-set"></span>
+    </div>
   </div>
 </header>
 
@@ -173,13 +185,20 @@
 
   <section class="spec-section">
     <h2 class="ui-heading">Data</h2>
-    <div class="ui-table-wrap">
+    <div class="ui-table-wrap" tabindex="0" role="region" aria-label="Jobs">
       <table class="ui-table ui-table--hover">
-        <thead><tr><th>Job</th><th>State</th><th class="num">Minutes</th></tr></thead>
+        <thead><tr>
+          <th aria-sort="none"><button class="ui-table__sort" type="button">Job
+            <svg class="ui-icon ui-table__sort-icon" aria-hidden="true"><use href="../ui-theme/icons.svg#arrow-up-down"/></svg></button></th>
+          <th aria-sort="none"><button class="ui-table__sort" type="button">State
+            <svg class="ui-icon ui-table__sort-icon" aria-hidden="true"><use href="../ui-theme/icons.svg#arrow-up-down"/></svg></button></th>
+          <th class="num" aria-sort="ascending"><button class="ui-table__sort" type="button">Minutes
+            <svg class="ui-icon ui-table__sort-icon" aria-hidden="true"><use href="../ui-theme/icons.svg#arrow-up"/></svg></button></th>
+        </tr></thead>
         <tbody>
+          <tr><td>sign-b</td><td><span class="ui-badge ui-badge--danger">failed</span></td><td class="num">4.2</td></tr>
           <tr><td>kerf-ladder</td><td><span class="ui-badge ui-badge--live">running</span></td><td class="num">12.4</td></tr>
           <tr aria-selected="true"><td>hinge-plate-v4</td><td><span class="ui-badge ui-badge--success">done</span></td><td class="num">38.0</td></tr>
-          <tr><td>sign-b</td><td><span class="ui-badge ui-badge--danger">failed</span></td><td class="num">4.2</td></tr>
         </tbody>
       </table>
     </div>

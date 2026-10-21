@@ -1,6 +1,6 @@
 # Tokens
 
-Generated from `src/css/theme-base.css` by `tools/sync_theme.py build` (ThemeForge 1.4.0).
+Generated from `src/css/theme-base.css` by `tools/sync_theme.py build` (ThemeForge 2.0.0).
 Every theme resolves every token below: a theme sets the colours, and the rest are
 shared or derived. The values shown are Purple's (the `:root` base).
 `tokens/<theme>.json` holds each theme's resolved values in the W3C design tokens format.
@@ -52,7 +52,7 @@ raises them to 7:1 for every text colour and 4.5:1 for edges and indicators, as 
 
 ## Text
 
-*core.* Text tiers (primary, secondary, tertiary, disabled), links, and the label colour for each kind of fill (`--on-accent`, `--on-danger`, ...). Quieter text is a lower tier, never opacity.
+*core.* Text tiers (primary, secondary, tertiary, disabled), links, and the label colour for each kind of fill (`--on-accent`, `--on-danger`, ...). Quieter text is a lower tier, never opacity. `--text-disabled` (3:1) is for disabled controls only, since WCAG 1.4.3 exempts text in inactive controls; quiet text that is not part of a disabled control uses `--text-tertiary` (4.5:1).
 
 | Token | Purple value |
 |---|---|

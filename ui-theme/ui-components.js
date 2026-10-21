@@ -1,7 +1,7 @@
-/* GENERATED component helpers: ThemeForge 1.4.0, drop-in bundle (ui-theme/).
+/* GENERATED component helpers: ThemeForge 2.0.0, drop-in bundle (ui-theme/).
    https://github.com/LaserLloyd/ThemeForge . Do not edit this copy: update the whole
    folder (python ui-theme/update.py) and keep app styles in the app.
-   body sha256: 40e8ec0d3badd3d6 */
+   body sha256: 996bd1cf328464c5 */
 /* ============================================================================
    ui-components.js — behaviour for the component layer (optional) · ThemeForge
    ----------------------------------------------------------------------------
@@ -45,7 +45,7 @@
    Order of precedence for a word: a data-ui-str-<key> attribute on the element
    or an ancestor, then setStrings()/loadLocale(), then the English default.
    Placeholders like {name} are filled from the call. ui-theme/locales/ holds
-   en.json (the defaults) and ja.json.
+   en.json (the defaults) and one file each for ar, de, es, fr, ja, pt and zh.
    ============================================================================ */
 (function (global) {
   'use strict';
@@ -124,14 +124,23 @@
     return doc.documentElement.lang || (global.navigator && global.navigator.language) || 'en';
   }
 
-  // Fetch <this file's folder>/locales/<lang>.json and merge it over the current words
-  // (so earlier setStrings() calls for keys the file lacks survive). Tries the full tag
-  // (pt-BR) then the language (pt). English is built in: loadLocale('en') restores it.
-  // Resolves true when a file was applied.
+  // Fetch <this file's folder>/locales/<lang>.json and merge it over the current words.
+  // Tries the full tag (pt-BR) then the language (pt). English is built in:
+  // loadLocale('en') restores it. Resolves true when a file was applied.
+  // Only the newest loadLocale() call applies (an app's loadLocale('ja') and
+  // data-locale="auto" may both be in flight), and a language file's words replace the
+  // previous file's: a word the new file lacks goes back to English, while words set with
+  // setStrings() that no earlier file set survive. A call that finds no file leaves the
+  // words as they are.
+  var localeCall = 0;
+  var localeWords = [];
+
   function loadLocale(lang, url) {
+    var call = ++localeCall;
     lang = String(lang || locale()).toLowerCase().replace(/_/g, '-');
     if (!url && /^en(-|$)/.test(lang)) {  // English is built in
       resetStrings();
+      localeWords = [];
       init(doc);
       return Promise.resolve(true);
     }
@@ -144,10 +153,19 @@
         if (!r.ok) throw new Error('HTTP ' + r.status);
         return r.json();
       }).then(function (map) {
+        if (call !== localeCall) return false;  // a later call won
+        for (var w = 0; w < localeWords.length; w++) {
+          var key = localeWords[w];
+          if (!Object.prototype.hasOwnProperty.call(map, key)) {
+            if (Object.prototype.hasOwnProperty.call(DEFAULTS, key)) table[key] = DEFAULTS[key];
+            else delete table[key];
+          }
+        }
         setStrings(map);
+        localeWords = Object.keys(map).filter(function (k) { return k.charAt(0) !== '$' && typeof map[k] === 'string'; });
         init(doc);
         return true;
-      }).catch(function () { return attempt(i + 1); });
+      }).catch(function () { return call === localeCall ? attempt(i + 1) : false; });
     }
     return attempt(0);
   }
@@ -382,18 +400,34 @@
     return Promise.resolve(legacyCopy(text, node));
   }
 
+  // The text node that holds a button's word, so feedback swaps the word and leaves an
+  // icon beside it alone; null for an icon-only button.
+  function labelText(button) {
+    var walker = doc.createTreeWalker(button, 4 /* NodeFilter.SHOW_TEXT */);
+    var found = null;
+    var node;
+    while ((node = walker.nextNode())) {
+      if (node.nodeValue.trim() && !(node.parentElement && node.parentElement.closest('svg'))) found = node;
+    }
+    return found;
+  }
+
   function copyFeedback(button, ok) {
     if (!button || !button.matches || !button.matches('button, [role="button"]')) return;
     var word = ok ? t('copied', button) : t('copyFailed', button);
-    var hasText = button.textContent.replace(/\s+/g, '') !== '';
-    if (hasText && button.__uiCopyLabel === undefined) button.__uiCopyLabel = button.textContent;
+    var label = button.__uiCopyNode || labelText(button);
+    if (label && button.__uiCopyLabel === undefined) {
+      button.__uiCopyNode = label;
+      button.__uiCopyLabel = label.nodeValue;
+    }
     button.setAttribute('data-copied', ok ? 'true' : 'failed');
-    if (hasText) button.textContent = word;
+    if (label) label.nodeValue = word;
     announce(word, button);
     global.clearTimeout(button.__uiCopyTimer);
     button.__uiCopyTimer = global.setTimeout(function () {
       button.removeAttribute('data-copied');
-      if (button.__uiCopyLabel !== undefined) button.textContent = button.__uiCopyLabel;
+      if (button.__uiCopyNode) button.__uiCopyNode.nodeValue = button.__uiCopyLabel;
+      button.__uiCopyNode = undefined;
       button.__uiCopyLabel = undefined;
     }, 1800);
   }
@@ -483,10 +517,22 @@
   // Put the string table's words into the empty parts of a row: the level marker,
   // the "set by environment" badge and the reset button (with a name of its own, so
   // twenty of them are not twenty identical buttons). Parts the app filled stay.
+  // Put a word from the table in an empty element. An element that holds only an icon
+  // keeps it: the word becomes its accessible name instead. A name only counts on an
+  // element with a role, so a bare span or div that has none gets role="img".
   function fill(node, key, vars) {
     if (!node) return;
+    var word = t(key, node, vars);
+    if (node.firstElementChild && !node.textContent.trim()) {
+      if (!node.hasAttribute('aria-label') || node.__uiWord) {
+        node.setAttribute('aria-label', word);
+        node.__uiWord = true;
+        if (!node.hasAttribute('role') && !/^(BUTTON|A)$/.test(node.tagName)) node.setAttribute('role', 'img');
+      }
+      return;
+    }
     if (!node.textContent.trim() || node.__uiWord) {
-      node.textContent = t(key, node, vars);
+      node.textContent = word;
       node.__uiWord = true;
     }
   }
@@ -500,7 +546,8 @@
     var reset = row.querySelector('.ui-setting__reset');
     if (reset) {
       fill(reset, 'reset');
-      if (!reset.hasAttribute('aria-label') || reset.__uiAutoLabel) {
+      var iconOnly = reset.__uiWord && !reset.textContent.trim();  // fill() named it; name it fully
+      if (!reset.hasAttribute('aria-label') || reset.__uiAutoLabel || iconOnly) {
         reset.setAttribute('aria-label', t('resetNamed', reset, { name: name }));
         reset.__uiAutoLabel = true;
       }
@@ -571,7 +618,7 @@
 
   // icon name -> the emoji and symbols that stand for it (src/icons/icons.json; the
   // build fills this in).
-  var ICONS = /*@icons*/{"plus":["\u2795","\uff0b","\u271a"],"x":["\u2715","\u2716","\u2717","\u2718","\u274e"],"check":["\u2713","\u2714","\u2611"],"pencil":["\u270f","\ud83d\udcdd","\u2712","\ud83d\udd8a","\ud83d\udd8b"],"trash":["\ud83d\uddd1"],"copy":["\u29c9"],"save":["\ud83d\udcbe","\ud83d\udcbf","\ud83d\udcc0"],"download":["\u2913"],"upload":["\ud83d\udce4","\u2912"],"refresh-cw":["\ud83d\udd04","\ud83d\udd03","\ud83d\udd01","\u21bb","\u27f3","\u21ba","\u27f2"],"undo-2":["\u238c","\u21b6"],"reply":["\u21a9"],"search":["\ud83d\udd0d","\ud83d\udd0e"],"link":["\ud83d\udd17"],"unlink":[],"external-link":["\u2197","\u2b08"],"pin":["\ud83d\udccc","\ud83d\udccd"],"archive":["\ud83d\uddc3","\ud83d\udce6"],"tag":["\ud83c\udff7","\ud83d\udd16"],"flag":["\ud83d\udea9","\ud83c\udfc1","\ud83c\udff3","\ud83c\udff4"],"eraser":["\ud83e\uddf9","\ud83e\uddfd"],"eye":["\ud83d\udc41","\ud83d\udc40"],"eye-off":["\ud83d\ude48"],"sliders-horizontal":["\ud83c\udf9b","\ud83c\udf9a"],"user-plus":[],"list-checks":[],"menu":["\u2630","\u2261"],"ellipsis":["\u2026","\u22ef"],"ellipsis-vertical":["\u22ee"],"chevron-down":["\u25be","\u25bc","\u2304","\ud83d\udd3d"],"chevron-up":["\u25b4","\u25b2","\u2303","\ud83d\udd3c"],"chevron-right":["\u25b8","\u25b9","\u203a","\u276f"],"chevron-left":["\u25c2","\u25c0","\u25c3","\u2039","\u276e"],"arrow-left":["\u2190","\u2b05","\ud83d\udd19"],"arrow-right":["\u2192","\u27a1","\u27f6"],"arrow-up":["\u2191","\u2b06"],"arrow-down":["\u2193","\u2b07"],"arrow-up-down":["\u21c5","\u2195"],"grip-vertical":["\u283f","\u22ee\u22ee","\u28ff"],"list":[],"maximize-2":["\u26f6","\u2922"],"info":["\u2139","\u24d8","\ud83d\udca1"],"triangle-alert":["\u26a0","\u2757","\u2755","\u203c","\ud83d\udea8"],"circle-check":["\u2705","\ud83d\udfe2"],"circle-x":["\u274c","\ud83d\uded1","\ud83d\udd34"],"ban":["\ud83d\udeab","\u26d4"],"circle-question-mark":["\u2753","\u2754","\u2049","\ud83e\udd14"],"bell":["\ud83d\udd14","\ud83d\udce3","\ud83d\udce2"],"clock":["\u23f0","\u23f1","\u23f2","\u231a","\u231b","\u23f3","\ud83d\udd50","\ud83d\udd51","\ud83d\udd52","\ud83d\udd53","\ud83d\udd54","\ud83d\udd55","\ud83d\udd56","\ud83d\udd57","\ud83d\udd58","\ud83d\udd59","\ud83d\udd5a","\ud83d\udd5b"],"history":["\ud83d\udd70"],"activity":["\ud83e\ude7a","\ud83d\udc93"],"cloud-off":[],"settings":["\u2699","\ud83d\udd29"],"wrench":["\ud83d\udd27","\ud83d\udee0","\ud83d\udd28","\ud83e\uddf0"],"palette":["\ud83c\udfa8","\ud83d\udd8c"],"sun":["\u2600","\ud83c\udf1e","\ud83d\udd06","\ud83d\udd05"],"moon":["\ud83c\udf19","\ud83c\udf1b","\ud83c\udf1c","\u263e","\u263d"],"folder":["\ud83d\udcc1","\ud83d\udcc2","\ud83d\uddc2"],"file-text":["\ud83d\udcc4","\ud83d\udcc3","\ud83d\udcd1","\ud83d\udcdc","\ud83d\udcf0","\ud83d\udcd5"],"book-open":["\ud83d\udcd6","\ud83d\udcda","\ud83d\udcd8","\ud83d\udcd7","\ud83d\udcd9","\ud83d\udcd3","\ud83d\udcd4","\ud83d\udcd2"],"clipboard-list":["\ud83d\udccb","\ud83d\udcbc","\ud83d\uddd2"],"paperclip":["\ud83d\udcce","\ud83d\udd87"],"image":["\ud83d\uddbc","\ud83c\udf9e"],"image-off":[],"camera":["\ud83d\udcf7","\ud83d\udcf8"],"message-circle":["\ud83d\udcac","\ud83d\udde8","\ud83d\udcad","\ud83d\uddef"],"messages-square":[],"mail":["\u2709","\ud83d\udce7","\ud83d\udce8","\ud83d\udce9","\ud83d\udcee"],"mail-open":[],"inbox":["\ud83d\udce5","\ud83d\udcec","\ud83d\udced","\ud83d\udceb","\ud83d\udcea"],"send":[],"chart-column":["\ud83d\udcca","\ud83d\udcc8","\ud83d\udcc9"],"puzzle":["\ud83e\udde9"],"code":[],"music":["\ud83c\udfb5","\ud83c\udfb6","\ud83c\udfbc"],"target":["\ud83c\udfaf"],"user":["\ud83d\udc64","\ud83e\uddd1","\ud83d\udc68","\ud83d\udc69","\ud83d\ude4b"],"users":["\ud83d\udc65","\ud83d\udc6a"],"bot":["\ud83e\udd16","\ud83d\udc7e"],"brain":["\ud83e\udde0"],"sparkles":["\u2728","\ud83c\udf1f","\ud83d\udcab","\u2b50"],"life-buoy":["\ud83d\udedf","\ud83c\udd98"],"lock":["\ud83d\udd12","\ud83d\udd10","\ud83d\udd0f"],"lock-open":["\ud83d\udd13"],"key":["\ud83d\udd11","\ud83d\udddd"],"shield":["\ud83d\udee1"],"shield-check":[],"shield-alert":[],"monitor":["\ud83d\udda5","\ud83d\udcbb","\ud83d\udcfa"],"smartphone":["\ud83d\udcf1","\ud83d\udcf2"],"terminal":["\u2328"],"cpu":[],"database":["\ud83d\uddc4","\ud83d\udee2"],"gauge":[],"power":["\u23fb","\u23fc","\u2b58"],"plug":["\ud83d\udd0c","\ud83d\udd0b"],"globe":["\ud83c\udf10","\ud83c\udf0d","\ud83c\udf0e","\ud83c\udf0f","\ud83d\uddfa"],"flask-conical":["\ud83e\uddea","\u2697","\ud83d\udd2c"],"zap":["\u26a1","\ud83d\udd25","\ud83d\ude80"],"play":["\u25b6","\u23ef","\u25ba"],"pause":["\u23f8"],"square":["\u23f9","\u25a0","\u25fc","\u2b1b"],"mic":["\ud83c\udfa4","\ud83c\udf99"],"thumbs-up":["\ud83d\udc4d","\ud83d\udc4c"],"thumbs-down":["\ud83d\udc4e"]}/*@end-icons*/;
+  var ICONS = /*@icons*/{"plus":["\u2795","\uff0b","\u271a"],"x":["\u2715","\u00d7","\u2716","\u2717","\u2718","\u274e"],"check":["\u2713","\u2714","\u2611"],"pencil":["\u270f","\ud83d\udcdd","\u2712","\ud83d\udd8a","\ud83d\udd8b"],"trash":["\ud83d\uddd1"],"copy":["\u29c9"],"save":["\ud83d\udcbe","\ud83d\udcbf","\ud83d\udcc0"],"download":["\u2913"],"upload":["\ud83d\udce4","\u2912"],"refresh-cw":["\ud83d\udd04","\ud83d\udd03","\ud83d\udd01","\u21bb","\u27f3","\u21ba","\u27f2"],"undo-2":["\u238c","\u21b6"],"reply":["\u21a9"],"search":["\ud83d\udd0d","\ud83d\udd0e"],"link":["\ud83d\udd17"],"unlink":[],"external-link":["\u2197","\u2b08"],"pin":["\ud83d\udccc","\ud83d\udccd"],"archive":["\ud83d\uddc3","\ud83d\udce6"],"tag":["\ud83c\udff7","\ud83d\udd16"],"flag":["\ud83d\udea9","\ud83c\udfc1","\ud83c\udff3","\ud83c\udff4"],"eraser":["\ud83e\uddf9","\ud83e\uddfd"],"eye":["\ud83d\udc41","\ud83d\udc40"],"eye-off":["\ud83d\ude48"],"sliders-horizontal":["\ud83c\udf9b","\ud83c\udf9a"],"user-plus":[],"list-checks":[],"menu":["\u2630","\u2261"],"ellipsis":["\u2026","\u22ef"],"ellipsis-vertical":["\u22ee"],"chevron-down":["\u25be","\u25bc","\u2304","\ud83d\udd3d"],"chevron-up":["\u25b4","\u25b2","\u2303","\ud83d\udd3c"],"chevron-right":["\u25b8","\u25b9","\u203a","\u276f"],"chevron-left":["\u25c2","\u25c0","\u25c3","\u2039","\u276e"],"arrow-left":["\u2190","\u2b05","\ud83d\udd19"],"arrow-right":["\u2192","\u27a1","\u27f6"],"arrow-up":["\u2191","\u2b06"],"arrow-down":["\u2193","\u2b07"],"arrow-up-down":["\u21c5","\u2195"],"grip-vertical":["\u283f","\u22ee\u22ee","\u28ff"],"list":[],"maximize-2":["\u26f6","\u2922"],"info":["\u2139","\u24d8","\ud83d\udca1"],"triangle-alert":["\u26a0","\u2757","\u2755","\u203c","\ud83d\udea8"],"circle-check":["\u2705","\ud83d\udfe2"],"circle-x":["\u274c","\ud83d\uded1","\ud83d\udd34"],"ban":["\ud83d\udeab","\u26d4"],"circle-question-mark":["\u2753","\u2754","\u2049","\ud83e\udd14"],"bell":["\ud83d\udd14","\ud83d\udce3","\ud83d\udce2"],"clock":["\u23f0","\u23f1","\u23f2","\u231a","\u231b","\u23f3","\ud83d\udd50","\ud83d\udd51","\ud83d\udd52","\ud83d\udd53","\ud83d\udd54","\ud83d\udd55","\ud83d\udd56","\ud83d\udd57","\ud83d\udd58","\ud83d\udd59","\ud83d\udd5a","\ud83d\udd5b"],"history":["\ud83d\udd70"],"activity":["\ud83e\ude7a","\ud83d\udc93"],"cloud-off":[],"settings":["\u2699","\ud83d\udd29"],"wrench":["\ud83d\udd27","\ud83d\udee0","\ud83d\udd28","\ud83e\uddf0"],"palette":["\ud83c\udfa8","\ud83d\udd8c"],"sun":["\u2600","\ud83c\udf1e","\ud83d\udd06","\ud83d\udd05"],"moon":["\ud83c\udf19","\ud83c\udf1b","\ud83c\udf1c","\u263e","\u263d"],"folder":["\ud83d\udcc1","\ud83d\udcc2","\ud83d\uddc2"],"file-text":["\ud83d\udcc4","\ud83d\udcc3","\ud83d\udcd1","\ud83d\udcdc","\ud83d\udcf0","\ud83d\udcd5"],"book-open":["\ud83d\udcd6","\ud83d\udcda","\ud83d\udcd8","\ud83d\udcd7","\ud83d\udcd9","\ud83d\udcd3","\ud83d\udcd4","\ud83d\udcd2"],"clipboard-list":["\ud83d\udccb","\ud83d\udcbc","\ud83d\uddd2"],"paperclip":["\ud83d\udcce","\ud83d\udd87"],"image":["\ud83d\uddbc","\ud83c\udf9e"],"image-off":[],"camera":["\ud83d\udcf7","\ud83d\udcf8"],"message-circle":["\ud83d\udcac","\ud83d\udde8","\ud83d\udcad","\ud83d\uddef"],"messages-square":[],"mail":["\u2709","\ud83d\udce7","\ud83d\udce8","\ud83d\udce9","\ud83d\udcee"],"mail-open":[],"inbox":["\ud83d\udce5","\ud83d\udcec","\ud83d\udced","\ud83d\udceb","\ud83d\udcea"],"send":[],"chart-column":["\ud83d\udcca","\ud83d\udcc8","\ud83d\udcc9"],"puzzle":["\ud83e\udde9"],"code":[],"music":["\ud83c\udfb5","\ud83c\udfb6","\ud83c\udfbc"],"target":["\ud83c\udfaf"],"user":["\ud83d\udc64","\ud83e\uddd1","\ud83d\udc68","\ud83d\udc69","\ud83d\ude4b"],"users":["\ud83d\udc65","\ud83d\udc6a"],"bot":["\ud83e\udd16","\ud83d\udc7e"],"brain":["\ud83e\udde0"],"sparkles":["\u2728","\ud83c\udf1f","\ud83d\udcab","\u2b50"],"life-buoy":["\ud83d\udedf","\ud83c\udd98"],"lock":["\ud83d\udd12","\ud83d\udd10","\ud83d\udd0f"],"lock-open":["\ud83d\udd13"],"key":["\ud83d\udd11","\ud83d\udddd"],"shield":["\ud83d\udee1"],"shield-check":[],"shield-alert":[],"monitor":["\ud83d\udda5","\ud83d\udcbb","\ud83d\udcfa"],"smartphone":["\ud83d\udcf1","\ud83d\udcf2"],"terminal":["\u2328"],"cpu":[],"database":["\ud83d\uddc4","\ud83d\udee2"],"gauge":[],"power":["\u23fb","\u23fc","\u2b58"],"plug":["\ud83d\udd0c","\ud83d\udd0b"],"globe":["\ud83c\udf10","\ud83c\udf0d","\ud83c\udf0e","\ud83c\udf0f","\ud83d\uddfa"],"flask-conical":["\ud83e\uddea","\u2697","\ud83d\udd2c"],"zap":["\u26a1","\ud83d\udd25","\ud83d\ude80"],"play":["\u25b6","\u23ef","\u25ba"],"pause":["\u23f8"],"square":["\u23f9","\u25a0","\u25fc","\u2b1b"],"mic":["\ud83c\udfa4","\ud83c\udf99"],"thumbs-up":["\ud83d\udc4d","\ud83d\udc4c"],"thumbs-down":["\ud83d\udc4e"]}/*@end-icons*/;
   var SVG = 'http://www.w3.org/2000/svg';
   var sprite = (script && script.getAttribute('data-icons')) || base + 'icons.svg';
   var byEmoji = {};
@@ -734,7 +781,7 @@
     for (var a = 0; a < areas.length; a++) emojify(areas[a], areas[a].getAttribute('data-ui-emoji'));
     var buttons = root.querySelectorAll ? root.querySelectorAll(COPY_BUTTON) : [];
     for (var i = 0; i < buttons.length; i++) {
-      if (!buttons[i].hasAttribute('aria-label')) fill(buttons[i], 'copy');
+      if (!buttons[i].hasAttribute('aria-label') || buttons[i].__uiWord) fill(buttons[i], 'copy');
     }
     var rows = root.querySelectorAll ? root.querySelectorAll('.ui-setting') : [];
     for (var j = 0; j < rows.length; j++) {

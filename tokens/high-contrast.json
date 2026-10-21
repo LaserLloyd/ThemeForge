@@ -1,5 +1,5 @@
 {
-  "$description": "High Contrast: ThemeForge 1.4.0 design tokens in the W3C DTCG format (Format Module 2025.10), generated from src/css. The CSS custom property for a token is --<token name>.",
+  "$description": "High Contrast: ThemeForge 2.0.0 design tokens in the W3C DTCG format (Format Module 2025.10), generated from src/css. The CSS custom property for a token is --<token name>.",
   "$extensions": {
     "com.laserlloyd.themeforge": {
       "theme": {

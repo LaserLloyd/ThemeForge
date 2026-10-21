@@ -2,7 +2,7 @@
 """Self-test `python -m forgeui vendor` on the examples' forgeui.json manifests.
 
     python tools/selftest_forgeui.py                       use this checkout's forgeui/ package
-    python tools/selftest_forgeui.py --wheel dist/forgeui-1.4.0-py3-none-any.whl
+    python tools/selftest_forgeui.py --wheel dist/themeforge-2.0.0-py3-none-any.whl
                                                            install the built wheel into a throwaway
                                                            virtual environment and test THAT
 
@@ -13,7 +13,8 @@ For every examples/*/forgeui.json it copies the example to a temporary folder an
   3. a second `vendor` changes nothing,
   4. a hand edit to a bundle file makes `--check` fail (exit 1) and `vendor` refuse (exit 1),
      and `vendor --force` restores it (exit 0), after which `--check` passes again,
-  5. with a wheel, the interpreter really imported the installed package, not this checkout.
+  5. with a wheel, the interpreter really imported the installed package, not this checkout,
+     and both console scripts (`forgeui`, `themeforge`) of the `themeforge` distribution run.
 
 CI runs the wheel form after `python -m build`, so a wheel that lost its bundle (or a manifest
 the tool cannot read) fails the build. Exits 0 when everything passes. Standard library only.
@@ -35,6 +36,16 @@ ROOT = Path(__file__).resolve().parent.parent
 def run(python: str, args: list[str], cwd: Path, env: dict | None = None) -> tuple[int, str]:
     proc = subprocess.run([python, "-m", "forgeui", *args], cwd=cwd, capture_output=True, text=True,
                           encoding="utf-8", errors="replace", timeout=120, env=env)
+    return proc.returncode, proc.stdout + proc.stderr
+
+
+def run_script(python: str, name: str, args: list[str], cwd: Path) -> tuple[int, str]:
+    """Run a console script installed next to the venv's interpreter."""
+    exe = Path(python).parent / (name + (".exe" if sys.platform == "win32" else ""))
+    if not exe.is_file():
+        return 1, f"{exe} does not exist"
+    proc = subprocess.run([str(exe), *args], cwd=cwd, capture_output=True, text=True,
+                          encoding="utf-8", errors="replace", timeout=120)
     return proc.returncode, proc.stdout + proc.stderr
 
 
@@ -86,7 +97,7 @@ def main(argv: list[str] | None = None) -> int:
     except Exception:
         pass
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--wheel", help="a built forgeui wheel to install into a throwaway venv and test")
+    parser.add_argument("--wheel", help="a built themeforge wheel to install into a throwaway venv and test")
     parser.add_argument("--examples", default=str(ROOT / "examples"), help="folder holding the examples")
     args = parser.parse_args(argv)
     examples = sorted(p.parent for p in Path(args.examples).glob("*/forgeui.json"))
@@ -108,6 +119,10 @@ def main(argv: list[str] | None = None) -> int:
             code, out = run(python, ["path"], work)
             if code != 0 or Path(ROOT) in Path(out.strip()).parents or "site-packages" not in out:
                 problems.append(f"the wheel's package did not import from site-packages: {out.strip()}")
+            for script in ("forgeui", "themeforge"):
+                code, out = run_script(python, script, ["--version"], work)
+                if code != 0 or "bundle" not in out:
+                    problems.append(f"the console script `{script}` does not run: exit {code}: {out.strip()}")
         else:
             import os
             python = sys.executable

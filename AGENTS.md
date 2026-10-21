@@ -4,10 +4,11 @@ You are an AI coding agent and someone asked you to theme a web app, or to give 
 picker, dark mode or a consistent look. This file is everything you need: follow it top to
 bottom. It takes about five minutes.
 
-**Names.** Repository `LaserLloyd/ThemeForge`; the package and product are **ForgeUI** (a Python
-wheel, `forgeui`, that carries the same folder). What you copy into the app is one folder,
-`ui-theme/`. The script defines `window.UITheme`. Every component class starts with `ui-` (the
-base layer also keeps a few unprefixed helpers for older apps, listed in `docs/COMPONENTS.md`).
+**Names.** Repository and product `LaserLloyd/ThemeForge`; its Python package is the `themeforge`
+distribution (import name `forgeui`), which carries the same folder. Never `pip install forgeui`:
+that name on PyPI is an unrelated project. What you copy into the app is one folder, `ui-theme/`.
+The script defines `window.UITheme`. Every component class starts with `ui-` (the base layer also
+keeps a few unprefixed helpers for older apps, listed in `docs/COMPONENTS.md`).
 There is no npm package and no build step: plain CSS files and two small scripts. The rules
 and the versioning policy are in `docs/THEME_SYSTEM.md`.
 
@@ -56,8 +57,8 @@ its `ui-theme/` folder. If you were handed `ThemeForge.zip` (the release zip), u
 
 Other ways (pip for Python apps; the rest when Python is not available):
 
-- **pip (Python apps):** `pip install "forgeui @ git+https://github.com/LaserLloyd/ThemeForge@v1.4.0"`
-  (the wheel is not on PyPI; that name belongs to an unrelated project), then
+- **pip (Python apps):** `pip install "themeforge @ git+https://github.com/LaserLloyd/ThemeForge@v2.0.0"`
+  (from the release tag until the package is published on PyPI; the module it installs is `forgeui`), then
   `python -m forgeui init --dest static/ui-theme`,
   edit the `forgeui.json` it writes (themes, default, storage key), and `python -m forgeui vendor`.
   Commit the folder and the manifest; `python -m forgeui vendor --check` in CI keeps the copy honest.
@@ -65,9 +66,9 @@ Other ways (pip for Python apps; the rest when Python is not available):
   and write the head block for FastAPI and NiceGUI. Details: `docs/THEME_SYSTEM.md`.
 - **git:** `git clone --depth 1 https://github.com/LaserLloyd/ThemeForge.git ut-tmp`, copy
   `ut-tmp/ui-theme` into the app, delete `ut-tmp`.
-- **Node:** `npx degit LaserLloyd/ThemeForge/ui-theme#v1.4.0 static/ui-theme`.
+- **Node:** `npx degit LaserLloyd/ThemeForge/ui-theme#v2.0.0 static/ui-theme`.
 - **No install (prototypes, single HTML files):** load the files from jsDelivr, pinned to a
-  release: `https://cdn.jsdelivr.net/gh/LaserLloyd/ThemeForge@v1.4.0/ui-theme/ui-theme.js`
+  release: `https://cdn.jsdelivr.net/gh/LaserLloyd/ThemeForge@v2.0.0/ui-theme/ui-theme.js`
   (and the same path for each CSS file). Never pin `@main`; the CDN caches it for up to
   12 hours. A CDN page updates by changing the pinned version; `update.py` and steps 8.5, 9
   and 10 below do not apply to it.
@@ -157,7 +158,7 @@ almost every time:
 |---|---|
 | page, nav, card, hover, active grounds | `--surface-0`, `--surface-1`, `--surface-2`, `--surface-3`, `--surface-4` |
 | inset well, menus and popovers | `--surface-sunken`, `--surface-overlay` |
-| text, in tiers | `--text-primary`, `--text-secondary` (labels, descriptions), `--text-tertiary` (hints, timestamps), `--text-disabled` |
+| text, in tiers | `--text-primary`, `--text-secondary` (labels, descriptions), `--text-tertiary` (hints, timestamps), `--text-disabled` (disabled controls only, 3:1 floor; other quiet text uses `--text-tertiary`) |
 | links and accent-coloured text | `--text-link`, `--text-link-hover` |
 | primary action fill | `--accent`, `--accent-hover`, label on it `--on-accent` |
 | on / checked / selected / current | `--selected` (fill or indicator), `--on-selected` (on it) |
@@ -198,7 +199,7 @@ Buttons `.ui-btn` + `--primary` `--ghost` `--outline` `--danger` `--cta` `--sm` 
 `.ui-switch-state`; `.ui-card` (`__header` `__title` `__footer`) `.ui-well` `.ui-stat`;
 `.ui-badge` (`--success` `--warning` `--danger` `--info` `--live` `--accent`...) `.ui-dot`
 `.ui-count`; `.ui-callout` (`--info` `--success` `--warning` `--danger`); `.ui-tabs` +
-`.ui-tab`; `.ui-segmented`; `.ui-table-wrap` + `.ui-table` (`--hover` `--compact`, `td.num`);
+`.ui-tab`; `.ui-segmented`; `.ui-table-wrap` + `.ui-table` (`--hover` `--compact`, `td.num`) and `.ui-table__sort` (+ `.ui-table__sort-icon`) for sortable headers;
 `.ui-dialog`; `.ui-drawer` (side sheet); `.ui-menu` + `.ui-menu__item`; `[data-ui-tooltip]`
 (`data-ui-tooltip-side="bottom"` near the top); `.ui-progress` `.ui-spinner` `.ui-skeleton`;
 `.ui-breadcrumbs`; `.ui-pagination`; `.ui-avatar`; `.ui-chip` (+ `__remove`); `.ui-details`
@@ -300,7 +301,17 @@ Icons: use `icons.svg` (section 5). An inline SVG of the app's own: `fill="curre
    ```
    It should print nothing, or only comments. (`tools/lint_colors.py` in this repository is the
    thorough version.)
-5. `python3 static/ui-theme/update.py --check` prints "up to date".
+5. **Icons (advisory, not a pass or fail).** If the `themeforge` package is installed (Python apps;
+   import name `forgeui`), run `python -m forgeui icons <the app's template, script and Python folders>`,
+   for example:
+   ```
+   python -m forgeui icons templates static src
+   ```
+   It lists candidates, one per line: `file:line: 🗑 -> trash`. Replace the ones in the UI (buttons,
+   tabs, menus, status lines) with icons; leave comments, regexes and text processing alone, and mark
+   an emoji kept on purpose with `forgeui: allow-icons`. It skips comments, docstrings and `test`/`tests`
+   folders. `docs/ICONS.md` ("Moving an app over") explains the rest.
+6. `python3 static/ui-theme/update.py --check` prints "up to date".
 
 ## 9. Keep the convention in the app
 
@@ -308,7 +319,7 @@ Add this line to the app's own `AGENTS.md` or `CLAUDE.md` (create one if missing
 agent working on the app keeps using the theme:
 
 ```
-UI styling uses ThemeForge 1.4.0 in static/ui-theme/ (read static/ui-theme/README.md before
+UI styling uses ThemeForge 2.0.0 in static/ui-theme/ (read static/ui-theme/README.md before
 writing CSS). Every page head carries the theme block from the base template: ui-theme.js first
 and blocking, ui-theme-base.css + ui-components.css before the app's CSS, ui-theme.css after it.
 Build from its tokens and ui-* classes, never write colour literals, never edit that folder;
@@ -321,11 +332,23 @@ never emoji; update it with `python3 static/ui-theme/update.py`.
 ## 10. Updating later
 
 `python3 static/ui-theme/update.py` installs the latest release (`--check` only reports;
-`--ref v1.4.0` pins a version); an app with a `forgeui.json` raises its `forgeui` pin and runs
-`python -m forgeui vendor` instead. It replaces only the files it owns, leaves the app's own
-files in the folder alone, and refuses to overwrite a file that was edited by hand (move the
-edit into the app's CSS). Read `CHANGELOG.md` in this repository for what changed, then repeat
-step 8. More in `docs/UPDATING.md`.
+`--ref v2.0.0` pins a version). From 2.0 it stops before a major release unless you pass `--ref`
+or `--source`, which is the deliberate yes. An app with a `forgeui.json` raises `"version"` there and, for a
+major, renames its requirement to `themeforge` in the same edit (the old name with the new tag
+fails), then runs `python -m forgeui vendor` instead. It replaces only the files it owns, leaves
+the app's own files in the folder alone, and refuses to overwrite a file that was edited by hand
+(move the edit into the app's CSS). Read `CHANGELOG.md` in this repository for what changed, then
+repeat step 8. More in `docs/UPDATING.md`.
+
+**An app already on 1.x**, on its first 2.0 update:
+
+1. `forgeui.json` apps: set `"version"` to `"2.0"`, rename the requirement to `themeforge` (the
+   install line in section 2), then `python -m forgeui vendor`. `update.py` apps:
+   `python3 static/ui-theme/update.py --ref v2.0.0`.
+2. A service worker or offline cache list: add `icons.svg` and the `locales/` files to it.
+3. Swap the UI emoji for icons (section 8, step 5): `<svg class="ui-icon"><use href=".../icons.svg#name"/></svg>`.
+4. Where the app picks its language, call `UIComponents.loadLocale(lang)`, or put `data-locale="auto"`
+   on the `ui-components.js` script tag.
 
 ## 11. Troubleshooting
 
@@ -342,6 +365,8 @@ step 8. More in `docs/UPDATING.md`.
 | Tailwind `rounded-md` / `font-sans` changed | Expected: the theme defines `--radius-*` and `--font-*`, and its values win. |
 | A library reacts to `data-theme` | The runtime sets `<html data-theme>`; see section 3. |
 | `update.py` says "edited by hand" | Something changed a file in `ui-theme/`. Move the change into app CSS, then rerun with `--force`. |
+| `update.py` says "is a major release" | Expected from 2.0: read `CHANGELOG.md`, then rerun with `--ref v<new>`. |
+| `does not match given name 'forgeui'` (uv), `does not start with 'forgeui'` (pip) | The requirement still says `forgeui` and the tag is 2.0. Rename it to `themeforge`; the tag is fine. |
 
 ## 12. Reference
 

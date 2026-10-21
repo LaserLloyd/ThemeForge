@@ -1,6 +1,6 @@
 # Icons
 
-Generated from `src/icons/icons.json` by `tools/sync_theme.py build` (ThemeForge 1.4.0).
+Generated from `src/icons/icons.json` by `tools/sync_theme.py build` (ThemeForge 2.0.0).
 
 105 outline icons for app chrome, one sprite (`ui-theme/icons.svg`). They draw in
 `currentColor` with the theme's `--icon-stroke`, so every theme colours them and the
@@ -66,12 +66,42 @@ Noto Emoji web font, which `--font-emoji` names first, e.g.
 `data-fonts-href="https://fonts.googleapis.com/css2?family=Noto+Emoji&display=swap"` on the
 `ui-theme.js` tag.
 
+## Moving an app over
+
+`python -m forgeui icons` lists every emoji and Material Icons name in an app that one of these
+icons replaces, so moving an app over is a lookup. It needs the `themeforge` package (import name
+`forgeui`) and nothing else. Its output is a list of candidates, not a verdict: replace the ones in
+the app's UI (buttons, tabs, menus, status lines) and leave the rest.
+
+```
+python -m forgeui icons src/            # list the candidates, exit 0
+python -m forgeui icons src/ --check    # optional CI gate: exit 1 while any is left (for an app already clean)
+```
+
+Each candidate is a line of file, line and icon: `src/app.js:12: 🗑 -> trash`, or in NiceGUI code
+`src/ui.py:40: delete_forever -> trash (forgeui.quasar_icon('delete_forever'))`. A Material name
+with no icon is listed as `(no ThemeForge icon)`, and neither it nor an emoji with no icon fails
+`--check`; `--all` also lists those emoji, which can stay as content. `--json` prints the report
+for other tools, and `--folder static/ui-theme` reads `icons.json` from the app's vendored copy
+instead of the installed package. It reads `.html`, `.js`, `.ts`, `.vue`, `.py`, `.css` and the like
+(and `.json` inside a `locales`, `i18n` or `lang` folder), and skips `node_modules`, `vendor`, `dist`,
+`build`, copies of this bundle, and `test` and `tests` folders (a folder named on the command line is
+still scanned). It skips comment lines and Python docstrings. It counts `…` and `×` only as the whole
+text of an element (`>…<`), never inside a quoted string. An arrow or symbol (→ ✓ ✕ ▸) counts when it
+is the whole text of a string or an element, never inside a sentence.
+
+An emoji that should stay (a reaction, say) carries the marker in a comment, and its line is skipped:
+
+```python
+ui.label('Done ✅')  # forgeui: allow-icons
+```
+
 ## The set
 
 | Icon | Label | Use for | Emoji and symbols it replaces | Material Icons names |
 |---|---|---|---|---|
 | `plus` | Add | add, new, create | ➕ ＋ ✚ | `add`, `add_circle` |
-| `x` | Close | close, remove, dismiss | ✕ ✖ ✗ ✘ ❎ | `close`, `clear` |
+| `x` | Close | close, remove, dismiss | ✕ × ✖ ✗ ✘ ❎ | `close`, `clear` |
 | `check` | Done | done, confirm, selected | ✓ ✔ ☑ | `check`, `done` |
 | `pencil` | Edit | edit, rename, write | ✏ 📝 ✒ 🖊 🖋 | `edit`, `edit_note`, `mode_edit` |
 | `trash` | Delete | delete, discard | 🗑 | `delete`, `delete_forever`, `delete_outline`, `delete_sweep` |
@@ -180,12 +210,16 @@ Noto Emoji web font, which `--font-emoji` names first, e.g.
 
 The set holds what the apps draw, and the build refuses more than 120: add an icon when an app
 needs one and nothing here means the same thing (a Material name or an emoji can usually join an
-existing icon instead). To add one, copy the icon's file from the
-`lucide-static` 1.50.0 package (`icons/<name>.svg`, unchanged) into `src/icons/lucide/`, add
-an entry to `src/icons/icons.json`, and run `python tools/sync_theme.py build`. Icon names are public
-API, like token names: never rename or remove one in a minor release.
+existing icon instead). To add one, draw it as `src/icons/svg/<name>.svg` on the same grid as the
+others: `viewBox="0 0 24 24"`, `fill="none"`, `stroke="currentColor"`, `stroke-width="2"`, round
+caps and joins, plain shapes only (`path`, `circle`, `rect`, `line`, `polyline`, `polygon`, `ellipse`),
+kept inside 2 to 22 on both axes. Draw it yourself; never copy an icon from another set, so the set
+stays free of anyone else's license. Then add an entry to `src/icons/icons.json` and run
+`python tools/sync_theme.py build`. Icon names are public API, like token names: never rename or
+remove one in a minor release.
 
 ## License
 
-The icons are [Lucide](https://lucide.dev) 1.50.0, ISC license (some derived from
-Feather, MIT). The notice ships beside the sprite as `ui-theme/icons-LICENSE.txt`; keep it with any copy.
+The icons were drawn for ThemeForge and are MIT-0 (MIT No Attribution), like everything
+else in the repository: use, copy, change and ship them however you like, with nothing to credit or
+keep.

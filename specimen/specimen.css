@@ -29,6 +29,9 @@
   border-radius: var(--radius-pill);
   box-shadow: inset 0 0 0 1px var(--glass-stroke-strong);
 }
+/* The language switch sits above the readout, so the theme tabs keep their width. */
+.spec-side { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+.spec-lang { width: auto; }
 .spec-readout {
   display: flex;
   gap: 18px;

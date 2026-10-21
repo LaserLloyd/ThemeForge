@@ -20,7 +20,9 @@
 #  compose file does that); nginx writes only to /tmp.
 # =============================================================================
 
-FROM nginxinc/nginx-unprivileged:1.28-alpine-slim AS runtime
+# The base is the current nginx stable line, pinned by digest so a rebuild is the same image; move
+# both together (docker buildx imagetools inspect nginxinc/nginx-unprivileged:1.30-alpine-slim).
+FROM nginxinc/nginx-unprivileged:1.30-alpine-slim@sha256:5d8bb9437d74a600ec5dbf90c035451c724dc33eac8d3a71078f6f8612c345f6 AS runtime
 
 ARG VERSION=dev
 ARG REVISION=unknown
@@ -30,7 +32,7 @@ LABEL org.opencontainers.image.title="ThemeForge specimen" \
       org.opencontainers.image.description="Static preview of every ThemeForge component in every theme" \
       org.opencontainers.image.source="https://github.com/LaserLloyd/ThemeForge" \
       org.opencontainers.image.documentation="https://github.com/LaserLloyd/ThemeForge/blob/main/docs/deploy/docker.md" \
-      org.opencontainers.image.licenses="MIT" \
+      org.opencontainers.image.licenses="MIT-0" \
       org.opencontainers.image.version="${VERSION}" \
       org.opencontainers.image.revision="${REVISION}" \
       org.opencontainers.image.created="${CREATED}"
@@ -41,8 +43,9 @@ LABEL org.opencontainers.image.title="ThemeForge specimen" \
 #   /healthz     200 "ok" (for HEALTHCHECK; never cached)
 COPY --chown=101:101 <<'NGINX' /etc/nginx/conf.d/default.conf
 server {
+    # IPv4 only: Docker publishes the port on the host's IPv4 and IPv6 either way, and an IPv6
+    # listen here stops nginx from starting on a host with IPv6 turned off.
     listen 8080 default_server;
-    listen [::]:8080 default_server;
     server_name _;
     root /usr/share/nginx/html;
     index index.html;

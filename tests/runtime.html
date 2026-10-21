@@ -33,6 +33,8 @@
   function check(name, actual, expected) {
     const ok = JSON.stringify(actual) === JSON.stringify(expected);
     results.push({ name, ok, detail: ok ? '' : `got ${JSON.stringify(actual)}, want ${JSON.stringify(expected)}` });
+    // If the run stalls, the runner prints this line: it names the last check that finished.
+    document.getElementById('summary').textContent = `running… ${results.length} done, last: ${name}`;
   }
 
   function preset(values) {
@@ -519,6 +521,7 @@
     check('locales: ja-JP falls back to ja', [await U.loadLocale('ja-JP'), U.t('copy')], [true, 'コピー']);
     check('locales: en restores the built-in words', [await U.loadLocale('en'), U.t('cancel')], [true, 'Cancel']);
     check('locales: an explicit url', [await U.loadLocale('ja', LOCALES + 'ja.json'), U.t('basic')], [true, '基本']);
+    check('locales: loadLocale(ar) applies', [await U.loadLocale('ar'), U.t('cancel')], [true, 'إلغاء']);
   }
 
   // 43b. data-locale on the script tag loads a locale by itself.
@@ -770,6 +773,9 @@
     check('emojify: running it again changes nothing', U.emojify(e1, 'icon') + U.emojify(d.getElementById('e2'), 'text'), 0);
     check('emojify: a button that is one mapped symbol gets the icon',
           [U.emojify(d.getElementById('eb')), d.querySelector('#eb use').getAttribute('href').split('#')[1]], [1, 'x']);
+    d.getElementById('ic').insertAdjacentHTML('afterend', '<button id="ex" class="ui-btn ui-btn--icon" aria-label="Close">×</button><p id="em">3 × 4</p>');
+    check('emojify: a lone × is the close icon, a × in a sum stays a sign',
+          [U.emojify(d.getElementById('ex')), U.emojify(d.getElementById('em')), d.getElementById('em').textContent], [1, 0, '3 × 4']);
     const other = `http://localhost:${location.port}/ui-theme/icons.svg`;
     const fx = await comp('', { scriptAttrs: `data-icons="${other}"` });
     check('icons: a sprite on another origin is referenced in the page (it is fetched and inlined)',
@@ -778,6 +784,62 @@
       check('emoji css: text and colour presentation', [w.getComputedStyle(d.querySelector('#e2 .ui-emoji')).fontVariantEmoji,
             w.getComputedStyle(d.querySelector('#e3 .ui-emoji--color')).fontVariantEmoji], ['text', 'emoji']);
     }
+  }
+
+  // 43k. Copy buttons keep their icon (#15); loadLocale calls do not race (#14).
+  {
+    // The checks need an icon element, not its drawing. A same-document #copy loads nothing:
+    // an external sprite in a frame's first HTML holds its load event on that file, and under
+    // Chrome's virtual time on CI the load sometimes never came and the run stalled here.
+    const ICON = '<svg class="ui-icon" aria-hidden="true"><use href="#copy"/></svg>';
+    const f = await comp(
+      `<div class="ui-copy"><code class="ui-copy__value">abc</code><button class="ui-btn ui-btn--icon ui-copy__button" id="ib" type="button">${ICON}</button></div>` +
+      `<div class="ui-copy"><code class="ui-copy__value">def</code><button class="ui-btn ui-copy__button" id="tb" type="button">${ICON}Copy</button></div>`);
+    const w = f.contentWindow, d = f.contentDocument, U = w.UIComponents;
+    Object.defineProperty(w.navigator, 'clipboard', { configurable: true,
+      value: { writeText: () => Promise.resolve() } });
+    const ib = d.getElementById('ib'), tb = d.getElementById('tb');
+    check('copy: an icon-only button keeps its icon and is named Copy',
+          [!!ib.querySelector('svg'), ib.textContent.trim(), ib.getAttribute('aria-label')], [true, '', 'Copy']);
+    U.setStrings({ copy: 'Kopieren' });
+    U.init(d);
+    check('copy: the icon-only button is renamed with the table', ib.getAttribute('aria-label'), 'Kopieren');
+    U.resetStrings();
+    tb.click();
+    await tick(60);
+    check('copy: feedback swaps the word and keeps the icon', [!!tb.querySelector('svg'), tb.textContent.trim()], [true, 'Copied']);
+    ib.click();
+    await tick(60);
+    check('copy: an icon-only button is marked, not emptied', [!!ib.querySelector('svg'), ib.getAttribute('data-copied')], [true, 'true']);
+    await tick(1900);
+    check('copy: after the feedback the word and the icon are both back', [!!tb.querySelector('svg'), tb.textContent.trim(), tb.hasAttribute('data-copied')], [true, 'Copy', false]);
+
+    // An icon-only part of a settings row that is not a button: aria-label names nothing on a bare
+    // span, so it gets role="img"; a role the app set stays, and a button needs none.
+    {
+      const g = await comp(
+        '<div class="ui-setting" data-level="advanced" data-source="env" data-default="1"><div class="ui-setting__text"><div class="ui-setting__label"><label for="ic">Port</label>' +
+        `<span class="ui-badge ui-setting__level" id="il" role="note">${ICON}</span><span class="ui-badge ui-setting__env" id="ie">${ICON}</span></div></div>` +
+        `<div class="ui-setting__control"><input class="ui-input" id="ic" value="2"><button class="ui-btn ui-btn--ghost ui-btn--sm ui-setting__reset" id="ir" type="button">${ICON}</button></div></div>`);
+      const gd = g.contentDocument;
+      const part = (id) => { const n = gd.getElementById(id); return [!!n.querySelector('svg'), n.getAttribute('aria-label'), n.getAttribute('role')]; };
+      check('setting: an icon-only badge keeps its icon and is named, with role img', part('ie'), [true, 'Set by environment', 'img']);
+      check('setting: a role the app set stays, and a button gets none', [part('il'), part('ir')],
+            [[true, 'Advanced', 'note'], [true, 'Reset Port to default', null]]);
+      g.contentWindow.UIComponents.setStrings({ setByEnv: 'Par l\u2019environnement' });
+      g.contentWindow.UIComponents.init(gd);
+      check('setting: the icon-only badge is renamed with the table and keeps its role', part('ie'), [true, 'Par l\u2019environnement', 'img']);
+    }
+
+    const late = U.loadLocale('ja');
+    await U.loadLocale('en');
+    await late;
+    check('loadLocale: the newest call wins over a slower earlier one', U.t('cancel'), 'Cancel');
+    await U.loadLocale('ja');
+    const ja = U.t('copy');
+    await U.loadLocale('fr', 'data:application/json,' + encodeURIComponent(JSON.stringify({ cancel: 'Annuler' })));
+    check('loadLocale: a new language file drops the words of the previous one', [ja, U.t('cancel'), U.t('copy')], ['コピー', 'Annuler', 'Copy']);
+    await U.loadLocale('en');
   }
 
   // 43h. Pseudo-locale: every built-in word at 2-3x length must not break the layout.
@@ -859,6 +921,52 @@
     const btns = Array.from(dlg.querySelectorAll('.ui-dialog__actions button'));
     check('rtl: dialog actions run right to left (OK is the leftmost last)', rect(btns[0]).left > rect(btns[1]).left, true);
     dlg.remove();
+    // Joined script: tracking would pull each word apart, so Arabic sets every tracked role solid.
+    d.getElementById('stage').insertAdjacentHTML('beforeend', '<h1 id="rh">عنوان</h1><div class="ui-kicker" id="rk">الحالة</div>');
+    check('rtl: Arabic headings and kickers are not tracked',
+          ['rh', 'rk'].map((id) => parseFloat(w.getComputedStyle(d.getElementById(id)).letterSpacing) || 0), [0, 0]);
+    d.getElementById('stage').insertAdjacentHTML('beforeend', '<table class="ui-table"><thead><tr><th id="rth">عنوان</th><th><button class="ui-table__sort" id="rsb" type="button">عنوان</button></th></tr></thead></table>');
+    check('rtl: an Arabic sortable header is not tracked either (the button follows the header)',
+          ['rth', 'rsb'].map((id) => parseFloat(w.getComputedStyle(d.getElementById(id)).letterSpacing) || 0), [0, 0]);
+  }
+
+  // 43l. Sortable table headers: the button, the icon and the sorted and numeric states.
+  {
+    // A same-document #name, as in 43k: no sprite file for the frame's load event to wait on.
+    const SORT = (name) => `<svg class="ui-icon ui-table__sort-icon" aria-hidden="true"><use href="#${name}"/></svg>`;
+    const f = await comp(
+      '<div class="ui-table-wrap"><table class="ui-table"><thead><tr>' +
+      // The header's own weight and colour are set away from the rules, so a passing check
+      // shows the rule at work and not an inherited value.
+      `<th id="hs" aria-sort="ascending" style="font-weight: 400"><button class="ui-table__sort" id="bs" type="button">Minutes${SORT('arrow-up')}</button></th>` +
+      `<th id="hu" aria-sort="none" style="color: var(--text-primary)"><button class="ui-table__sort" id="bu" type="button">Job${SORT('arrow-up-down')}</button></th>` +
+      `<th id="hn" class="num" aria-sort="descending"><button class="ui-table__sort" id="bn" type="button">Total${SORT('arrow-down')}</button></th>` +
+      '<th id="hp">Owner</th>' +
+      '</tr></thead><tbody><tr><td>render</td><td class="num">12.4</td></tr></tbody></table></div>' +
+      '<table class="ui-table"><thead><tr><th id="hq">Owner</th></tr></thead></table>' +
+      '<span id="tt" style="color: var(--text-tertiary)">quiet</span><span id="tp" style="color: var(--text-primary)">loud</span>');
+    const w = f.contentWindow, d = f.contentDocument;
+    const cs = (el) => w.getComputedStyle(el);
+    const bs = d.getElementById('bs'), bu = d.getElementById('bu'), bn = d.getElementById('bn');
+    const iu = d.querySelector('#hu svg'), hn = d.getElementById('hn');
+    check('sort: a sorted header is a semibold button in primary text',
+          [cs(bs).fontWeight, cs(bn).fontWeight, cs(bs).color === cs(d.getElementById('tp')).color], ['600', '600', true]);
+    check('sort: an unsorted header keeps its icon in tertiary text',
+          cs(iu).color === cs(d.getElementById('tt')).color, true);
+    check('sort: the button is a reset control (no border, transparent, pointer, inline flex)',
+          [cs(bu).backgroundColor, cs(bu).borderTopWidth, cs(bu).cursor, cs(bu).display], ['rgba(0, 0, 0, 0)', '0px', 'pointer', 'inline-flex']);
+    check('sort: the icon is 1em, the size of the label text', Math.abs(rect(iu).width - parseFloat(cs(iu).fontSize)) < 0.5, true);
+    check('sort: a numeric header fills its cell and the label sits at the end',
+          [cs(bn).justifyContent, Math.abs(rect(bn).right - (rect(hn).right - parseFloat(cs(hn).paddingRight))) < 1], ['flex-end', true]);
+    // A button resets text-transform and letter-spacing; the header's plain cells set the label in
+    // capitals and tracked, so the button has to match the plain header beside it.
+    const hp = d.getElementById('hp');
+    check('sort: a sortable header is set like a plain header in the same row (capitals, tracking)',
+          [cs(hp).textTransform, cs(bu).textTransform, cs(hp).letterSpacing !== 'normal', cs(bu).letterSpacing === cs(hp).letterSpacing],
+          ['uppercase', 'uppercase', true, true]);
+    check('sort: the button is at least a 24px target tall', [bs, bu, bn].map((b) => rect(b).height >= 24), [true, true, true]);
+    check('sort: the target does not make the header row taller than plain headers',
+          Math.abs(rect(hp).height - rect(d.getElementById('hq')).height) < 1, true);
   }
 
   // Report.

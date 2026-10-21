@@ -254,7 +254,7 @@ Variants `--info`, `--success`, `--warning`, `--danger` (use `role="alert"` for 
 ## Tables and lists
 
 ```html
-<div class="ui-table-wrap">
+<div class="ui-table-wrap" tabindex="0" role="region" aria-label="Jobs">
   <table class="ui-table ui-table--hover">
     <thead><tr><th>Job</th><th class="num">Minutes</th></tr></thead>
     <tbody><tr aria-selected="true"><td>render</td><td class="num">12.4</td></tr></tbody>
@@ -264,6 +264,20 @@ Variants `--info`, `--success`, `--warning`, `--danger` (use `role="alert"` for 
 ```
 
 `--compact` tightens rows. `aria-selected="true"` marks a selected row.
+
+Sortable headers: the app sorts its own rows and updates `aria-sort` on the `th` and the icon's
+`#name` when the sort changes. `ascending` takes `arrow-up`, `descending` takes `arrow-down`, and
+`none` takes `arrow-up-down`.
+
+```html
+<th aria-sort="ascending">
+  <button class="ui-table__sort" type="button">Minutes
+    <svg class="ui-icon ui-table__sort-icon" aria-hidden="true"><use href="/static/ui-theme/icons.svg#arrow-up"/></svg>
+  </button>
+</th>
+<th aria-sort="none"><button class="ui-table__sort" type="button">Job
+  <svg class="ui-icon ui-table__sort-icon" aria-hidden="true"><use href="/static/ui-theme/icons.svg#arrow-up-down"/></svg></button></th>
+```
 
 ## Dialog
 
@@ -302,13 +316,19 @@ All text is set as text, never HTML, so user input is safe to show.
 ### Words and languages
 
 Every word `ui-components.js` puts on the page (Cancel, OK, Copy, Copied, Reset to default, ...)
-comes from a string table. `ui-theme/locales/en.json` lists the keys and the English defaults;
-`ja.json` is the Japanese bundle.
+comes from a string table. `ui-theme/locales/en.json` lists the keys and the English defaults.
+Seven more ship beside it, one per language (`ar`, `de`, `es`, `fr`, `ja`, `pt`, `zh`), each with
+every key. `pt` is European Portuguese and `zh` is Simplified Chinese, so a `pt-BR` or `zh-TW`
+page falls back to them. An app that needs Traditional Chinese can ship `locales/zh-tw.json` as an
+`extra_files` overlay in `forgeui.json`, since `loadLocale('zh-TW')` looks for `zh-tw.json` before `zh.json`.
 
 ```js
 UIComponents.setStrings({ cancel: 'Annuler', ok: 'OK' });   // merge your own words
 await UIComponents.loadLocale('ja');                         // fetch locales/ja.json (true if applied)
 ```
+
+`loadLocale()` changes the words only. It does not set `lang` or `dir`, so an Arabic page sets
+`<html lang="ar" dir="rtl">` itself; the `:lang(ar)` rules and the right-to-left layout need both.
 
 ```html
 <script src="/static/ui-theme/ui-components.js" data-locale="auto" defer></script>  <!-- follows <html lang> -->
@@ -320,7 +340,7 @@ The word for a key is the first of: a `data-ui-str-<key>` attribute (kebab-case:
 then English. `{name}` style placeholders are filled from the call (`resetNamed`: "Reset {name}
 to default"). Options passed to a call (`confirmLabel`, `cancelLabel`, `label`) still win.
 Locale files are flat JSON objects of strings; keys starting with `$` are metadata. Add a
-language by loading any URL: `loadLocale('de', '/my/de.json')`. Dates and numbers:
+language by loading any URL: `loadLocale('nl', '/my/nl.json')`. Dates and numbers:
 `UIComponents.formatNumber(1234.5)` and `UIComponents.formatDate(date)` use `Intl` in the page's
 language (`UIComponents.locale()`).
 
@@ -470,10 +490,15 @@ Details elements with the same `name` open one at a time.
   <input class="ui-input" type="file">
 </fieldset>
 
-<div class="ui-table-wrap ui-table-wrap--scroll" style="--ui-table-max-h: 320px">
+<div class="ui-table-wrap ui-table-wrap--scroll" tabindex="0" role="region" aria-label="Log"
+     style="--ui-table-max-h: 320px">
   <table class="ui-table ui-table--sticky">…</table>     <!-- the header row stays put -->
 </div>
 ```
+
+A wrapper that can scroll (sideways on a phone, or `--scroll`) takes `tabindex="0"`, `role="region"`
+and an `aria-label`: keyboard users can then focus it and scroll with the arrow keys, and screen
+readers announce what it holds.
 
 ## Printing and high contrast
 

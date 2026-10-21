@@ -1,16 +1,13 @@
 #!/usr/bin/env python3
-"""Build the drop-in theme bundle, and keep copies of it current.
+"""Build the drop-in theme bundle, and check that the generated files are current.
 
     python tools/sync_theme.py build      regenerate ui-theme/, tokens/ and the generated docs
-    python tools/sync_theme.py check      exit 1 if any generated file is stale (and check app copies)
-    python tools/sync_theme.py install --to DIR      DEPRECATED, see below
-    python tools/sync_theme.py install [<app> ...] --apps REGISTRY [--dest REPO]   DEPRECATED
-    python tools/sync_theme.py list       themes, and apps when a registry is given
+    python tools/sync_theme.py check      exit 1 if any generated file is stale
+    python tools/sync_theme.py list       the themes
 
-DEPRECATED: `install` (to a folder, or to apps in a machine-local registry) is replaced by
-`python -m forgeui vendor`, driven by a forgeui.json manifest that lives in each app's own
-repository (docs/THEME_SYSTEM.md). The old command still works and prints a deprecation
-message; it will be removed in the next major version.
+Apps get a copy of the bundle with `python -m forgeui vendor`, driven by a forgeui.json manifest
+that lives in each app's own repository (docs/THEME_SYSTEM.md). The machine-local app registry
+and `sync_theme.py install` were removed in 2.0.
 
 Everything an app needs is ONE folder, ui-theme/ at the repository root. It
 is generated from src/ and adapters/ and is the same bytes for every app;
@@ -27,7 +24,7 @@ What build writes into ui-theme/:
   ui-theme.d.ts       TypeScript declarations for the two globals (src/ui-theme.d.ts + icon names)
   icons.svg           the icon sprite, one <symbol> per icon (src/icons)
   icons.json          the icon names, labels and the emoji each stands for
-  icons-LICENSE.txt   the icons' license (Lucide, ISC)
+  icons-LICENSE.txt   the icons' license: MIT-0 like the rest, no conditions (the repository LICENSE)
   ui-theme.css        tokens: Purple's :root, every theme block, locale overrides
   adapters/           framework adapters (adapters/*.css, *.js)
   locales/            words ui-components.js puts on the page, one JSON file per language (src/locales)
@@ -37,20 +34,7 @@ What build writes into ui-theme/:
   VERSION             "ThemeForge <version> <hash>"
   files.json          sha256 of every file above (LF line endings), read by update.py
 
-App registry (DEPRECATED; use forgeui.json and `python -m forgeui vendor`):
-a folder of <app>.json files, OUTSIDE this repository, named with --apps or
-the UI_THEME_APPS environment variable. Each file:
-
-    {"app": "myapp",
-     "repo": "C:/code/myapp",                  absolute, or relative to the registry folder
-     "bundle_dir": "static/ui-theme",          where the app keeps its copy, relative to repo
-     "extra_files": {                          optional: files only this app's copy carries
-       "adapters/legacy.css": "overlays/myapp-legacy.css",          copied in
-       "adapters/quasar.css": {"append": "overlays/myapp-extra.css"} appended to a bundle file
-     }}
-
-Source paths in extra_files are relative to the registry folder. --dest
-replaces a manifest's repo root (e.g. a git worktree). Standard library only.
+Standard library only.
 """
 
 from __future__ import annotations
@@ -59,7 +43,6 @@ import argparse
 import hashlib
 import importlib.util
 import json
-import os
 import re
 import sys
 from pathlib import Path
@@ -73,10 +56,6 @@ TOKENS = ROOT / "tokens"
 DOCS = ROOT / "docs"
 
 NAME = "ThemeForge"
-#: Names this bundle shipped under before; a copy whose VERSION carries one is still
-#: this bundle (ThemeForge was released as unifyingTheme, and before that the drop-in
-#: folder stamped "ui-theme <date> <hash>"). Same list as tools/update.py.
-LEGACY_NAMES = ("unifyingTheme", "ui-theme")
 REPO = "LaserLloyd/ThemeForge"
 BASE_SLUG = "purple"
 GROUNDS = {"oled", "dark", "light"}
@@ -88,7 +67,6 @@ SECTION_C = "C. THEME-AGNOSTIC LAYER"
 LOCALE_START = "/* ---- Locale overrides"
 LOCALE_END = "/* ---- highlight.js 11 mapping"
 MANIFEST = "files.json"
-APPS_ENV = "UI_THEME_APPS"
 
 
 class SyncError(Exception):
@@ -365,8 +343,8 @@ def header(kind: str, body: str, version: str) -> str:
 
 # ---------------------------------------------------------------- icons
 #
-# src/icons/icons.json lists the icon set; src/icons/lucide/<name>.svg is each
-# icon's source, copied unchanged from the Lucide package the file names. The
+# src/icons/icons.json lists the icon set; src/icons/svg/<name>.svg is each
+# icon's source, drawn for ThemeForge on a 24px grid (MIT-0, like the rest). The
 # build writes one sprite (ui-theme/icons.svg, a <symbol id="<name>"> per icon)
 # and puts the emoji each icon stands for into ui-components.js.
 
@@ -381,7 +359,7 @@ ICON_NAMES_RE = re.compile(r"/\*@icon-names\*/.*?/\*@end-icon-names\*/", re.S)
 SVG_ROOT = re.compile(r"<svg\b([^>]*)>(.*)</svg>", re.S)
 XML_COMMENT = re.compile(r"<!--.*?-->", re.S)
 #: What every source icon's root element must say: the shape the sprite and .ui-icon assume.
-LUCIDE_ROOT = {"viewBox": "0 0 24 24", "fill": "none", "stroke": "currentColor", "stroke-width": "2",
+ICON_ROOT = {"viewBox": "0 0 24 24", "fill": "none", "stroke": "currentColor", "stroke-width": "2",
                "stroke-linecap": "round", "stroke-linejoin": "round"}
 
 
@@ -400,8 +378,8 @@ def load_icons() -> dict:
     for name, entry in icons.items():
         if not ICON_NAME.match(name):
             raise SyncError(f"src/icons/icons.json: {name!r} is not a lower-case-kebab icon name")
-        if not (ICONS / "lucide" / f"{name}.svg").is_file():
-            raise SyncError(f"src/icons/icons.json: {name} has no source file src/icons/lucide/{name}.svg")
+        if not (ICONS / "svg" / f"{name}.svg").is_file():
+            raise SyncError(f"src/icons/icons.json: {name} has no source file src/icons/svg/{name}.svg")
         if entry.get("group") not in ICON_GROUPS or not entry.get("label") or not entry.get("use"):
             raise SyncError(f"src/icons/icons.json: {name} needs a group ({', '.join(ICON_GROUPS)}), a label and a use")
         for emoji in entry.get("emoji", []):
@@ -419,9 +397,9 @@ def load_icons() -> dict:
                 raise SyncError(f"src/icons/icons.json: Material name {material} is listed under "
                                 f"{owner['material:' + material]} and {name}")
             owner["material:" + material] = name
-    extra = sorted(p.stem for p in (ICONS / "lucide").glob("*.svg") if p.stem not in icons)
+    extra = sorted(p.stem for p in (ICONS / "svg").glob("*.svg") if p.stem not in icons)
     if extra:
-        raise SyncError(f"src/icons/lucide/ holds {', '.join(extra)}, which icons.json does not list")
+        raise SyncError(f"src/icons/svg/ holds {', '.join(extra)}, which icons.json does not list")
     return data
 
 
@@ -429,24 +407,26 @@ def icon_symbol(name: str) -> str:
     """One icon as a sprite <symbol>: the source's shapes, its root attributes
     moved onto the symbol, and the stroke weight read from --icon-stroke (a custom
     property inherits into a <use>, so every theme can set its own)."""
-    text = XML_COMMENT.sub("", read(ICONS / "lucide" / f"{name}.svg"))
+    text = XML_COMMENT.sub("", read(ICONS / "svg" / f"{name}.svg"))
     m = SVG_ROOT.search(text)
     attrs = dict(re.findall(r'([\w:-]+)="([^"]*)"', m.group(1))) if m else {}
-    wrong = [k for k, v in LUCIDE_ROOT.items() if attrs.get(k) != v]
+    wrong = [k for k, v in ICON_ROOT.items() if attrs.get(k) != v]
     if not m or wrong:
-        raise SyncError(f"src/icons/lucide/{name}.svg: not a Lucide 24px outline icon ({', '.join(wrong) or 'no <svg>'})")
+        raise SyncError(f"src/icons/svg/{name}.svg: not a 24px outline icon with a 2px round stroke "
+                        f"({', '.join(wrong) or 'no <svg>'})")
     body = re.sub(r"\s+/>", "/>", re.sub(r">\s+<", "><", m.group(2).strip()))
     if re.search(r"<(?!/?(?:path|circle|rect|line|polyline|polygon|ellipse)\b)", body) or "style=" in body:
-        raise SyncError(f"src/icons/lucide/{name}.svg: only plain shapes are allowed in an icon")
+        raise SyncError(f"src/icons/svg/{name}.svg: only plain shapes are allowed in an icon")
     return (f'<symbol id="{name}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" '
             f'stroke-linejoin="round" style="stroke-width:var(--icon-stroke,2)">{body}</symbol>')
 
 
 def icon_sprite(icons: dict, version: str) -> str:
     src = icons["source"]
-    lines = [f'<svg xmlns="http://www.w3.org/2000/svg">',
-             f"<!-- GENERATED: {NAME} {version} icons ({len(icons['icons'])}), from {src['name']} {src['version']} "
-             f"({src['license']}; notice in icons-LICENSE.txt). Use: <svg class=\"ui-icon\"><use href=\"icons.svg#name\"/></svg> -->"]
+    lines = ['<svg xmlns="http://www.w3.org/2000/svg">',
+             f"<!-- GENERATED: {NAME} {version} icons ({len(icons['icons'])}), drawn for {src['name']}, "
+             f"{src['license']}: use them any way you like, no notice needed. "
+             f"Use: <svg class=\"ui-icon\"><use href=\"icons.svg#name\"/></svg> -->"]
     lines += [icon_symbol(name) for name in icons["icons"]]
     return "\n".join(lines) + "\n</svg>\n"
 
@@ -459,8 +439,10 @@ def icon_registry(icons: dict, version: str) -> str:
 
 def icon_license(icons: dict) -> str:
     src = icons["source"]
-    return (f"The icons in icons.svg are {src['name']} icons ({src['url']}), from the {src['package']} "
-            f"{src['version']} package, used under the license below.\n\n" + read(ICONS / "LICENSE"))
+    return (f"The icons in icons.svg were drawn for {src['name']} ({src['url']}) and, like everything in\n"
+            f"this folder, are released under {src['license']} (MIT No Attribution): use, copy, change and\n"
+            "ship them however you like. Nothing has to be kept or credited, including this file.\n\n"
+            + read(ROOT / "LICENSE"))
 
 
 def render_components(icons: dict) -> str:
@@ -533,7 +515,7 @@ def bundle_files(data: dict) -> dict[str, str]:
 
 GROUP_NOTES = {
     "surfaces": ("core", "Grounds, from the page (`--surface-0`) up through nav (1), cards (2), hover (3) and active (4); `--surface-sunken` for inset wells, `--surface-overlay` for menus and popovers, `--glass-*` for translucent panes, `--code-bg` for code."),
-    "text": ("core", "Text tiers (primary, secondary, tertiary, disabled), links, and the label colour for each kind of fill (`--on-accent`, `--on-danger`, ...). Quieter text is a lower tier, never opacity."),
+    "text": ("core", "Text tiers (primary, secondary, tertiary, disabled), links, and the label colour for each kind of fill (`--on-accent`, `--on-danger`, ...). Quieter text is a lower tier, never opacity. `--text-disabled` (3:1) is for disabled controls only, since WCAG 1.4.3 exempts text in inactive controls; quiet text that is not part of a disabled control uses `--text-tertiary` (4.5:1)."),
     "accent": ("core", "The brand accent: fills for primary actions, with `--on-accent` for labels on them. Accent-coloured text uses `--text-link` instead."),
     "call-to-action": ("core", "A stronger action plate for marketing-style calls to action, and the highlight colour for tips and marks."),
     "lines": ("core", "Borders, dividers, the focus ring, glass strokes. `--border-strong` is the edge of a form control (3:1)."),
@@ -755,6 +737,36 @@ def icons_doc(data: dict, icons: dict) -> str:
         "`data-fonts-href=\"https://fonts.googleapis.com/css2?family=Noto+Emoji&display=swap\"` on the",
         "`ui-theme.js` tag.",
         "",
+        "## Moving an app over",
+        "",
+        "`python -m forgeui icons` lists every emoji and Material Icons name in an app that one of these",
+        "icons replaces, so moving an app over is a lookup. It needs the `themeforge` package (import name",
+        "`forgeui`) and nothing else. Its output is a list of candidates, not a verdict: replace the ones in",
+        "the app's UI (buttons, tabs, menus, status lines) and leave the rest.",
+        "",
+        "```",
+        "python -m forgeui icons src/            # list the candidates, exit 0",
+        "python -m forgeui icons src/ --check    # optional CI gate: exit 1 while any is left (for an app already clean)",
+        "```",
+        "",
+        "Each candidate is a line of file, line and icon: `src/app.js:12: 🗑 -> trash`, or in NiceGUI code",
+        "`src/ui.py:40: delete_forever -> trash (forgeui.quasar_icon('delete_forever'))`. A Material name",
+        "with no icon is listed as `(no ThemeForge icon)`, and neither it nor an emoji with no icon fails",
+        "`--check`; `--all` also lists those emoji, which can stay as content. `--json` prints the report",
+        "for other tools, and `--folder static/ui-theme` reads `icons.json` from the app's vendored copy",
+        "instead of the installed package. It reads `.html`, `.js`, `.ts`, `.vue`, `.py`, `.css` and the like",
+        "(and `.json` inside a `locales`, `i18n` or `lang` folder), and skips `node_modules`, `vendor`, `dist`,",
+        "`build`, copies of this bundle, and `test` and `tests` folders (a folder named on the command line is",
+        "still scanned). It skips comment lines and Python docstrings. It counts `…` and `×` only as the whole",
+        "text of an element (`>…<`), never inside a quoted string. An arrow or symbol (→ ✓ ✕ ▸) counts when it",
+        "is the whole text of a string or an element, never inside a sentence.",
+        "",
+        "An emoji that should stay (a reaction, say) carries the marker in a comment, and its line is skipped:",
+        "",
+        "```python",
+        "ui.label('Done ✅')  # forgeui: allow-icons",
+        "```",
+        "",
         "## The set",
         "",
         "| Icon | Label | Use for | Emoji and symbols it replaces | Material Icons names |",
@@ -771,15 +783,19 @@ def icons_doc(data: dict, icons: dict) -> str:
         "",
         f"The set holds what the apps draw, and the build refuses more than {ICON_LIMIT}: add an icon when an app",
         "needs one and nothing here means the same thing (a Material name or an emoji can usually join an",
-        "existing icon instead). To add one, copy the icon's file from the",
-        f"`{src['package']}` {src['version']} package (`icons/<name>.svg`, unchanged) into `src/icons/lucide/`, add",
-        "an entry to `src/icons/icons.json`, and run `python tools/sync_theme.py build`. Icon names are public",
-        "API, like token names: never rename or remove one in a minor release.",
+        "existing icon instead). To add one, draw it as `src/icons/svg/<name>.svg` on the same grid as the",
+        "others: `viewBox=\"0 0 24 24\"`, `fill=\"none\"`, `stroke=\"currentColor\"`, `stroke-width=\"2\"`, round",
+        "caps and joins, plain shapes only (`path`, `circle`, `rect`, `line`, `polyline`, `polygon`, `ellipse`),",
+        "kept inside 2 to 22 on both axes. Draw it yourself; never copy an icon from another set, so the set",
+        "stays free of anyone else's license. Then add an entry to `src/icons/icons.json` and run",
+        "`python tools/sync_theme.py build`. Icon names are public API, like token names: never rename or",
+        "remove one in a minor release.",
         "",
         "## License",
         "",
-        f"The icons are [{src['name']}]({src['url']}) {src['version']}, {src['license']} license (some derived from",
-        "Feather, MIT). The notice ships beside the sprite as `ui-theme/icons-LICENSE.txt`; keep it with any copy.",
+        f"The icons were drawn for {src['name']} and are {src['license']} (MIT No Attribution), like everything",
+        "else in the repository: use, copy, change and ship them however you like, with nothing to credit or",
+        "keep.",
         "",
     ]
     return "\n".join(lines)
@@ -922,67 +938,6 @@ def doc_consistency(data: dict) -> list[str]:
     return problems
 
 
-# ---------------------------------------------------------------- app registry
-
-
-def registry_dir(args) -> Path | None:
-    value = getattr(args, "apps", None) or os.environ.get(APPS_ENV)
-    if not value:
-        return None
-    path = Path(value).expanduser().resolve()
-    if not path.is_dir():
-        raise SyncError(f"app registry {path} is not a folder")
-    return path
-
-
-def load_manifest(registry: Path, name: str) -> dict:
-    path = registry / f"{name}.json"
-    if not path.is_file():
-        raise SyncError(f"no manifest {path}")
-    m = json.loads(read(path))
-    m.setdefault("app", name)
-    rel = m.get("bundle_dir")
-    if not rel:
-        raise SyncError(f"{name}: bundle_dir is required (where the app keeps its copy of ui-theme/)")
-    if Path(rel).is_absolute() or ".." in Path(rel).parts:
-        raise SyncError(f"{name}: bundle_dir must be relative to the app's repo root")
-    for target, source in (m.get("extra_files") or {}).items():
-        if Path(target).is_absolute() or ".." in Path(target).parts:
-            raise SyncError(f"{name}: extra_files target {target} must stay inside the bundle folder")
-        src = source.get("append") if isinstance(source, dict) else source
-        if not src or not (registry / src).is_file():
-            raise SyncError(f"{name}: extra_files source {src} not found in {registry}")
-    return m
-
-
-def repo_root(registry: Path, m: dict, dest: str | None) -> Path:
-    if dest:
-        return Path(dest).resolve()
-    if not m.get("repo"):
-        raise SyncError(f"{m['app']}: manifest has no repo; pass --dest")
-    return (registry / m["repo"]).resolve()
-
-
-def app_copy(registry: Path, m: dict, bundle: dict[str, str]) -> dict[str, str]:
-    """The exact files this app's copy should hold: the bundle plus its extra_files."""
-    files = dict(bundle)
-    for target, source in (m.get("extra_files") or {}).items():
-        if isinstance(source, dict):
-            if target not in files:
-                raise SyncError(f"{m['app']}: cannot append to {target}: not a bundle file")
-            extra = lf(read(registry / source["append"]))
-            files[target] = files[target].rstrip("\n") + "\n\n" + extra
-        else:
-            files[target] = lf(read(registry / source))
-    return files
-
-
-def app_names(registry: Path, names: list[str], dest: str | None) -> list[str]:
-    if dest and len(names) != 1:
-        raise SyncError("--dest needs exactly one app name (it replaces that app's repo root)")
-    return names or sorted(p.stem for p in registry.glob("*.json"))
-
-
 # ---------------------------------------------------------------- io
 
 
@@ -1025,18 +980,6 @@ def folder_drift(folder: Path, expected: dict[str, str]) -> list[str]:
     bad += [f"stale   {rel}" for rel in expected if rel in have and have[rel] != expected[rel]]
     bad += [f"extra   {rel}" for rel in have if rel not in expected]
     return bad
-
-
-def require_bundle_folder(folder: Path) -> None:
-    """Refuse to write into a non-empty folder that is not a copy of the bundle
-    (no VERSION naming it), so a mistyped path never loses an app's files."""
-    if not folder.is_dir() or not any(folder.iterdir()):
-        return
-    version = folder / "VERSION"
-    names = tuple(n + " " for n in (NAME, *LEGACY_NAMES))
-    if not (version.is_file() and version.read_text(encoding="utf-8", errors="replace").startswith(names)):
-        raise SyncError(f"{folder} is not empty and is not a copy of ui-theme/ (no VERSION); "
-                        "point --to / bundle_dir at the ui-theme folder itself, e.g. static/ui-theme")
 
 
 def mirror(folder: Path, files: dict[str, str], quiet: bool = False) -> None:
@@ -1086,56 +1029,6 @@ def cmd_build(args) -> int:
     return 0
 
 
-DEPRECATION = ("deprecated: `sync_theme.py install` is replaced by `python -m forgeui vendor`, which reads a "
-               "forgeui.json kept in each app's own repository (no machine-local registry, overlays never "
-               "appended into bundle files). See docs/THEME_SYSTEM.md. This command still works.")
-
-
-def cmd_install(args) -> int:
-    """Copy the bundle folder, as build would write it, into a folder or into
-    registered apps. Refuses a stale ui-theme/ so nothing receives a bundle
-    that build would not produce. Deprecated: use `python -m forgeui vendor`."""
-    print(DEPRECATION, file=sys.stderr)
-    data = load_registry()
-    expected = bundle_files(data)
-    stale = folder_drift(BUNDLE, expected)
-    if stale:
-        for p in stale:
-            print("STALE ui-theme/", p)
-        print("ui-theme/ is out of date with src/: run `python tools/sync_theme.py build` first.")
-        return 1
-    if args.to:
-        target = Path(args.to).resolve()
-        require_bundle_folder(target)
-        print(f"-> {target}")
-        mirror(target, expected, args.quiet)
-        print(f"installed {expected['VERSION'].strip()}")
-        return 0
-    registry = registry_dir(args)
-    if registry is None:
-        raise SyncError(f"install needs --to DIR, or an app registry (--apps DIR or {APPS_ENV})")
-    skipped: list[str] = []
-    installed: list[str] = []
-    for name in app_names(registry, args.names, args.dest):
-        m = load_manifest(registry, name)
-        target = repo_root(registry, m, args.dest) / m["bundle_dir"]
-        if not target.parent.is_dir():
-            print(f"SKIP {name}: {target.parent} not found")
-            skipped.append(name)
-            continue
-        require_bundle_folder(target)
-        print(f"{name} -> {target}")
-        mirror(target, app_copy(registry, m, expected), args.quiet)
-        installed.append(name)
-    if not installed:
-        # Every app was skipped: "installed" here would be a success report for a run that wrote nothing.
-        print(f"installed {expected['VERSION'].strip()} into 0 apps (every app skipped)")
-        return 1
-    print(f"installed {expected['VERSION'].strip()} into {len(installed)} app(s): {', '.join(installed)}"
-          + (f"; skipped {', '.join(skipped)}" if skipped else ""))
-    return 1 if skipped else 0
-
-
 def cmd_check(args) -> int:
     data = load_registry()
     failures = []
@@ -1149,16 +1042,6 @@ def cmd_check(args) -> int:
         failures += [f"{label}: extra   {rel}" for rel in have
                      if rel.startswith("images/swatch-") and rel not in files]
     failures += [f"docs: {p}" for p in doc_consistency(data)]
-    registry = registry_dir(args)
-    if registry is not None:
-        expected = bundle_files(data)
-        for name in app_names(registry, args.names, args.dest):
-            m = load_manifest(registry, name)
-            target = repo_root(registry, m, args.dest) / m["bundle_dir"]
-            if not target.parent.is_dir():
-                failures.append(f"{name}: {target.parent} not found")
-                continue
-            failures += [f"{name}: {p}" for p in folder_drift(target, app_copy(registry, m, expected))]
     for f in failures:
         print("DRIFT", f)
     print("ok" if not failures else f"{len(failures)} problem(s)")
@@ -1171,13 +1054,6 @@ def cmd_list(args) -> int:
     print("themes:")
     for t in data["themes"]:
         print(f"  {t['slug']:<17} {t['name']:<17} {t['set']:<7} ground={t['ground']:<5} family={t['family']}")
-    registry = registry_dir(args)
-    if registry is not None:
-        print(f"apps ({registry}):")
-        for path in sorted(registry.glob("*.json")):
-            m = json.loads(read(path))
-            extras = ",".join(m.get("extra_files") or {}) or "-"
-            print(f"  {path.stem:<12} {m.get('bundle_dir')}  extra_files={extras}")
     return 0
 
 
@@ -1191,21 +1067,9 @@ def main(argv: list[str] | None = None) -> int:
     p = sub.add_parser("build", help="regenerate ui-theme/, tokens/ and docs/contrast-report.md")
     p.add_argument("--quiet", action="store_true")
     p.set_defaults(func=cmd_build)
-    p = sub.add_parser("install", help="copy ui-theme/ into a ui-theme folder (--to) or into registered apps; "
-                                       "the folder becomes an exact copy")
-    p.add_argument("names", nargs="*", help="app names in the registry (default: all)")
-    p.add_argument("--to", help="the folder to copy ui-theme/ into, e.g. myapp/static/ui-theme")
-    p.add_argument("--apps", help=f"app registry folder (default: ${APPS_ENV})")
-    p.add_argument("--dest", help="repo root for the one named app (e.g. a git worktree)")
-    p.add_argument("--quiet", action="store_true")
-    p.set_defaults(func=cmd_install)
-    p = sub.add_parser("check", help="exit 1 if generated files or registered app copies are stale")
-    p.add_argument("names", nargs="*")
-    p.add_argument("--apps", help=f"app registry folder (default: ${APPS_ENV})")
-    p.add_argument("--dest", help="repo root for the one named app")
+    p = sub.add_parser("check", help="exit 1 if generated files are stale or the docs are inconsistent")
     p.set_defaults(func=cmd_check)
-    p = sub.add_parser("list", help="list themes, and apps when a registry is given")
-    p.add_argument("--apps", help=f"app registry folder (default: ${APPS_ENV})")
+    p = sub.add_parser("list", help="list the themes")
     p.set_defaults(func=cmd_list)
     args = parser.parse_args(argv)
     try:
