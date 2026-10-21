@@ -26,8 +26,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 # Chrome dumps the page when this much virtual time has passed, finished or not. The suite
-# needs about 8 s of it; an idle page skips the rest at no cost, so the margin is wide.
-VIRTUAL_TIME_BUDGET_MS = 180_000
+# needs about 8 s of it.
+VIRTUAL_TIME_BUDGET_MS = 30_000
 CANDIDATES = [
     "google-chrome", "google-chrome-stable", "chromium", "chromium-browser", "chrome", "msedge",
     r"C:\Program Files\Google\Chrome\Application\chrome.exe",
@@ -85,7 +85,7 @@ def main(argv: list[str] | None = None) -> int:
             text = re.sub(r"<[^>]+>", "", summary.group(1))
             print("  ", text)
             if text.startswith("running"):
-                print(f"   (the run did not finish within {VIRTUAL_TIME_BUDGET_MS // 1000} s of virtual time)")
+                print("   (the run stopped before it finished: the check after that one never ran)")
         if not dom.strip():
             print(result.stderr[-2000:], file=sys.stderr)
         return 1

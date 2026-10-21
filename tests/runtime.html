@@ -9,12 +9,9 @@
   .pass::marker { content: "✔ "; }
   .fail { font-weight: 700; }
   .fail::marker { content: "✘ "; }
-  /* Frames render as real pages (not display: none), so media queries and focus
-     behave as they do in an app. They sit in the viewport, unseen: Chrome throttles
-     frames outside it, and a throttled frame's sprite request can wait forever while
-     virtual time runs out, so the run stalled at a random frame on CI. */
-  iframe { position: fixed; left: 0; top: 0; width: 800px; height: 600px; border: 0;
-           opacity: 0; pointer-events: none; z-index: -1; }
+  /* Frames render off-screen (not display: none), so media queries and
+     focus behave as on a real page. */
+  iframe { position: absolute; left: -10000px; top: 0; width: 800px; height: 600px; border: 0; }
   code { font-family: ui-monospace, Consolas, monospace; }
 </style>
 </head>
@@ -791,8 +788,10 @@
 
   // 43k. Copy buttons keep their icon (#15); loadLocale calls do not race (#14).
   {
-    const SPRITE = new URL('../ui-theme/icons.svg', location.href).href;
-    const ICON = `<svg class="ui-icon" aria-hidden="true"><use href="${SPRITE}#copy"/></svg>`;
+    // The checks need an icon element, not its drawing. A same-document #copy loads nothing:
+    // an external sprite in a frame's first HTML holds its load event on that file, and under
+    // Chrome's virtual time on CI the load sometimes never came and the run stalled here.
+    const ICON = '<svg class="ui-icon" aria-hidden="true"><use href="#copy"/></svg>';
     const f = await comp(
       `<div class="ui-copy"><code class="ui-copy__value">abc</code><button class="ui-btn ui-btn--icon ui-copy__button" id="ib" type="button">${ICON}</button></div>` +
       `<div class="ui-copy"><code class="ui-copy__value">def</code><button class="ui-btn ui-copy__button" id="tb" type="button">${ICON}Copy</button></div>`);
@@ -933,8 +932,8 @@
 
   // 43l. Sortable table headers: the button, the icon and the sorted and numeric states.
   {
-    const SPRITE = new URL('../ui-theme/icons.svg', location.href).href;
-    const SORT = (name) => `<svg class="ui-icon ui-table__sort-icon" aria-hidden="true"><use href="${SPRITE}#${name}"/></svg>`;
+    // A same-document #name, as in 43k: no sprite file for the frame's load event to wait on.
+    const SORT = (name) => `<svg class="ui-icon ui-table__sort-icon" aria-hidden="true"><use href="#${name}"/></svg>`;
     const f = await comp(
       '<div class="ui-table-wrap"><table class="ui-table"><thead><tr>' +
       // The header's own weight and colour are set away from the rules, so a passing check
