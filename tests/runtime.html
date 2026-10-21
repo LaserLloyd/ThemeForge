@@ -33,6 +33,8 @@
   function check(name, actual, expected) {
     const ok = JSON.stringify(actual) === JSON.stringify(expected);
     results.push({ name, ok, detail: ok ? '' : `got ${JSON.stringify(actual)}, want ${JSON.stringify(expected)}` });
+    // If the run stalls, the runner prints this line: it names the last check that finished.
+    document.getElementById('summary').textContent = `running… ${results.length} done, last: ${name}`;
   }
 
   function preset(values) {

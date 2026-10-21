@@ -843,7 +843,8 @@ class IconLintTests(Base):
         gear = "<b>\u2699</b>\n"
         root = self.tree({
             "app/ui.html": gear,
-            "app/tests/t.html": gear, "app/Tests/t.html": gear, "app/test/t.html": gear,
+            # Tests sits in another folder from tests: on Windows and macOS they would be one folder.
+            "app/tests/t.html": gear, "app/pkg/Tests/t.html": gear, "app/test/t.html": gear,
             "app/__tests__/t.js": gear,
             "app/pkg/build/b.html": gear, "app/pkg/vendor/v.html": gear, "app/dist/d.html": gear,
             # skipped without a word
@@ -855,7 +856,7 @@ class IconLintTests(Base):
         self.assertEqual(code, 0)
         self.assertEqual([line.split(" ")[0] for line in out.splitlines()[:-1]], ["case/app/ui.html:1:"])
         self.assertEqual(err.splitlines(), [
-            "note: skipped case/app/Tests", "note: skipped case/app/__tests__", "note: skipped case/app/dist",
+            "note: skipped case/app/__tests__", "note: skipped case/app/dist", "note: skipped case/app/pkg/Tests",
             "note: skipped case/app/pkg/build", "note: skipped case/app/pkg/vendor", "note: skipped case/app/test",
             "note: skipped case/app/tests"])
         code, out, err = self.call(str(root / "app"), "--json")
