@@ -610,7 +610,8 @@ class UpdateTests(unittest.TestCase):
         (self.dest / "locales").symlink_to(outside, target_is_directory=True)
         code, out = self.run_update()
         self.assertEqual(code, 2, out)
-        self.assertIn("unsafe path", out)
+        self.assertIn(f"{self.dest.resolve() / 'locales'} is a link that leaves the folder; refusing to write through it", out)
+        self.assertNotIn("new bundle", out)                   # it is the copy's link, not the download's path
         self.assertEqual(list(outside.iterdir()), [])
 
     @unittest.skipIf(sys.platform == "win32", "POSIX permission bits")
@@ -727,6 +728,93 @@ class UpdateTests(unittest.TestCase):
         code, out = self.run_update("--check")
         self.assertEqual(code, 0, out)
         self.assertIn("up to date", out)
+
+    # -- a new major version is installed only when --ref (or --source) says so
+
+    def set_installed(self, version, hash_="000000000000"):
+        """Make the installed copy look like an older release (its files stay as they are)."""
+        manifest = json.loads((self.dest / "files.json").read_text(encoding="utf-8"))
+        manifest["version"], manifest["hash"] = version, hash_
+        (self.dest / "files.json").write_text(json.dumps(manifest), encoding="utf-8")
+
+    def run_latest(self, *extra, latest="2.0.0"):
+        """update.py against a pretend GitHub whose newest release is ``latest``. Returns (code, output,
+        the URLs fetched). The archive is this repository's bundle whatever the number says."""
+        urls = []
+        archive = self.archive.read_bytes()
+
+        def fetch(url):
+            urls.append(url)
+            return f"ThemeForge {latest} abc123def456\n".encode() if "raw.githubusercontent" in url else archive
+
+        real, update.fetch = update.fetch, fetch
+        try:
+            code, out = quiet(update.main, ["--dest", str(self.dest), *extra])
+        finally:
+            update.fetch = real
+        return code, out, urls
+
+    def test_a_new_major_is_not_installed_without_ref(self):
+        self.run_update()
+        self.set_installed("1.4.0")
+        before = {p.relative_to(self.dest).as_posix(): p.read_bytes() for p in self.dest.rglob("*") if p.is_file()}
+        code, out, urls = self.run_latest()
+        self.assertEqual(code, 1, out)
+        self.assertIn("1.4.0 -> 2.0.0 is a major release: read CHANGELOG.md "
+                      "(https://github.com/LaserLloyd/ThemeForge/blob/main/CHANGELOG.md), then rerun with --ref v2.0.0", out)
+        self.assertEqual([u for u in urls if "codeload" in u], [])             # not even downloaded
+        self.assertEqual({p.relative_to(self.dest).as_posix(): p.read_bytes()
+                          for p in self.dest.rglob("*") if p.is_file()}, before)  # nothing written
+        code, out, _ = self.run_latest("--force")                              # --force is not the yes
+        self.assertEqual(code, 1, out)
+        self.assertIn("is a major release", out)
+
+    def test_check_reports_a_major_as_an_available_update(self):
+        self.run_update()
+        self.set_installed("1.4.0")
+        code, out, urls = self.run_latest("--check")
+        self.assertEqual(code, 1, out)
+        self.assertIn("update available", out)
+        self.assertIn("1.4.0 -> 2.0.0 is a major release", out)
+        self.assertIn("--ref v2.0.0", out)
+        self.set_installed("2.0.0", "abc123def456")
+        code, out, _ = self.run_latest("--check")
+        self.assertEqual((code, "major" in out), (0, False), out)
+
+    def test_an_explicit_ref_or_source_is_the_yes_to_a_major(self):
+        self.run_update()
+        self.set_installed("1.4.0")
+        code, out, urls = self.run_latest("--ref", "v2.0.0")
+        self.assertEqual(code, 0, out)
+        self.assertNotIn("major", out)
+        self.assertTrue(any("codeload" in u and u.endswith("/v2.0.0") for u in urls), urls)
+        self.assertEqual(sync.folder_drift(self.dest, self.bundle), [])
+        self.set_installed("1.4.0")
+        code, out = self.run_update()                                          # --source
+        self.assertEqual(code, 0, out)
+        self.assertEqual(json.loads((self.dest / "files.json").read_text(encoding="utf-8"))["version"],
+                         json.loads(self.bundle["files.json"])["version"])
+
+    def test_minor_patch_and_first_installs_are_not_held_back(self):
+        self.run_update()
+        for installed, latest in (("2.0.0", "2.1.0"), ("2.0.0", "2.0.1"), ("1.2.0", "1.3.0"), ("2.0.0", "1.9.0")):
+            with self.subTest(installed=installed, latest=latest):
+                self.set_installed(installed)
+                code, out, urls = self.run_latest(latest=latest)
+                self.assertEqual(code, 0, out)
+                self.assertNotIn("major", out)
+                self.assertTrue(any("codeload" in u for u in urls), urls)
+        shutil.rmtree(self.dest)
+        code, out, _ = self.run_latest()                                       # nothing installed yet
+        self.assertEqual(code, 0, out)
+
+    def test_the_major_guard_reads_a_copy_that_has_no_files_json(self):
+        self.dest.mkdir(parents=True)
+        (self.dest / "VERSION").write_text("ThemeForge 1.1.0 abc\n", encoding="utf-8")
+        self.assertEqual(self.run_latest()[0], 1)
+        # a date-stamped copy has no major version to compare
+        (self.dest / "VERSION").write_text("ui-theme 2026-09-24 638060cc7dc6\n", encoding="utf-8")
+        self.assertEqual(self.run_latest()[0], 0)
 
 
 

@@ -16,20 +16,32 @@ What it looks for, per line:
 
 * Emoji, looked up the way ``UIComponents.iconFor()`` does (variation selectors and skin tones
   dropped; a ZWJ sequence falls back to its first emoji). A pictograph (⚙ 🗑 📁 ✅) is reported
-  wherever it stands. Arrows and symbols that are not pictographs (→ ✓ ✕ ▸ ▾ ☰ … ×) are common in
-  prose, so they are reported only as the whole text of a string ('✕', "▸", `…`) or of an element
-  (>✕<, whitespace allowed). Pictographs without an icon are listed only with --all.
+  wherever it stands. Arrows and symbols that are not pictographs (→ ✓ ✕ ▸ ▾ ☰) are common in
+  prose, so they are reported only as the whole text of a string ('✕', "▸", `→`) or of an element
+  (>✕<, whitespace allowed). … and × are text more often than icons (a truncation suffix, a
+  multiplication sign), so they are reported only as an element (>×<), never as a string.
+  Pictographs without an icon are listed only with --all.
 * Material Icons names in NiceGUI/Quasar code: icon="name", ui.icon("name"), 'icon': 'name',
   props('... icon=name') and <q-icon name="name">. Values that start with svguse: or img: are
-  already converted, and so are the bundle's own icon names (trash). A Material name with no icon
-  is listed too, and never fails --check.
+  already converted, and other icon fonts (mdi-delete) are left alone. What else counts depends on
+  the file. In .py and .vue files Quasar draws the name from its icon font, so every Material name
+  is reported, and so is every one of the bundle's own names (icon='trash' draws a missing glyph
+  there; use forgeui.quasar_icon). In other files the bundle's own names are skipped, since
+  { icon: 'mail' } already names a sprite icon, and Material names are reported. A Material name
+  with no icon is listed too, and never fails --check.
 
-A line holding ``forgeui: allow-icons`` is skipped, so an app can keep an emoji on purpose.
+Not read: lines that start with a comment marker (//, /*, *, <!--, and # in .py .sh .yml .yaml
+.toml), Python docstrings (found with ast; other triple-quoted strings are read), and any line
+holding ``forgeui: allow-icons``, so an app can keep an emoji on purpose. The list is candidates:
+replace the ones in buttons, tabs, menus and status lines; leave regexes and text processing alone.
 
 Files with the suffixes .html .htm .js .mjs .jsx .ts .tsx .vue .svelte .jinja .j2 .py .css are read
-(and .json inside a folder named locales, locale, i18n or lang) as UTF-8. node_modules, vendor, dist,
-build, .git, __pycache__, .venv, venv and copies of the ThemeForge bundle are skipped. A file named on
-the command line is always read.
+(and .json inside a folder named locales, locale, i18n or lang) as UTF-8. A file or folder named on
+the command line is always read, even a folder called tests or build. Below it, these are skipped
+without a word: dot-folders, node_modules, __pycache__, venv and copies of the ThemeForge bundle.
+vendor, dist, build, test, tests and __tests__ are skipped with ``note: skipped DIR`` on stderr (and
+under "skipped" in --json), because an app can keep its own code in a folder of that name; name it
+on the command line to read it.
 
 Exit codes: 0 ok (or nothing replaceable), 1 with --check and something to replace, 2 usage error.
 Standard library only; Python 3.9 or newer.
@@ -38,6 +50,7 @@ Standard library only; Python 3.9 or newer.
 from __future__ import annotations
 
 import argparse
+import ast
 import bisect
 import dataclasses
 import functools
@@ -45,6 +58,7 @@ import json
 import os
 import re
 import sys
+import warnings
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable, Dict, FrozenSet, Iterable, Iterator, List, Optional, Set, Tuple
@@ -55,7 +69,16 @@ MARKER = "forgeui: allow-icons"
 SUFFIXES = frozenset((".html", ".htm", ".js", ".mjs", ".jsx", ".ts", ".tsx", ".vue", ".svelte", ".jinja",
                       ".j2", ".py", ".css"))
 LOCALE_DIRS = frozenset(("locales", "locale", "i18n", "lang"))
-SKIP_DIRS = frozenset((".git", "node_modules", "vendor", "dist", "build", "__pycache__", ".venv", "venv"))
+# Skipped without a word, along with every folder whose name starts with a dot and the bundle copies.
+QUIET_DIRS = frozenset(("node_modules", "__pycache__", "venv"))
+# Skipped with a note, because an app can keep its own package in a folder of that name.
+NOTED_DIRS = frozenset(("vendor", "dist", "build", "test", "tests", "__tests__"))
+# Where Quasar draws icon="name" from its own font, so a bundle icon name draws nothing there.
+QUASAR_SUFFIXES = frozenset((".py", ".vue"))
+# Files whose lines starting with # are comments (in CSS and HTML a # starts a colour or an id).
+HASH_COMMENT_SUFFIXES = frozenset((".py", ".sh", ".yml", ".yaml", ".toml"))
+# Symbols that are prose or arithmetic more often than icons: reported as an element, never as a string.
+TEXT_SYMBOLS = frozenset(("…", "×"))
 
 # ---------------------------------------------------------------- finding emoji
 
@@ -72,6 +95,7 @@ _STRIP = re.compile("[︎️\U0001F3FB-\U0001F3FF]")  # emojiKey() in src/ui-com
 # The BMP characters Unicode lists as emoji, outside the blocks of plain arrows, shapes and letters:
 # these are pictures and are reported wherever they stand. The rest of _RANGES (→ ✓ ✕ ▸ ☰ ...) is
 # punctuation of a kind prose uses, and counts only alone, unless a U+FE0F asks for the emoji look.
+# … and × count only alone as an element (see TEXT_SYMBOLS).
 _PICTOGRAPHS = (
     (0x2139, 0x2139), (0x231A, 0x231B), (0x2328, 0x2328), (0x23CF, 0x23CF), (0x23E9, 0x23F3),
     (0x23F8, 0x23FA), (0x25FD, 0x25FE), (0x2600, 0x2604), (0x260E, 0x260E), (0x2611, 0x2611),
@@ -112,9 +136,10 @@ def _is_pictograph(text: str) -> bool:
     return any(lo <= first <= hi for lo, hi in _PICTOGRAPHS)
 
 
-def _alone(text: str, start: int, end: int) -> bool:
-    """The match is the whole text of a string ('✕', "▸", `…`) or of an element (>✕<, whitespace allowed)."""
-    if start > 0 and end < len(text) and text[start - 1] in "'\"`" and text[end] == text[start - 1]:
+def _alone(text: str, start: int, end: int, quoted: bool = True) -> bool:
+    """The match is the whole text of a string ('✕', "▸", `→`; not when ``quoted`` is False) or of an
+    element (>✕<, whitespace allowed)."""
+    if quoted and start > 0 and end < len(text) and text[start - 1] in "'\"`" and text[end] == text[start - 1]:
         return True
     before, after = start, end
     while before > 0 and text[before - 1].isspace():
@@ -216,10 +241,61 @@ class Finding:
         return f"{where}{self.text} (no ThemeForge icon)"
 
 
+def _comment_lines(lines: List[str], suffix: str) -> Set[int]:
+    """The lines that start with a comment marker (//, /*, *, <!--, and # where it is one), and the lines a
+    /* */ or <!-- --> comment that starts a line runs on over. Other kinds of file (markdown, where *
+    starts a list item) are not code, so nothing in them is a comment."""
+    found: Set[int] = set()
+    if suffix not in SUFFIXES and suffix not in HASH_COMMENT_SUFFIXES:
+        return found
+    hash_comments = suffix in HASH_COMMENT_SUFFIXES
+    closing = ""
+    for number, line in enumerate(lines, 1):
+        line = line.strip()
+        if closing:
+            found.add(number)
+            if closing in line:
+                closing = ""
+        elif line.startswith("//") or (hash_comments and line.startswith("#")):
+            found.add(number)
+        elif line.startswith(("/*", "<!--")):
+            found.add(number)
+            opening, closer = ("/*", "*/") if line.startswith("/*") else ("<!--", "-->")
+            if closer not in line[len(opening):]:
+                closing = closer
+        elif not hash_comments and (line == "*" or line.startswith(("* ", "*/", "*\t"))):
+            found.add(number)
+    return found
+
+
+def _docstring_lines(source: str) -> Set[int]:
+    """The lines of the module, class and function docstrings of Python source; none if it does not parse."""
+    try:
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")  # invalid escape sequences in other people's strings
+            tree = ast.parse(source.lstrip("\ufeff"))
+    except (SyntaxError, ValueError, RecursionError):
+        return set()
+    lines: Set[int] = set()
+    for node in ast.walk(tree):
+        if isinstance(node, (ast.Module, ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)) and node.body:
+            first = node.body[0]
+            if (isinstance(first, ast.Expr) and isinstance(first.value, ast.Constant)
+                    and isinstance(first.value.value, str)):
+                lines.update(range(first.lineno, (first.end_lineno or first.lineno) + 1))
+    return lines
+
+
 def scan_text(text: str, catalog: Catalog, path: str = "", show_all: bool = False) -> List[Finding]:
-    """The findings in one file's text, in line order. ``show_all`` keeps pictographs with no icon."""
+    """The findings in one file's text, in line order. ``show_all`` keeps pictographs with no icon.
+    The suffix of ``path`` tells what kind of file it is (comments, docstrings, Quasar names)."""
+    suffix = os.path.splitext(path)[1].lower()
     lines = text.split("\n")
-    skipped: Set[int] = {n for n, line in enumerate(lines, 1) if MARKER in line} if MARKER in text else set()
+    skipped = _comment_lines(lines, suffix)
+    if MARKER in text:
+        skipped |= {n for n, line in enumerate(lines, 1) if MARKER in line}
+    if suffix == ".py":
+        skipped |= _docstring_lines(text)
     starts = [0]
     for line in lines[:-1]:
         starts.append(starts[-1] + len(line) + 1)
@@ -236,10 +312,12 @@ def scan_text(text: str, catalog: Catalog, path: str = "", show_all: bool = Fals
         icon = catalog.icon_for(symbol)
         if icon is None and not show_all:
             continue
-        if not _is_pictograph(symbol) and not _alone(text, match.start(), match.end()):
+        if not _is_pictograph(symbol) and not _alone(text, match.start(), match.end(),
+                                                      quoted=symbol not in TEXT_SYMBOLS):
             continue
         add(bisect.bisect_right(starts, match.start()), symbol, "emoji", icon)
 
+    quasar = suffix in QUASAR_SUFFIXES
     for number, line in enumerate(lines, 1):
         if number in skipped or ("icon" not in line and "Icon" not in line):
             continue
@@ -249,9 +327,12 @@ def scan_text(text: str, catalog: Catalog, path: str = "", show_all: bool = Fals
         for name in names:
             if name.startswith(("svguse:", "img:")):
                 continue  # already drawn from the bundle (or an image)
-            icon = catalog.material.get(name)
-            if icon is None and (name in catalog.icons or not _MATERIAL_NAME.fullmatch(name)):
-                continue  # one of the bundle's own names (not a Material name), or another icon font
+            own = name in catalog.icons
+            if own and not quasar:
+                continue  # names a sprite icon already: { icon: 'mail' }
+            icon = catalog.material.get(name) or (name if own else None)
+            if icon is None and not _MATERIAL_NAME.fullmatch(name):
+                continue  # another icon font (mdi-delete, fa-solid) or a path
             add(number, name, "material", icon)
 
     found.sort(key=lambda f: f.line)
@@ -262,11 +343,21 @@ def _is_bundle_copy(folder: Path) -> bool:
     return (folder / "files.json").is_file() and (folder / "VERSION").is_file()
 
 
-def _walk(root: Path) -> Iterator[Path]:
+def _walk(root: Path, skipped: Dict[Path, str]) -> Iterator[Path]:
+    """The files under ``root``. Folders skipped with a note are added to ``skipped`` (resolved -> as shown)."""
     root_name = root.resolve().name.lower()
     for here, dirs, files in os.walk(root):
         here_path = Path(here)
-        dirs[:] = sorted(d for d in dirs if d not in SKIP_DIRS and not _is_bundle_copy(here_path / d))
+        keep = []
+        for d in sorted(dirs):
+            lower = d.lower()
+            if d.startswith(".") or lower in QUIET_DIRS or _is_bundle_copy(here_path / d):
+                continue
+            if lower in NOTED_DIRS:
+                skipped.setdefault((here_path / d).resolve(), (here_path / d).as_posix())
+                continue
+            keep.append(d)
+        dirs[:] = keep
         names = {root_name} | {part.lower() for part in here_path.relative_to(root).parts}
         in_locales = bool(names & LOCALE_DIRS)
         for name in sorted(files):
@@ -275,9 +366,11 @@ def _walk(root: Path) -> Iterator[Path]:
                 yield here_path / name
 
 
-def iter_files(paths: Iterable[str]) -> Iterator[Path]:
-    """The files to read for these paths: a file is read as named, a folder is searched."""
+def iter_files(paths: Iterable[str], skipped: Optional[Dict[Path, str]] = None) -> Iterator[Path]:
+    """The files to read for these paths: a file is read as named, a folder is searched. A path named
+    here is always read; the folders skipped below it with a note are collected in ``skipped``."""
     seen: Set[Path] = set()
+    skipped = {} if skipped is None else skipped
     for raw in paths:
         root = Path(raw)
         if root.is_file():
@@ -286,7 +379,7 @@ def iter_files(paths: Iterable[str]) -> Iterator[Path]:
             print(f"note: {raw} is a ThemeForge bundle copy; skipped", file=sys.stderr)
             candidates = []
         else:
-            candidates = _walk(root)
+            candidates = _walk(root, skipped)
         for path in candidates:
             real = path.resolve()
             if real not in seen:
@@ -329,8 +422,9 @@ def run(paths: List[str], *, folder: Optional[str] = None, check: bool = False, 
         return 2
 
     findings: List[Finding] = []
+    skipped: Dict[Path, str] = {}
     count = 0
-    for path in iter_files(paths):
+    for path in iter_files(paths, skipped):
         try:
             text = path.read_bytes().decode("utf-8", errors="ignore")
         except OSError as exc:
@@ -340,10 +434,13 @@ def run(paths: List[str], *, folder: Optional[str] = None, check: bool = False, 
         findings += scan_text(text, catalog, path.as_posix(), show_all)
     findings.sort(key=lambda f: (f.path, f.line))
     summary = summarize(findings, count)
+    notes = sorted(skipped.values())
+    for note in notes:
+        print(f"note: skipped {note}", file=sys.stderr)
 
     if as_json:
-        out(json.dumps({"findings": [f.as_dict() for f in findings], "summary": summary}, ensure_ascii=False,
-                       indent=2))
+        out(json.dumps({"findings": [f.as_dict() for f in findings], "skipped": notes, "summary": summary},
+                       ensure_ascii=False, indent=2))
     else:
         for finding in findings:
             out(str(finding))

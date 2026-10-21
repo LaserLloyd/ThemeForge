@@ -32,7 +32,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         bundle = bundle_version()
     except OSError:  # a damaged install: --help and --version still answer, and say so
         bundle = "missing"
-    parser.add_argument("--version", action="version", version=f"forgeui {__version__} (bundle {bundle})")
+    parser.add_argument("--version", action="version", version=f"themeforge {__version__} (bundle {bundle})")
     sub = parser.add_subparsers(dest="cmd", required=True)
     vendor.build_parser(sub.add_parser("vendor", help="copy the bundle into this repository, or check the copy",
                                        description=vendor.__doc__,

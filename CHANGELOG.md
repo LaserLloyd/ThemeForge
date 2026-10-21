@@ -52,7 +52,8 @@ which asks every copy to keep the notice, and 1.3.0 and 1.4.0 also carried Lucid
   `.ui-table__sort-icon` (`arrow-up-down` until sorted, then `arrow-up` or `arrow-down`). The app sorts
   and sets `aria-sort`; the CSS draws the state: `none` leaves the arrow in tertiary text, and
   `ascending` or `descending` make the label primary text and semibold, with the arrow in the same
-  colour. In a `th.num` the button fills the cell and sits at the inline end.
+  colour. In a `th.num` the button fills the cell and sits at the inline end. The label keeps the
+  header's capitals and tracking, and the button is a 24px target that does not make the row taller.
 - **PyPI-ready:** `docs/PYPI.md` is the package page, the release builds an sdist next to the
   wheel, and an opt-in `pypi` job publishes with trusted publishing once the maintainer turns it on
   ([CONTRIBUTING.md](CONTRIBUTING.md), "Publishing to PyPI") (#2, #6).
@@ -75,7 +76,11 @@ which asks every copy to keep the notice, and 1.3.0 and 1.4.0 also carried Lucid
   `UIComponents.icon()`, `iconFor()`, `forgeui.quasar_icon()`), but the redrawn icons sit slightly
   inside the old 2..22 box, so they read a touch smaller at 24px. A screenshot test will see every
   icon move.
-- The sortable header's arrow has its own class, `.ui-table__sort-icon`, next to `.ui-table__sort`.
+- `update.py` with no `--ref` stops before a major release and says to read this file and rerun
+  with `--ref v<new>`; `--check` reports the update as a major. An explicit `--ref` or `--source` is
+  the deliberate yes. It guards the next major: a 1.x copy's own `update.py` moves to 2.0 without
+  asking, which is safe because 2.0 removes nothing from the bundle.
+- `python -m forgeui --version` prints `themeforge <version> (bundle <version>)`.
 
 **Removed**
 
@@ -86,12 +91,13 @@ which asks every copy to keep the notice, and 1.3.0 and 1.4.0 also carried Lucid
 
 - A copy button that is only an icon keeps it: `init()` names it with `aria-label` instead of
   replacing the icon with the word "Copy", and the "Copied" feedback swaps only a button's word,
-  never its icon (#15).
+  never its icon (#15). An icon-only label that is not a button (`.ui-setting__env`) gets
+  `role="img"` with its `aria-label`, so screen readers read it.
 - `loadLocale()`: only the newest call applies, so `data-locale="auto"` and an app's own
   `loadLocale('ja')` no longer race, and a new language file's words replace the previous file's
   instead of mixing with them (#14).
 - `update.py` checks every path it will write before writing anything, so a subfolder that is a
-  link to somewhere else is refused rather than written through (#13).
+  link to somewhere else is refused rather than written through, and the message names the link (#13).
 - `forgeui.head_html()` and `forgeui.quasar_icon()` notice a copy vendored again under a running
   server: their caches follow the files' modification times (#16).
 - The specimen preview image runs on nginx 1.30 (the 1.28 base it used stopped getting updates in

@@ -1,7 +1,7 @@
 /* GENERATED component helpers: ThemeForge 2.0.0, drop-in bundle (ui-theme/).
    https://github.com/LaserLloyd/ThemeForge . Do not edit this copy: update the whole
    folder (python ui-theme/update.py) and keep app styles in the app.
-   body sha256: d14cbc78d79b2562 */
+   body sha256: 996bd1cf328464c5 */
 /* ============================================================================
    ui-components.js — behaviour for the component layer (optional) · ThemeForge
    ----------------------------------------------------------------------------
@@ -124,13 +124,14 @@
     return doc.documentElement.lang || (global.navigator && global.navigator.language) || 'en';
   }
 
-  // Fetch <this file's folder>/locales/<lang>.json and merge it over the current words
-  // (so earlier setStrings() calls for keys the file lacks survive). Tries the full tag
-  // (pt-BR) then the language (pt). English is built in: loadLocale('en') restores it.
-  // Resolves true when a file was applied.
+  // Fetch <this file's folder>/locales/<lang>.json and merge it over the current words.
+  // Tries the full tag (pt-BR) then the language (pt). English is built in:
+  // loadLocale('en') restores it. Resolves true when a file was applied.
   // Only the newest loadLocale() call applies (an app's loadLocale('ja') and
   // data-locale="auto" may both be in flight), and a language file's words replace the
-  // previous file's: a word the new file lacks goes back to English.
+  // previous file's: a word the new file lacks goes back to English, while words set with
+  // setStrings() that no earlier file set survive. A call that finds no file leaves the
+  // words as they are.
   var localeCall = 0;
   var localeWords = [];
 
@@ -517,7 +518,8 @@
   // the "set by environment" badge and the reset button (with a name of its own, so
   // twenty of them are not twenty identical buttons). Parts the app filled stay.
   // Put a word from the table in an empty element. An element that holds only an icon
-  // keeps it: the word becomes its accessible name instead.
+  // keeps it: the word becomes its accessible name instead. A name only counts on an
+  // element with a role, so a bare span or div that has none gets role="img".
   function fill(node, key, vars) {
     if (!node) return;
     var word = t(key, node, vars);
@@ -525,6 +527,7 @@
       if (!node.hasAttribute('aria-label') || node.__uiWord) {
         node.setAttribute('aria-label', word);
         node.__uiWord = true;
+        if (!node.hasAttribute('role') && !/^(BUTTON|A)$/.test(node.tagName)) node.setAttribute('role', 'img');
       }
       return;
     }

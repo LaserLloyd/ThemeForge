@@ -119,6 +119,20 @@ class PackageTests(Base):
         self.assertNotIn("ui-theme.css?v=ffffffffff", first)
         self.assertIn("ui-theme.css?v=ffffffffff", second)
 
+    def test_quasar_icon_sees_a_copy_vendored_again_under_a_running_process(self):
+        copy = Path(self.tmp.name) / "copy"
+        shutil.copytree(BUNDLE, copy)
+        self.assertEqual(forgeui.quasar_icon("trash", folder=copy), "svguse:/theme/icons.svg#trash")
+        with self.assertRaises(ValueError):
+            forgeui.quasar_icon("delete_sweep_zz", folder=copy)
+        path = copy / "icons.json"
+        data = json.loads(path.read_text(encoding="utf-8"))
+        data["icons"]["trash"]["material"].append("delete_sweep_zz")
+        path.write_text(json.dumps(data), encoding="utf-8")
+        stat = path.stat()
+        os.utime(path, ns=(stat.st_atime_ns, stat.st_mtime_ns + 1_000_000_000))
+        self.assertEqual(forgeui.quasar_icon("delete_sweep_zz", folder=copy), "svguse:/theme/icons.svg#trash")
+
     def test_head_html_adapters_components_and_overlays(self):
         head = forgeui.head_html(themes=["glacier"], adapters=["quasar"], components=True,
                                  extra_css=["adapters/app-extra.css"], app_css=["/static/app.css"],
@@ -648,7 +662,7 @@ class CliTests(Base):
     def test_version_and_path(self):
         code, out = self.call("--version")
         self.assertEqual(code, 0)
-        self.assertIn(forgeui.__version__, out)
+        self.assertEqual(out.strip(), f"themeforge {forgeui.__version__} (bundle {forgeui.bundle_version()})")
         code, out = self.call("path")
         self.assertEqual((code, out.strip()), (0, str(BUNDLE)))
 
@@ -724,7 +738,17 @@ class IconLintTests(Base):
                 code = cli.main(["icons", *argv])
             except SystemExit as exc:
                 code = exc.code
-        return code, out.getvalue().replace(self.repo.as_posix() + "/", ""), err.getvalue()
+        here = self.repo.as_posix() + "/"
+        return code, out.getvalue().replace(here, ""), err.getvalue().replace(here, "")
+
+    def tree(self, files):
+        """Write ``files`` (relative path -> text) under a fresh folder inside the repo; return the folder."""
+        root = self.repo / "case"
+        for rel, text in files.items():
+            path = root / rel
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(text.encode("utf-8"))
+        return root
 
     def scan(self, text, **kwargs):
         return [(f.line, f.text, f.icon) for f in iconlint.scan_text(text, self.catalog, **kwargs)]
@@ -776,7 +800,8 @@ class IconLintTests(Base):
         code, out, err = self.call(str(self.repo), "--json", "--check")
         self.assertEqual((code, err), (1, ""))                # still honours --check
         report = json.loads(out)
-        self.assertEqual(set(report), {"findings", "summary"})
+        self.assertEqual(set(report), {"findings", "skipped", "summary"})
+        self.assertEqual(report["skipped"], [])
         self.assertEqual([(f["path"], f["line"], f["text"], f["kind"], f["icon"]) for f in report["findings"]], [
             ("app.py", 2, "delete_forever", "material", "trash"),
             ("app.py", 3, "account_tree", "material", None),
@@ -814,6 +839,44 @@ class IconLintTests(Base):
         out = self.call(str(self.repo / "notes.md"))[1]
         self.assertIn("notes.md:1: \U0001f5d1 -> trash", out)
 
+    def test_tests_and_build_folders_are_skipped_with_a_note(self):
+        gear = "<b>\u2699</b>\n"
+        root = self.tree({
+            "app/ui.html": gear,
+            "app/tests/t.html": gear, "app/Tests/t.html": gear, "app/test/t.html": gear,
+            "app/__tests__/t.js": gear,
+            "app/pkg/build/b.html": gear, "app/pkg/vendor/v.html": gear, "app/dist/d.html": gear,
+            # skipped without a word
+            "app/.hidden/h.html": gear, "app/node_modules/n.html": gear, "app/__pycache__/p.html": gear,
+            "app/venv/v.html": gear, "app/copy/files.json": "{}", "app/copy/VERSION": "ThemeForge 1.0.0\n",
+            "app/copy/c.html": gear,
+        })
+        code, out, err = self.call(str(root / "app"))
+        self.assertEqual(code, 0)
+        self.assertEqual([line.split(" ")[0] for line in out.splitlines()[:-1]], ["case/app/ui.html:1:"])
+        self.assertEqual(err.splitlines(), [
+            "note: skipped case/app/Tests", "note: skipped case/app/__tests__", "note: skipped case/app/dist",
+            "note: skipped case/app/pkg/build", "note: skipped case/app/pkg/vendor", "note: skipped case/app/test",
+            "note: skipped case/app/tests"])
+        code, out, err = self.call(str(root / "app"), "--json")
+        report = json.loads(out)
+        self.assertEqual(report["skipped"], [line.split("skipped ")[1] for line in err.splitlines()])
+        self.assertEqual([f["path"] for f in report["findings"]], ["case/app/ui.html"])
+
+    def test_a_folder_named_on_the_command_line_is_always_read(self):
+        gear = "<b>\u2699</b>\n"
+        root = self.tree({"app/tests/t.html": gear, "app/tests/build/b.html": gear, "app/pkg/build/b.html": gear,
+                          "app/pkg/ui.html": gear})
+        for named in ("app/tests", "app/pkg/build"):
+            code, out, err = self.call(str(root / named))
+            self.assertEqual(out.count("\u2699 -> settings"), 1, (named, out))
+        # what is skipped below it is still said once, even when two named folders reach it
+        code, out, err = self.call(str(root / "app" / "tests"), str(root / "app" / "tests"))
+        self.assertEqual(err.splitlines(), ["note: skipped case/app/tests/build"])
+        code, out, err = self.call(str(root / "app"), str(root / "app" / "pkg"))
+        self.assertEqual(err.splitlines(), ["note: skipped case/app/pkg/build", "note: skipped case/app/tests"])
+        self.assertEqual(out.count("\u2699 -> settings"), 1, out)
+
     def test_python_dash_m_prints_utf8(self):
         import subprocess
         proc = subprocess.run([sys.executable, "-m", "forgeui", "icons", str(self.repo / "static"), "--check"],
@@ -832,7 +895,7 @@ class IconLintTests(Base):
         self.assertGreater(len(expected), 200)
         for symbol, name in expected.items():
             with self.subTest(symbol=symbol):
-                self.assertEqual(self.scan("x = '%s'\n" % symbol), [(1, symbol, name)])
+                self.assertEqual(self.scan("<b>%s</b>\n" % symbol), [(1, symbol, name)])
 
     def test_variation_selectors_skin_tones_and_zwj_sequences(self):
         self.assertEqual(self.scan("\U0001f5d1\ufe0f"), [(1, "\U0001f5d1\ufe0f", "trash")])
@@ -852,11 +915,78 @@ class IconLintTests(Base):
         prose = "A \u2192 B \u2713 ok \u2026 more \u25b8 \u25be \u2630 3 \u00d7 4 \u21d2 \u2122"
         self.assertEqual(self.scan(prose), [])
         self.assertEqual(self.scan(prose, show_all=True), [])  # not alone, so not even listed
-        for alone in ("'\u2192'", '"\u25b8"', "`\u2026`", "<b>\u2713</b>", "<i> \u2630 </i>"):
+        for alone in ("'\u2192'", '"\u25b8"', "`\u2715`", "<b>\u2713</b>", "<i> \u2630 </i>", "<b>\u2026</b>"):
             with self.subTest(alone=alone):
                 self.assertEqual(len(self.scan(alone)), 1)
         self.assertEqual(self.scan("<button>\n  \u2715\n</button>"), [(2, "\u2715", "x")])
         self.assertEqual(self.scan("<button>\u00d7</button>"), [(1, "\u00d7", "x")])  # the usual close glyph
+
+    def test_ellipsis_and_times_count_only_as_an_element(self):
+        # A truncation suffix and a multiplication sign are text, whatever the quotes around them.
+        for text in ('snippet = snippet[:57] + "\u2026"', "label = w + '\u00d7' + h", "assert out.endswith('\u2026')",
+                     "const times = `\u00d7`;", "{ text: '\u00d7' }", "('\u2026', '...')"):
+            with self.subTest(text=text):
+                self.assertEqual(self.scan(text), [])
+        self.assertEqual(self.scan("<span>\u2026</span>"), [(1, "\u2026", "ellipsis")])
+        self.assertEqual(self.scan("<button>\n  \u00d7\n</button>"), [(2, "\u00d7", "x")])
+        # the other symbols that count only alone still count as a string
+        self.assertEqual(self.scan("{ text: '\u2715' }"), [(1, "\u2715", "x")])
+
+    def test_comment_lines_are_skipped_by_file_type(self):
+        gear = "\u2699"
+        for path, text in [
+            ("a.py", "# {g}"), ("a.py", "x = 1\n    # {g}"), ("a.sh", "# {g}"), ("a.yml", "# {g}"),
+            ("a.js", "// {g}"), ("a.ts", "  // {g}"), ("a.py", "// {g}"),
+            ("a.js", "/* {g} */"), ("a.js", "/**\n * {g}\n */"), ("a.js", "run(); /* opened late\n * {g}\n */"),
+            ("a.css", "/*\n  {g} a block comment whose lines do not start with a star\n*/"),
+            ("a.css", "/* {g}\n   {g} */"), ("a.css", "/**/\n/* x */ /* {g} */"),
+            ("a.html", "<!-- {g} -->"), ("a.html", "<!--\n  {g}\n-->"), ("a.vue", "<!-- {g} -->"),
+        ]:
+            with self.subTest(path=path, text=text):
+                self.assertEqual(self.scan(text.format(g=gear), path=path), [])
+        # # starts a colour or an id in CSS and HTML; a comment that ends is followed by code again
+        for path, text, line in [
+            ("a.css", "#app::before {{ content: '{g}' }}", 1), ("a.html", "# {g}", 1), ("a.js", "# {g}", 1),
+            ("a.py", "x = 1  # {g}", 1), ("a.js", "run();  // {g}", 1), ("a.py", "* {g}", 1),
+            ("a.css", "/* a */\n<b>{g}</b>", 2), ("a.html", "<!-- a -->\n<b>{g}</b>", 2),
+            ("a.css", "/* a\nb */\n<b>{g}</b>", 3), ("a.md", "* {g} item\n// {g}", 1), ("", "// {g}", 1),
+        ]:
+            with self.subTest(path=path, text=text):
+                found = self.scan(text.format(g=gear), path=path)
+                self.assertEqual([f[0] for f in found][:1], [line])
+
+    def test_python_docstrings_are_skipped_but_other_strings_are_read(self):
+        lines = [
+            '"""Module {g}',
+            'over two lines {g}"""',
+            "import x",
+            "class A:",
+            '    """Class {g}."""',
+            "    def f(self):",
+            "        '''Method {g}'''",
+            '        return x.html("""<b>{g}</b>""")  # READ: NiceGUI html with an emoji in it',
+            "async def g():",
+            '    """Async {g}"""',
+            "def h():",
+            "    y = 1",
+            '    """Not a docstring {g}"""  # READ: it is not the first statement',
+            "NOTE = '''{g}'''  # READ: a module-level string that is not the docstring",
+        ]
+        text = "\n".join(lines).format(g="\u2699")
+        hits = [n for n, line in enumerate(text.split("\n"), 1) if "READ" in line]
+        self.assertEqual(len(hits), 3)
+        self.assertEqual([f[0] for f in self.scan(text, path="app.py")], hits)
+        # Not Python, or Python that does not parse: nothing is a docstring.
+        self.assertEqual(len(self.scan('"""Module \u2699"""\n', path="app.js")), 1)
+        self.assertEqual(len(self.scan('"""Module \u2699"""\ndef broken(:\n', path="app.py")), 1)
+        self.assertEqual(len(self.scan('\ufeff"""Module \u2699"""\n', path="app.py")), 0)  # a BOM is fine
+
+    def test_reading_python_raises_no_syntax_warnings(self):
+        import warnings
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter("always")
+            self.scan('"""Docstring"""\nx = re.compile("\\d+ \\.")\ny = "\\d"\n', path="app.py")
+        self.assertEqual([str(w.message) for w in caught], [])
 
     def test_material_name_forms(self):
         text = "\n".join([
@@ -866,15 +996,38 @@ class IconLintTests(Base):
             "ui.button('x').props('flat round icon=close')",
             "ui.button('x').props(\"icon='delete'\")",
             "tabs = [{'icon': 'folder_open', 'label': 'Files'}, {\"icon\": \"account_tree\"}]",
-            "const tabs = [{ icon: 'search' }];",
             '<q-icon name="delete_outline" size="sm" />',
             '<q-btn icon="mic" icon-right="close" />',
         ])
-        self.assertEqual(self.scan(text), [
+        expected = [
             (1, "delete_forever", "trash"), (2, "refresh", "refresh-cw"), (3, "settings", "settings"),
             (4, "close", "x"), (5, "delete", "trash"), (6, "folder_open", "folder"),
-            (6, "account_tree", None), (7, "search", "search"), (8, "delete_outline", "trash"),
-            (9, "mic", "mic"), (9, "close", "x")])
+            (6, "account_tree", None), (7, "delete_outline", "trash"), (8, "mic", "mic"), (8, "close", "x")]
+        self.assertEqual(self.scan(text, path="app.py"), expected)
+
+    def test_the_bundles_own_icon_names_depend_on_the_file_type(self):
+        # Quasar draws icon="name" from its font, so even trash draws a missing glyph in NiceGUI and Vue.
+        quasar = "\n".join([
+            "ui.button(icon='trash')",
+            "ui.icon('circle-check')",
+            "tabs = [{'icon': 'search'}, {'icon': 'mail'}]",
+            "ui.button(icon='mdi-delete')",
+            "ui.button(icon='svguse:/theme/icons.svg#trash')",
+        ])
+        self.assertEqual(self.scan(quasar, path="app.py"), [
+            (1, "trash", "trash"), (2, "circle-check", "circle-check"), (3, "search", "search"),
+            (3, "mail", "mail")])
+        self.assertEqual(self.scan('<q-btn icon="trash" />\n<q-icon name="mail" />', path="Page.vue"),
+                         [(1, "trash", "trash"), (2, "mail", "mail")])
+        # Elsewhere they already name sprite icons, mail and search being Material names too.
+        script = "\n".join([
+            "const tabs = [{ icon: 'mail' }, { icon: 'trash' }, { icon: 'search' }, { icon: 'circle-check' }];",
+            "const more = [{ icon: 'delete_forever' }, { icon: 'account_tree' }];",
+        ])
+        for path in ("app.js", "app.ts", "app.jsx", "app.tsx", "index.html", "app.svelte", "app.css", ""):
+            with self.subTest(path=path):
+                self.assertEqual(self.scan(script, path=path),
+                                 [(2, "delete_forever", "trash"), (2, "account_tree", None)])
 
     def test_material_lookalikes_are_left_alone(self):
         text = "\n".join([
@@ -885,11 +1038,11 @@ class IconLintTests(Base):
             "ui.button(icon='mdi-delete')",
             "ui.button(icon='fa-solid fa-trash')",
             "<q-btn :icon=\"expr\" prepend-icon=\"close\" my_icon=\"close\">",
-            "{'icon': 'trash', 'label': 'Delete'}",             # one of the bundle's own names
+            "{'icon': 'trash', 'label': 'Delete'}",             # one of the bundle's own names (not in .py)
             "ui.button(icon='delete_forever')  # forgeui: allow-icons",
             "if icon == 'close': pass",
         ])
-        self.assertEqual(self.scan(text), [])
+        self.assertEqual(self.scan(text, path="app.js"), [])
 
     def test_the_module_stays_python_39_syntax(self):
         import ast

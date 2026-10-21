@@ -810,6 +810,23 @@
     await tick(1900);
     check('copy: after the feedback the word and the icon are both back', [!!tb.querySelector('svg'), tb.textContent.trim(), tb.hasAttribute('data-copied')], [true, 'Copy', false]);
 
+    // An icon-only part of a settings row that is not a button: aria-label names nothing on a bare
+    // span, so it gets role="img"; a role the app set stays, and a button needs none.
+    {
+      const g = await comp(
+        '<div class="ui-setting" data-level="advanced" data-source="env" data-default="1"><div class="ui-setting__text"><div class="ui-setting__label"><label for="ic">Port</label>' +
+        `<span class="ui-badge ui-setting__level" id="il" role="note">${ICON}</span><span class="ui-badge ui-setting__env" id="ie">${ICON}</span></div></div>` +
+        `<div class="ui-setting__control"><input class="ui-input" id="ic" value="2"><button class="ui-btn ui-btn--ghost ui-btn--sm ui-setting__reset" id="ir" type="button">${ICON}</button></div></div>`);
+      const gd = g.contentDocument;
+      const part = (id) => { const n = gd.getElementById(id); return [!!n.querySelector('svg'), n.getAttribute('aria-label'), n.getAttribute('role')]; };
+      check('setting: an icon-only badge keeps its icon and is named, with role img', part('ie'), [true, 'Set by environment', 'img']);
+      check('setting: a role the app set stays, and a button gets none', [part('il'), part('ir')],
+            [[true, 'Advanced', 'note'], [true, 'Reset Port to default', null]]);
+      g.contentWindow.UIComponents.setStrings({ setByEnv: 'Par l\u2019environnement' });
+      g.contentWindow.UIComponents.init(gd);
+      check('setting: the icon-only badge is renamed with the table and keeps its role', part('ie'), [true, 'Par l\u2019environnement', 'img']);
+    }
+
     const late = U.loadLocale('ja');
     await U.loadLocale('en');
     await late;
@@ -904,6 +921,9 @@
     d.getElementById('stage').insertAdjacentHTML('beforeend', '<h1 id="rh">عنوان</h1><div class="ui-kicker" id="rk">الحالة</div>');
     check('rtl: Arabic headings and kickers are not tracked',
           ['rh', 'rk'].map((id) => parseFloat(w.getComputedStyle(d.getElementById(id)).letterSpacing) || 0), [0, 0]);
+    d.getElementById('stage').insertAdjacentHTML('beforeend', '<table class="ui-table"><thead><tr><th id="rth">عنوان</th><th><button class="ui-table__sort" id="rsb" type="button">عنوان</button></th></tr></thead></table>');
+    check('rtl: an Arabic sortable header is not tracked either (the button follows the header)',
+          ['rth', 'rsb'].map((id) => parseFloat(w.getComputedStyle(d.getElementById(id)).letterSpacing) || 0), [0, 0]);
   }
 
   // 43l. Sortable table headers: the button, the icon and the sorted and numeric states.
@@ -917,7 +937,9 @@
       `<th id="hs" aria-sort="ascending" style="font-weight: 400"><button class="ui-table__sort" id="bs" type="button">Minutes${SORT('arrow-up')}</button></th>` +
       `<th id="hu" aria-sort="none" style="color: var(--text-primary)"><button class="ui-table__sort" id="bu" type="button">Job${SORT('arrow-up-down')}</button></th>` +
       `<th id="hn" class="num" aria-sort="descending"><button class="ui-table__sort" id="bn" type="button">Total${SORT('arrow-down')}</button></th>` +
+      '<th id="hp">Owner</th>' +
       '</tr></thead><tbody><tr><td>render</td><td class="num">12.4</td></tr></tbody></table></div>' +
+      '<table class="ui-table"><thead><tr><th id="hq">Owner</th></tr></thead></table>' +
       '<span id="tt" style="color: var(--text-tertiary)">quiet</span><span id="tp" style="color: var(--text-primary)">loud</span>');
     const w = f.contentWindow, d = f.contentDocument;
     const cs = (el) => w.getComputedStyle(el);
@@ -932,6 +954,15 @@
     check('sort: the icon is 1em, the size of the label text', Math.abs(rect(iu).width - parseFloat(cs(iu).fontSize)) < 0.5, true);
     check('sort: a numeric header fills its cell and the label sits at the end',
           [cs(bn).justifyContent, Math.abs(rect(bn).right - (rect(hn).right - parseFloat(cs(hn).paddingRight))) < 1], ['flex-end', true]);
+    // A button resets text-transform and letter-spacing; the header's plain cells set the label in
+    // capitals and tracked, so the button has to match the plain header beside it.
+    const hp = d.getElementById('hp');
+    check('sort: a sortable header is set like a plain header in the same row (capitals, tracking)',
+          [cs(hp).textTransform, cs(bu).textTransform, cs(hp).letterSpacing !== 'normal', cs(bu).letterSpacing === cs(hp).letterSpacing],
+          ['uppercase', 'uppercase', true, true]);
+    check('sort: the button is at least a 24px target tall', [bs, bu, bn].map((b) => rect(b).height >= 24), [true, true, true]);
+    check('sort: the target does not make the header row taller than plain headers',
+          Math.abs(rect(hp).height - rect(d.getElementById('hq')).height) < 1, true);
   }
 
   // Report.

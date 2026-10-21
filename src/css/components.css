@@ -909,19 +909,27 @@
 .ui-table tr[aria-selected="true"] td:first-child { box-shadow: inset 3px 0 0 var(--selected); }
 .ui-table tr[aria-selected="true"] td:first-child:dir(rtl) { box-shadow: inset -3px 0 0 var(--selected); }
 
-/* Sortable headers. The app sorts its rows and keeps aria-sort and the icon in step;
-   the button inherits the header's type, and the icon stays quiet until the column is sorted. */
+/* Sortable headers. The app sorts its rows and keeps aria-sort and the icon in step; the icon
+   stays quiet until the column is sorted. The button takes the header's type: font: inherit does
+   not reach text-transform or letter-spacing, which the browser's button style resets, so those
+   are inherited by name (Arabic sets the header's tracking to 0, and the button follows). */
 .ui-table__sort {
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
+  /* A 24px target that takes no more room in the row than its text: the negative margin
+     hands back what the minimum adds (1lh is the label's line). */
+  min-block-size: 24px;
+  margin-block: min(0px, (1lh - 24px) / 2);
   border: 0;
   background: transparent;
   color: inherit;
   font: inherit;
+  letter-spacing: inherit;
   padding: 0;
   cursor: pointer;
   text-align: inherit;
+  text-transform: inherit;
 }
 .ui-table__sort:hover { color: var(--text-primary); }
 .ui-table__sort-icon { --ui-icon-size: 1em; }

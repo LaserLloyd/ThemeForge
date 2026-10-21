@@ -23,6 +23,11 @@ neither the installed nor the new release) unless you pass --force: the bundle
 is replaced whole on every update, so keep app styles in the app. A run that
 stops half way (a file held open) is safe to repeat: it resumes.
 
+A new major version may remove what an app uses, so moving to one is a decision:
+when the folder holds an older major and neither --ref nor --source names the
+target, nothing is written; it says to read CHANGELOG.md and rerun with --ref
+v<new> (exit 1; --check reports the same). Minor and patch releases just update.
+
 files.json proves the download is complete and unaltered; trust in where it
 came from rests on HTTPS to github.com and on pinning a release tag. Hashes
 are taken over LF line endings, so a checkout that turned the files into CRLF
@@ -191,15 +196,38 @@ def inside(folder: Path, rel: str, what) -> Path:
     """folder / rel, refused unless it stays inside folder (also after links are followed)."""
     p = PurePosixPath(rel.replace("\\", "/"))
     target = folder / rel
-    escapes = not rel or p.is_absolute() or ".." in p.parts or re.match(r"^[A-Za-z]:", rel)
-    if not escapes:
-        try:
-            target.resolve().relative_to(folder.resolve())
-        except ValueError:
-            escapes = True
-    if escapes:
+    if not rel or p.is_absolute() or ".." in p.parts or re.match(r"^[A-Za-z]:", rel):
         raise UpdateError(f"unsafe path in {what}: {rel} (outside {folder}); refusing to touch it")
+    base, here = folder.resolve(), folder
+    for part in p.parts:  # a folder or file of the copy that is a link leading out of it
+        here = here / part
+        try:
+            here.resolve().relative_to(base)
+        except ValueError:
+            raise UpdateError(f"{here} is a link that leaves the folder; refusing to write through it") from None
     return target
+
+
+def installed_version(folder: Path, manifest) -> str:
+    """The version of the bundle in folder, from its files.json or else its VERSION ('' if unknown)."""
+    if manifest and manifest.get("version"):
+        return str(manifest["version"])
+    try:
+        text = (folder / "VERSION").read_text(encoding="utf-8", errors="replace").split()
+    except OSError:
+        return ""
+    return text[1] if len(text) > 1 and text[0] in (NAME, *LEGACY_NAMES) else ""
+
+
+def is_major_jump(old: str, new: str) -> bool:
+    """True when both are x.y.z versions and new has the higher major (a date stamp has no major)."""
+    a, b = (re.match(r"(\d+)\.\d", v or "") for v in (old, new))
+    return bool(a and b and int(a.group(1)) < int(b.group(1)))
+
+
+def major_message(repo: str, old: str, new: str) -> str:
+    return (f"{old} -> {new} is a major release: read CHANGELOG.md "
+            f"(https://github.com/{repo}/blob/main/CHANGELOG.md), then rerun with --ref v{new}")
 
 
 def describe(manifest) -> str:
@@ -319,7 +347,8 @@ def apply(folder: Path, files: dict, old_manifest, new_manifest) -> list:
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--ref", default="latest",
-                        help="release tag, branch or commit (default: latest, the newest release tag)")
+                        help="release tag, branch or commit (default: latest, the newest release tag; "
+                             "a newer major version is installed only when named here)")
     parser.add_argument("--repo", default=REPO, help=f"the GitHub repository as user/name (default: {REPO})")
     parser.add_argument("--dest", help="the ui-theme folder to install into or update "
                                        "(default: the folder this script is in)")
@@ -346,6 +375,9 @@ def main(argv=None) -> int:
             print(f"{target}\n  installed: {describe(installed)}\n  available: {NAME} {version} ({args.repo}@{ref})")
             current = installed.get("version") if installed else None
             print("  up to date" if current == version else "  update available")
+            old = installed_version(target, installed)
+            if current != version and args.ref == "latest" and is_major_jump(old, version):
+                print("  " + major_message(args.repo, old, version))
             return 0 if current == version else 1
 
         if args.source:
@@ -354,6 +386,11 @@ def main(argv=None) -> int:
             origin = str(source)
         else:
             ref = resolve_ref(args.repo, args.ref)
+            if args.ref == "latest":  # a new major version is installed only when --ref (or --source) says so
+                old = installed_version(target, read_manifest(target))
+                if is_major_jump(old, ref[1:]):
+                    print(major_message(args.repo, old, ref[1:]), file=sys.stderr)
+                    return 1
             files, used = download_bundle(args.repo, ref, latest=args.ref == "latest")
             origin = f"{args.repo}@{used}"
         new = verify(files)
