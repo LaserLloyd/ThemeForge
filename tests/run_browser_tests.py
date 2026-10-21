@@ -26,9 +26,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 # Chrome dumps the page when this much virtual time has passed, finished or not. The suite
-# needs about 8 s of it on a fast machine and several times that on a CI runner, where virtual
-# time keeps moving while frames and files load; once the page is idle the rest is skipped at
-# no cost, so the budget is generous.
+# needs about 8 s of it; an idle page skips the rest at no cost, so the margin is wide.
 VIRTUAL_TIME_BUDGET_MS = 180_000
 CANDIDATES = [
     "google-chrome", "google-chrome-stable", "chromium", "chromium-browser", "chrome", "msedge",

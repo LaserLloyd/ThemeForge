@@ -9,9 +9,12 @@
   .pass::marker { content: "✔ "; }
   .fail { font-weight: 700; }
   .fail::marker { content: "✘ "; }
-  /* Frames render off-screen (not display: none), so media queries and
-     focus behave as on a real page. */
-  iframe { position: absolute; left: -10000px; top: 0; width: 800px; height: 600px; border: 0; }
+  /* Frames render as real pages (not display: none), so media queries and focus
+     behave as they do in an app. They sit in the viewport, unseen: Chrome throttles
+     frames outside it, and a throttled frame's sprite request can wait forever while
+     virtual time runs out, so the run stalled at a random frame on CI. */
+  iframe { position: fixed; left: 0; top: 0; width: 800px; height: 600px; border: 0;
+           opacity: 0; pointer-events: none; z-index: -1; }
   code { font-family: ui-monospace, Consolas, monospace; }
 </style>
 </head>
