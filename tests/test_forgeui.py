@@ -582,7 +582,7 @@ class VendorTests(Base):
         with zipfile.ZipFile(zpath, "w") as zf:
             for p in files:
                 zf.write(p, f"ui-theme/{p.relative_to(BUNDLE).as_posix()}")
-        wheel = Path(self.tmp.name) / "forgeui-x-py3-none-any.whl"
+        wheel = Path(self.tmp.name) / "themeforge-x-py3-none-any.whl"
         with zipfile.ZipFile(wheel, "w") as zf:
             zf.writestr("forgeui-x.dist-info/METADATA", "Name: forgeui\n")
             for p in files:

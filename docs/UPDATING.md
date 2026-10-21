@@ -2,13 +2,13 @@
 
 An app holds a copy of `ui-theme/` and never edits it, so updating is replacing the copy.
 Two tools do that safely, with the same guarantees (verified files, no overwriting of hand edits):
-`python -m forgeui vendor` for repositories that keep a `forgeui.json` (the ForgeUI package; see
+`python -m forgeui vendor` for repositories that keep a `forgeui.json` (the `themeforge` package; see
 [THEME_SYSTEM.md](THEME_SYSTEM.md)), and `ui-theme/update.py` for apps without pip.
 
-## With ForgeUI
+## With the Python package
 
 ```
-pip install --upgrade "forgeui @ git+https://github.com/LaserLloyd/ThemeForge@v1.5.0"   # the release your forgeui.json accepts (not PyPI: that name is another project)
+pip install --upgrade "themeforge @ git+https://github.com/LaserLloyd/ThemeForge@v1.5.0"   # the release your forgeui.json accepts (from the tag until it is on PyPI)
 python -m forgeui vendor                      # write the new copy (VERSION last)
 python -m forgeui vendor --check              # CI: exit 1 when the copy drifted
 python -m forgeui vendor --source ThemeForge-1.5.0.zip   # offline: a release zip, wheel, archive or folder

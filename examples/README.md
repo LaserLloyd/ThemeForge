@@ -8,7 +8,7 @@ Each example also carries a `forgeui.json`, the manifest an app keeps to say whe
 and which themes it offers. `python -m forgeui vendor` in an example's folder writes the copy
 (`static/ui-theme/` for the FastAPI example, which then serves it instead of the repository's),
 and `python -m forgeui vendor --check` verifies it. CI vendors both examples with the built wheel
-(`python tools/selftest_forgeui.py --wheel dist/forgeui-*.whl`).
+(`python tools/selftest_forgeui.py --wheel dist/themeforge-*.whl`).
 
 ## static-html
 

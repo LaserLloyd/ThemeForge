@@ -35,10 +35,10 @@ jobs:
           python -m twine check dist/*
           ls -l dist
       - name: forgeui vendor self-test on the examples (the built wheel, in a clean venv)
-        run: python tools/selftest_forgeui.py --wheel dist/forgeui-*-py3-none-any.whl
+        run: python tools/selftest_forgeui.py --wheel dist/themeforge-*-py3-none-any.whl
       - uses: actions/upload-artifact@v4
         with:
-          name: forgeui-dist
+          name: themeforge-dist
           path: dist/
           if-no-files-found: error
       - name: No CRLF in committed text files
@@ -62,7 +62,7 @@ jobs:
         run: |
           python -m pip install build
           python -m build
-          $wheel = (Get-ChildItem dist -Filter "*.whl").FullName
+          $wheel = (Get-ChildItem dist -Filter "themeforge-*.whl").FullName
           python tools/selftest_forgeui.py --wheel $wheel
 
   updater-on-oldest-python:

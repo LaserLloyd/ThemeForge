@@ -35,7 +35,11 @@
   Add a `CHANGELOG.md` entry for every release, and keep pinned URLs in the docs on the
   current version (`check` fails otherwise). Merging a new version to `main` is the release:
   `.github/workflows/release.yml` tags it and publishes the zip and wheel.
-- Apps vendor the bundle with `python -m forgeui vendor` (a `forgeui.json` in their own repo);
-  `sync_theme.py install` and its machine-local registry are deprecated. Never run either against
-  a folder you were not asked to change.
+- Apps vendor the bundle with `python -m forgeui vendor` (a `forgeui.json` in their own repo).
+  `sync_theme.py install` and the machine-local app registry were removed in 2.0. Never run
+  `vendor` against a folder you were not asked to change.
+- The Python distribution is `themeforge` (the name `forgeui` on PyPI is another project); the
+  import package and `python -m` module stay `forgeui`. `docs/PYPI.md` is the PyPI long
+  description (absolute links only); the `pypi` job in `release.yml` is opt-in
+  (`CONTRIBUTING.md`, "Publishing to PyPI").
 - `docs/THEME_SYSTEM.md` is the index and the contract rules; keep it true when the policy changes.

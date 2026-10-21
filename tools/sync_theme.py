@@ -1,16 +1,13 @@
 #!/usr/bin/env python3
-"""Build the drop-in theme bundle, and keep copies of it current.
+"""Build the drop-in theme bundle, and check that the generated files are current.
 
     python tools/sync_theme.py build      regenerate ui-theme/, tokens/ and the generated docs
-    python tools/sync_theme.py check      exit 1 if any generated file is stale (and check app copies)
-    python tools/sync_theme.py install --to DIR      DEPRECATED, see below
-    python tools/sync_theme.py install [<app> ...] --apps REGISTRY [--dest REPO]   DEPRECATED
-    python tools/sync_theme.py list       themes, and apps when a registry is given
+    python tools/sync_theme.py check      exit 1 if any generated file is stale
+    python tools/sync_theme.py list       the themes
 
-DEPRECATED: `install` (to a folder, or to apps in a machine-local registry) is replaced by
-`python -m forgeui vendor`, driven by a forgeui.json manifest that lives in each app's own
-repository (docs/THEME_SYSTEM.md). The old command still works and prints a deprecation
-message; it will be removed in the next major version.
+Apps get a copy of the bundle with `python -m forgeui vendor`, driven by a forgeui.json manifest
+that lives in each app's own repository (docs/THEME_SYSTEM.md). The machine-local app registry
+and `sync_theme.py install` were removed in 2.0.
 
 Everything an app needs is ONE folder, ui-theme/ at the repository root. It
 is generated from src/ and adapters/ and is the same bytes for every app;
@@ -37,20 +34,7 @@ What build writes into ui-theme/:
   VERSION             "ThemeForge <version> <hash>"
   files.json          sha256 of every file above (LF line endings), read by update.py
 
-App registry (DEPRECATED; use forgeui.json and `python -m forgeui vendor`):
-a folder of <app>.json files, OUTSIDE this repository, named with --apps or
-the UI_THEME_APPS environment variable. Each file:
-
-    {"app": "myapp",
-     "repo": "C:/code/myapp",                  absolute, or relative to the registry folder
-     "bundle_dir": "static/ui-theme",          where the app keeps its copy, relative to repo
-     "extra_files": {                          optional: files only this app's copy carries
-       "adapters/legacy.css": "overlays/myapp-legacy.css",          copied in
-       "adapters/quasar.css": {"append": "overlays/myapp-extra.css"} appended to a bundle file
-     }}
-
-Source paths in extra_files are relative to the registry folder. --dest
-replaces a manifest's repo root (e.g. a git worktree). Standard library only.
+Standard library only.
 """
 
 from __future__ import annotations
@@ -59,7 +43,6 @@ import argparse
 import hashlib
 import importlib.util
 import json
-import os
 import re
 import sys
 from pathlib import Path
@@ -73,10 +56,6 @@ TOKENS = ROOT / "tokens"
 DOCS = ROOT / "docs"
 
 NAME = "ThemeForge"
-#: Names this bundle shipped under before; a copy whose VERSION carries one is still
-#: this bundle (ThemeForge was released as unifyingTheme, and before that the drop-in
-#: folder stamped "ui-theme <date> <hash>"). Same list as tools/update.py.
-LEGACY_NAMES = ("unifyingTheme", "ui-theme")
 REPO = "LaserLloyd/ThemeForge"
 BASE_SLUG = "purple"
 GROUNDS = {"oled", "dark", "light"}
@@ -88,7 +67,6 @@ SECTION_C = "C. THEME-AGNOSTIC LAYER"
 LOCALE_START = "/* ---- Locale overrides"
 LOCALE_END = "/* ---- highlight.js 11 mapping"
 MANIFEST = "files.json"
-APPS_ENV = "UI_THEME_APPS"
 
 
 class SyncError(Exception):
@@ -930,67 +908,6 @@ def doc_consistency(data: dict) -> list[str]:
     return problems
 
 
-# ---------------------------------------------------------------- app registry
-
-
-def registry_dir(args) -> Path | None:
-    value = getattr(args, "apps", None) or os.environ.get(APPS_ENV)
-    if not value:
-        return None
-    path = Path(value).expanduser().resolve()
-    if not path.is_dir():
-        raise SyncError(f"app registry {path} is not a folder")
-    return path
-
-
-def load_manifest(registry: Path, name: str) -> dict:
-    path = registry / f"{name}.json"
-    if not path.is_file():
-        raise SyncError(f"no manifest {path}")
-    m = json.loads(read(path))
-    m.setdefault("app", name)
-    rel = m.get("bundle_dir")
-    if not rel:
-        raise SyncError(f"{name}: bundle_dir is required (where the app keeps its copy of ui-theme/)")
-    if Path(rel).is_absolute() or ".." in Path(rel).parts:
-        raise SyncError(f"{name}: bundle_dir must be relative to the app's repo root")
-    for target, source in (m.get("extra_files") or {}).items():
-        if Path(target).is_absolute() or ".." in Path(target).parts:
-            raise SyncError(f"{name}: extra_files target {target} must stay inside the bundle folder")
-        src = source.get("append") if isinstance(source, dict) else source
-        if not src or not (registry / src).is_file():
-            raise SyncError(f"{name}: extra_files source {src} not found in {registry}")
-    return m
-
-
-def repo_root(registry: Path, m: dict, dest: str | None) -> Path:
-    if dest:
-        return Path(dest).resolve()
-    if not m.get("repo"):
-        raise SyncError(f"{m['app']}: manifest has no repo; pass --dest")
-    return (registry / m["repo"]).resolve()
-
-
-def app_copy(registry: Path, m: dict, bundle: dict[str, str]) -> dict[str, str]:
-    """The exact files this app's copy should hold: the bundle plus its extra_files."""
-    files = dict(bundle)
-    for target, source in (m.get("extra_files") or {}).items():
-        if isinstance(source, dict):
-            if target not in files:
-                raise SyncError(f"{m['app']}: cannot append to {target}: not a bundle file")
-            extra = lf(read(registry / source["append"]))
-            files[target] = files[target].rstrip("\n") + "\n\n" + extra
-        else:
-            files[target] = lf(read(registry / source))
-    return files
-
-
-def app_names(registry: Path, names: list[str], dest: str | None) -> list[str]:
-    if dest and len(names) != 1:
-        raise SyncError("--dest needs exactly one app name (it replaces that app's repo root)")
-    return names or sorted(p.stem for p in registry.glob("*.json"))
-
-
 # ---------------------------------------------------------------- io
 
 
@@ -1033,18 +950,6 @@ def folder_drift(folder: Path, expected: dict[str, str]) -> list[str]:
     bad += [f"stale   {rel}" for rel in expected if rel in have and have[rel] != expected[rel]]
     bad += [f"extra   {rel}" for rel in have if rel not in expected]
     return bad
-
-
-def require_bundle_folder(folder: Path) -> None:
-    """Refuse to write into a non-empty folder that is not a copy of the bundle
-    (no VERSION naming it), so a mistyped path never loses an app's files."""
-    if not folder.is_dir() or not any(folder.iterdir()):
-        return
-    version = folder / "VERSION"
-    names = tuple(n + " " for n in (NAME, *LEGACY_NAMES))
-    if not (version.is_file() and version.read_text(encoding="utf-8", errors="replace").startswith(names)):
-        raise SyncError(f"{folder} is not empty and is not a copy of ui-theme/ (no VERSION); "
-                        "point --to / bundle_dir at the ui-theme folder itself, e.g. static/ui-theme")
 
 
 def mirror(folder: Path, files: dict[str, str], quiet: bool = False) -> None:
@@ -1094,56 +999,6 @@ def cmd_build(args) -> int:
     return 0
 
 
-DEPRECATION = ("deprecated: `sync_theme.py install` is replaced by `python -m forgeui vendor`, which reads a "
-               "forgeui.json kept in each app's own repository (no machine-local registry, overlays never "
-               "appended into bundle files). See docs/THEME_SYSTEM.md. This command still works.")
-
-
-def cmd_install(args) -> int:
-    """Copy the bundle folder, as build would write it, into a folder or into
-    registered apps. Refuses a stale ui-theme/ so nothing receives a bundle
-    that build would not produce. Deprecated: use `python -m forgeui vendor`."""
-    print(DEPRECATION, file=sys.stderr)
-    data = load_registry()
-    expected = bundle_files(data)
-    stale = folder_drift(BUNDLE, expected)
-    if stale:
-        for p in stale:
-            print("STALE ui-theme/", p)
-        print("ui-theme/ is out of date with src/: run `python tools/sync_theme.py build` first.")
-        return 1
-    if args.to:
-        target = Path(args.to).resolve()
-        require_bundle_folder(target)
-        print(f"-> {target}")
-        mirror(target, expected, args.quiet)
-        print(f"installed {expected['VERSION'].strip()}")
-        return 0
-    registry = registry_dir(args)
-    if registry is None:
-        raise SyncError(f"install needs --to DIR, or an app registry (--apps DIR or {APPS_ENV})")
-    skipped: list[str] = []
-    installed: list[str] = []
-    for name in app_names(registry, args.names, args.dest):
-        m = load_manifest(registry, name)
-        target = repo_root(registry, m, args.dest) / m["bundle_dir"]
-        if not target.parent.is_dir():
-            print(f"SKIP {name}: {target.parent} not found")
-            skipped.append(name)
-            continue
-        require_bundle_folder(target)
-        print(f"{name} -> {target}")
-        mirror(target, app_copy(registry, m, expected), args.quiet)
-        installed.append(name)
-    if not installed:
-        # Every app was skipped: "installed" here would be a success report for a run that wrote nothing.
-        print(f"installed {expected['VERSION'].strip()} into 0 apps (every app skipped)")
-        return 1
-    print(f"installed {expected['VERSION'].strip()} into {len(installed)} app(s): {', '.join(installed)}"
-          + (f"; skipped {', '.join(skipped)}" if skipped else ""))
-    return 1 if skipped else 0
-
-
 def cmd_check(args) -> int:
     data = load_registry()
     failures = []
@@ -1157,16 +1012,6 @@ def cmd_check(args) -> int:
         failures += [f"{label}: extra   {rel}" for rel in have
                      if rel.startswith("images/swatch-") and rel not in files]
     failures += [f"docs: {p}" for p in doc_consistency(data)]
-    registry = registry_dir(args)
-    if registry is not None:
-        expected = bundle_files(data)
-        for name in app_names(registry, args.names, args.dest):
-            m = load_manifest(registry, name)
-            target = repo_root(registry, m, args.dest) / m["bundle_dir"]
-            if not target.parent.is_dir():
-                failures.append(f"{name}: {target.parent} not found")
-                continue
-            failures += [f"{name}: {p}" for p in folder_drift(target, app_copy(registry, m, expected))]
     for f in failures:
         print("DRIFT", f)
     print("ok" if not failures else f"{len(failures)} problem(s)")
@@ -1179,13 +1024,6 @@ def cmd_list(args) -> int:
     print("themes:")
     for t in data["themes"]:
         print(f"  {t['slug']:<17} {t['name']:<17} {t['set']:<7} ground={t['ground']:<5} family={t['family']}")
-    registry = registry_dir(args)
-    if registry is not None:
-        print(f"apps ({registry}):")
-        for path in sorted(registry.glob("*.json")):
-            m = json.loads(read(path))
-            extras = ",".join(m.get("extra_files") or {}) or "-"
-            print(f"  {path.stem:<12} {m.get('bundle_dir')}  extra_files={extras}")
     return 0
 
 
@@ -1199,21 +1037,9 @@ def main(argv: list[str] | None = None) -> int:
     p = sub.add_parser("build", help="regenerate ui-theme/, tokens/ and docs/contrast-report.md")
     p.add_argument("--quiet", action="store_true")
     p.set_defaults(func=cmd_build)
-    p = sub.add_parser("install", help="copy ui-theme/ into a ui-theme folder (--to) or into registered apps; "
-                                       "the folder becomes an exact copy")
-    p.add_argument("names", nargs="*", help="app names in the registry (default: all)")
-    p.add_argument("--to", help="the folder to copy ui-theme/ into, e.g. myapp/static/ui-theme")
-    p.add_argument("--apps", help=f"app registry folder (default: ${APPS_ENV})")
-    p.add_argument("--dest", help="repo root for the one named app (e.g. a git worktree)")
-    p.add_argument("--quiet", action="store_true")
-    p.set_defaults(func=cmd_install)
-    p = sub.add_parser("check", help="exit 1 if generated files or registered app copies are stale")
-    p.add_argument("names", nargs="*")
-    p.add_argument("--apps", help=f"app registry folder (default: ${APPS_ENV})")
-    p.add_argument("--dest", help="repo root for the one named app")
+    p = sub.add_parser("check", help="exit 1 if generated files are stale or the docs are inconsistent")
     p.set_defaults(func=cmd_check)
-    p = sub.add_parser("list", help="list themes, and apps when a registry is given")
-    p.add_argument("--apps", help=f"app registry folder (default: ${APPS_ENV})")
+    p = sub.add_parser("list", help="list the themes")
     p.set_defaults(func=cmd_list)
     args = parser.parse_args(argv)
     try:

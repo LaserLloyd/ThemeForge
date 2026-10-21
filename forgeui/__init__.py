@@ -1,6 +1,7 @@
-"""ForgeUI: the ThemeForge design system as a pure-data Python package.
+"""forgeui: the import package of the ``themeforge`` distribution (``pip install themeforge``).
 
-The wheel carries the drop-in ``ui-theme/`` bundle (tokens, themes, base and
+The ThemeForge design system as a pure-data Python package. The wheel carries the
+drop-in ``ui-theme/`` bundle (tokens, themes, base and
 component CSS, the runtime, the component helpers and the icons) as package data,
 plus a few helpers and a vendoring tool. Standard library only; FastAPI/Starlette
 and NiceGUI are imported lazily by :func:`mount` when you call it.
@@ -15,7 +16,7 @@ and NiceGUI are imported lazily by :func:`mount` when you call it.
 
     python -m forgeui vendor              # copy the bundle into this repo (forgeui.json)
 
-The shipped contract is unchanged by the package name: the ``ui-theme/``
+The shipped contract does not depend on the package name: the ``ui-theme/``
 folder, ``window.UITheme``, the ``--token`` names and the ``ui-*`` classes are
 the public API (docs/THEME_SYSTEM.md).
 """

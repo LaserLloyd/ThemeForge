@@ -4,8 +4,8 @@ You are an AI coding agent and someone asked you to theme a web app, or to give 
 picker, dark mode or a consistent look. This file is everything you need: follow it top to
 bottom. It takes about five minutes.
 
-**Names.** Repository `LaserLloyd/ThemeForge`; the package and product are **ForgeUI** (a Python
-wheel, `forgeui`, that carries the same folder). What you copy into the app is one folder,
+**Names.** Repository and product `LaserLloyd/ThemeForge`; its Python package is the `themeforge`
+distribution (import name `forgeui`), which carries the same folder. What you copy into the app is one folder,
 `ui-theme/`. The script defines `window.UITheme`. Every component class starts with `ui-` (the
 base layer also keeps a few unprefixed helpers for older apps, listed in `docs/COMPONENTS.md`).
 There is no npm package and no build step: plain CSS files and two small scripts. The rules
@@ -56,8 +56,8 @@ its `ui-theme/` folder. If you were handed `ThemeForge.zip` (the release zip), u
 
 Other ways (pip for Python apps; the rest when Python is not available):
 
-- **pip (Python apps):** `pip install "forgeui @ git+https://github.com/LaserLloyd/ThemeForge@v1.5.0"`
-  (the wheel is not on PyPI; that name belongs to an unrelated project), then
+- **pip (Python apps):** `pip install "themeforge @ git+https://github.com/LaserLloyd/ThemeForge@v1.5.0"`
+  (from the release tag until the package is published on PyPI; the module it installs is `forgeui`), then
   `python -m forgeui init --dest static/ui-theme`,
   edit the `forgeui.json` it writes (themes, default, storage key), and `python -m forgeui vendor`.
   Commit the folder and the manifest; `python -m forgeui vendor --check` in CI keeps the copy honest.

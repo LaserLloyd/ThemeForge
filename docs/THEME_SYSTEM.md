@@ -1,10 +1,11 @@
-# ForgeUI theme system
+# ThemeForge theme system
 
-ForgeUI is the name of the package: design tokens, themes, components and a vendoring tool for
-web UIs. The repository stays `LaserLloyd/ThemeForge`, and **the shipped contract is unchanged by
-the name**: the `ui-theme/` folder, `window.UITheme`, every `--token` and every `ui-*` class keep
-the names they have had since 1.0.0. This page is the index to all of it, and the place that
-says which rules are law. It is the token source of truth in the sense that every other page
+ThemeForge is design tokens, themes, components and a vendoring tool for web UIs. Its Python
+package is the **`themeforge`** distribution (what `pip install` takes); you import it as
+**`forgeui`** and run `python -m forgeui`. The repository is `LaserLloyd/ThemeForge`, and **the
+shipped contract does not depend on any package name**: the `ui-theme/` folder, `window.UITheme`,
+every `--token` and every `ui-*` class keep the names they have had since 1.0.0. This page is the
+index to all of it, and the place that says which rules are law. It is the token source of truth in the sense that every other page
 (and every consuming app) defers to the rules and sources named here.
 
 ## What is true where
@@ -117,8 +118,9 @@ The public API is everything an app can depend on:
   state attributes components read (`data-level`, `data-source`, `data-default`, `data-state`,
   `data-copied`, ...), `[data-palette]`, `<html data-theme>` and `<html data-contrast-profile>`;
 - theme slugs, icon names (the `<symbol>` ids of `icons.svg`), and the keys of `locales/*.json`;
-- the `forgeui` Python package (`static_dir`, `head_html`, `head_html_from_manifest`, `mount`),
-  the `python -m forgeui` commands and flags, and the `forgeui.json` schema.
+- the `themeforge` distribution (import `forgeui`: `static_dir`, `head_html`,
+  `head_html_from_manifest`, `mount`), the `python -m forgeui` commands and flags (also the
+  `forgeui` and `themeforge` console scripts), and the `forgeui.json` schema.
 
 Not public: the bytes of any generated file, the hash in a header, selectors that are not a
 documented class, tokens a theme file defines outside the contract, and the internals of
@@ -134,8 +136,8 @@ Versions follow [Semantic Versioning](https://semver.org/):
 
 Deprecations are announced in [CHANGELOG.md](../CHANGELOG.md) and, where there is a command, by a
 message on stderr, and last at least one minor release before a major removes them
-(`sync_theme.py install` is the current example: deprecated in 1.2.0, replaced by
-`forgeui vendor`). The current major is the supported one. An app pins the bundle with the
+(`sync_theme.py install` is the example: deprecated in 1.2.0, replaced by `forgeui vendor`,
+removed in 2.0). The current major is the supported one. An app pins the bundle with the
 `version` of its `forgeui.json` (`"1.2"` accepts 1.2.x), so a new minor is a deliberate change.
 
 ## Distribution and vendoring
@@ -144,14 +146,16 @@ One folder is the whole contract, so every route ends in "this folder, byte for 
 
 | Route | For | How |
 |---|---|---|
-| **`forgeui` wheel** (primary) | Python apps (FastAPI, NiceGUI, Flask, Django) and any repo that can run `pip` in dev | `pip install` from a release tag (not PyPI; see Procedure); `python -m forgeui vendor` copies the folder into the repo; `forgeui.head_html()` and `forgeui.mount(app)` wire it |
+| **`themeforge` wheel** (primary) | Python apps (FastAPI, NiceGUI, Flask, Django) and any repo that can run `pip` in dev | `pip install` from a release tag until it is on PyPI (see Procedure); `python -m forgeui vendor` copies the folder into the repo; `forgeui.head_html()` and `forgeui.mount(app)` wire it |
 | **Release zip** | AI agents, offline machines, CI caches | Every [GitHub release](https://github.com/LaserLloyd/ThemeForge/releases) carries `ThemeForge-<version>.zip` (the bundle, `AGENTS.md`, the docs, tokens and examples); [`releases/latest/download/ThemeForge.zip`](https://github.com/LaserLloyd/ThemeForge/releases/latest/download/ThemeForge.zip) is always the newest. `python -m forgeui vendor --source ThemeForge-1.5.0.zip` vendors from it (it also takes a wheel, a repo archive or an unpacked folder) |
 | **`ui-theme/update.py`** | Apps with no `pip` | `python ui-theme/update.py` fetches the latest release from GitHub |
 | **jsDelivr** | Prototypes, single HTML files | `https://cdn.jsdelivr.net/gh/LaserLloyd/ThemeForge@v1.5.0/ui-theme/ui-theme.css`, pinned, never `@main` |
 
 There is no JavaScript build step in any route. Releasing is merging: when `src/themes.json` on
 `main` names a version with no tag yet, `.github/workflows/release.yml` runs the checks, builds
-the zip (`tools/release_zip.py`) and the wheel, and publishes the release, which creates the tag.
+the zip (`tools/release_zip.py`), the wheel and the sdist, and publishes the release, which creates
+the tag. Publishing to PyPI is a separate job that the maintainer turns on
+([CONTRIBUTING.md](../CONTRIBUTING.md#publishing-to-pypi)).
 
 ### The manifest: `forgeui.json`
 
@@ -178,9 +182,9 @@ theme choice lives (it replaces the same list copied into Python, HTML and JavaS
 
 ### Procedure
 
-1. Install: `pip install "forgeui @ git+https://github.com/LaserLloyd/ThemeForge@v1.5.0"` (a dev dependency is
-   enough; pin it in the lockfile). The wheel is not on PyPI: the name `forgeui` there belongs to an
-   unrelated project, so never run a bare `pip install forgeui`.
+1. Install: `pip install "themeforge @ git+https://github.com/LaserLloyd/ThemeForge@v1.5.0"` (a dev dependency is
+   enough; pin it in the lockfile). The distribution is `themeforge` and it imports as `forgeui`;
+   install it from the release tag until it is published on PyPI.
 2. `python -m forgeui init --dest static/ui-theme`, then edit `forgeui.json`.
 3. `python -m forgeui vendor`. It verifies every file against the bundle's `files.json` before it
    writes, replaces only files the bundle owns, removes files the new bundle dropped, leaves your
@@ -202,16 +206,12 @@ their own under app-owned names (`adapters/<app>-extra.css`) and are **never app
 bundle file**, which is what kept `files.json` from verifying a copy before 1.2.0; and a source
 that fails verification is refused before anything is written.
 
-### Migrating from the machine-local app registry
+### The machine-local app registry (removed in 2.0)
 
-Before 1.2.0 `sync_theme.py install --apps <folder>` copied the bundle into apps listed in a
-`<app>.json` registry kept outside every repository, which nobody else could reproduce. That
-command still works and prints a deprecation message. To migrate an app once: copy its
-`bundle_dir` to `dest`; give each `extra_files` entry a source file inside the app's repo (an
-`append` entry becomes an overlay file of its own with an app-owned name, loaded after the adapter
-it extended); move the app's theme list, default and storage key into `settings`; then run
-`python -m forgeui vendor --force` once (the first run replaces a copy whose adapter was appended
-to) and `--check` from then on.
+`sync_theme.py install` and its registry of `<app>.json` files kept outside every repository
+(`--apps`, `UI_THEME_APPS`) were removed in 2.0. `python -m forgeui vendor` with a `forgeui.json`
+in the app's own repository replaces them. To migrate, turn each `extra_files` entry into an
+overlay file in the app's repo, list the themes in `settings`, and run `vendor --force` once.
 
 ## Where to read next
 

@@ -5,6 +5,8 @@
     python -m forgeui head [--manifest M] [--prefix /theme]   the <head> tags for the manifest's settings
     python -m forgeui path                          the folder inside the installed package
     python -m forgeui --version
+
+The same commands run as the ``forgeui`` and ``themeforge`` console scripts.
 """
 
 from __future__ import annotations

@@ -16,8 +16,9 @@ ThemeForge is a drop-in CSS theme system for web apps that an AI coding agent in
 one step: thirteen colour themes (dark, OLED black, light, a neutral default and a high-contrast
 pair, with automatic dark mode from the OS setting), a theme picker, design tokens, a base element layer, text standards,
 ready-made component classes and 105 outline icons that take the theme's colours. MIT-0 licensed: use it any way you like, nothing to credit or keep. Plain CSS and a small script in one folder,
-`ui-theme/`. No build step, no dependencies, any framework. The package is called **ForgeUI**
-(a wheel, `forgeui`, installed from the git release tag); the repository, the `ui-theme/` folder and every token and class keep
+`ui-theme/`. No build step, no dependencies, any framework. The Python package is the
+**`themeforge`** distribution (a wheel; you `import forgeui` and run `python -m forgeui`), installed from the git
+release tag until it is published on PyPI; the repository, the `ui-theme/` folder and every token and class keep
 the ThemeForge names, so nothing an app depends on changes with the name.
 
 ![On, off, selected and disabled controls in every theme](docs/images/gallery.png)
@@ -82,10 +83,10 @@ Get-Content static\ui-theme\VERSION     # prints: ThemeForge <version> <hash>
 | Checks every file against `files.json` before writing | Fetches from GitHub on each run; offline needs `--source` |
 | Later updates: `py -3 static\ui-theme\update.py` | Installs the latest release; pin with `--ref vX.Y.Z` |
 
-#### 2. ForgeUI vendoring, `forgeui.json` + `python -m forgeui vendor`
+#### 2. Python package, `forgeui.json` + `python -m forgeui vendor`
 
-Choose this for a Python app (FastAPI, NiceGUI, Flask, Django) or when CI should fail if the copy drifts. The package installs from the
-git release tag; `pip install forgeui` from PyPI is a different project, so do not use it. It needs git.
+Choose this for a Python app (FastAPI, NiceGUI, Flask, Django) or when CI should fail if the copy drifts. The `themeforge` package installs from the
+git release tag until it is published on PyPI. It needs git.
 
 ```powershell
 winget install --id Git.Git -e --source winget
@@ -93,7 +94,7 @@ winget install --id Python.Python.3.12 -e --source winget
 # close and reopen PowerShell, then:
 cd C:\path\to\your\app
 py -3 -m venv .venv
-.\.venv\Scripts\python.exe -m pip install "forgeui @ git+https://github.com/LaserLloyd/ThemeForge@v1.5.0"
+.\.venv\Scripts\python.exe -m pip install "themeforge @ git+https://github.com/LaserLloyd/ThemeForge@v1.5.0"
 .\.venv\Scripts\python.exe -m forgeui init --dest static/ui-theme    # writes forgeui.json
 .\.venv\Scripts\python.exe -m forgeui vendor                         # copies the folder, verified
 .\.venv\Scripts\python.exe -m forgeui vendor --check                 # prints ok, exit 0
@@ -107,14 +108,14 @@ py -3 -m venv .venv
 
 #### 3. `uv`, no venv to manage
 
-Choose this when you already use [uv](https://docs.astral.sh/uv/). `uvx` runs `forgeui` from a cached environment, so nothing is installed into your app.
+Choose this when you already use [uv](https://docs.astral.sh/uv/). `uvx` runs the `forgeui` command from a cached environment, so nothing is installed into your app.
 
 ```powershell
 winget install --id Git.Git -e --source winget
 winget install --id astral-sh.uv -e --source winget
 # close and reopen PowerShell, then:
 cd C:\path\to\your\app
-$f = "forgeui @ git+https://github.com/LaserLloyd/ThemeForge@v1.5.0"
+$f = "themeforge @ git+https://github.com/LaserLloyd/ThemeForge@v1.5.0"
 uvx --from $f forgeui init --dest static/ui-theme
 uvx --from $f forgeui vendor
 uvx --from $f forgeui vendor --check
@@ -175,7 +176,7 @@ sudo apt-get update && sudo apt-get install -y git curl ca-certificates
 curl -LsSf https://astral.sh/uv/install.sh | sh
 source $HOME/.local/bin/env
 cd /path/to/your/app
-F="forgeui @ git+https://github.com/LaserLloyd/ThemeForge@v1.5.0"
+F="themeforge @ git+https://github.com/LaserLloyd/ThemeForge@v1.5.0"
 uvx --from "$F" forgeui init --dest static/ui-theme
 uvx --from "$F" forgeui vendor
 uvx --from "$F" forgeui vendor --check     # prints ok, exit 0
@@ -195,7 +196,7 @@ Choose this when you cannot install uv. Ubuntu 24.04 refuses a bare `pip install
 sudo apt-get update && sudo apt-get install -y git python3-venv
 cd /path/to/your/app
 python3 -m venv .venv
-.venv/bin/pip install "forgeui @ git+https://github.com/LaserLloyd/ThemeForge@v1.5.0"
+.venv/bin/pip install "themeforge @ git+https://github.com/LaserLloyd/ThemeForge@v1.5.0"
 .venv/bin/python -m forgeui init --dest static/ui-theme
 .venv/bin/python -m forgeui vendor
 .venv/bin/python -m forgeui vendor --check     # prints ok, exit 0
@@ -250,7 +251,7 @@ xcode-select --install     # skip if git already works
 curl -LsSf https://astral.sh/uv/install.sh | sh
 source $HOME/.local/bin/env
 cd /path/to/your/app
-F="forgeui @ git+https://github.com/LaserLloyd/ThemeForge@v1.5.0"
+F="themeforge @ git+https://github.com/LaserLloyd/ThemeForge@v1.5.0"
 uvx --from "$F" forgeui init --dest static/ui-theme
 uvx --from "$F" forgeui vendor
 uvx --from "$F" forgeui vendor --check     # prints ok, exit 0
@@ -297,7 +298,7 @@ its `ui-theme/` folder. If you were handed `ThemeForge.zip` (the release zip), u
 - **`update.py` route:** `python3 static/ui-theme/update.py` updates; `--check` reports only (exit 1 when an update exists);
   `--ref vX.Y.Z` pins a release. To roll back, run it again with `--ref` set to the release you had (the
   `VERSION` file of a copy names it). To uninstall, delete the `static/ui-theme` folder and the theme lines in your pages.
-- **ForgeUI route:** raise the tag in the install line (for example `@v1.5.0` to a later release), then run `vendor` again;
+- **Python package route:** raise the tag in the install line (for example `@v1.5.0` to a later release), then run `vendor` again;
   `vendor --check` confirms the copy. To roll back, install the earlier tag, set `forgeui.json`'s `version` to it, and
   `vendor` again. A hand-edited bundle file is refused unless you pass `--force`, so keep edits in overlays
   (`extra_files`). To uninstall, delete the vendored folder and `forgeui.json`, and `.venv` if you made one for this.
@@ -329,7 +330,7 @@ Build with tokens (`var(--surface-2)`, `var(--text-secondary)`) and classes
 (`ui-btn ui-btn--primary`, `ui-card`, `ui-switch`). Full guide: [`AGENTS.md`](AGENTS.md).
 Works in current Chrome, Edge, Firefox and Safari (2024 or newer).
 
-With the ForgeUI package installed in your app's environment (Python apps), the same tags come from the manifest:
+With the `themeforge` package installed in your app's environment (Python apps), the same tags come from the manifest:
 
 ```python
 import forgeui

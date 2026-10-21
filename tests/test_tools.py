@@ -73,6 +73,15 @@ class BuildTests(unittest.TestCase):
         code, out = quiet(sync.main, ["check"])
         self.assertEqual(code, 0, out)
 
+    def test_the_app_registry_and_install_are_gone(self):
+        """Removed in 2.0: apps vendor with `python -m forgeui vendor` and a forgeui.json."""
+        for argv in (["install", "--to", "x"], ["check", "--apps", "x"], ["list", "--apps", "x"]):
+            with self.assertRaises(SystemExit) as raised, contextlib.redirect_stderr(io.StringIO()):
+                sync.main(argv)
+            self.assertEqual(raised.exception.code, 2, argv)
+        for name in ("cmd_install", "registry_dir", "load_manifest", "app_copy", "APPS_ENV"):
+            self.assertFalse(hasattr(sync, name), name)
+
     def test_bundle_is_deterministic(self):
         self.assertEqual(self.bundle, sync.bundle_files(self.data))
 
@@ -365,94 +374,13 @@ class ThemeSystemDocTests(unittest.TestCase):
         self.assertTrue([p for p in problems if "theme list differs" in p], problems)
 
 
-class RegistryTests(unittest.TestCase):
+class WriteAllTests(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
         self.base = Path(self.tmp.name)
-        self.registry = self.base / "registry"
-        (self.registry / "overlays").mkdir(parents=True)
-        (self.registry / "overlays" / "legacy.css").write_text(":root { --legacy: var(--accent); }\n", encoding="utf-8")
-        (self.registry / "overlays" / "extra.css").write_text(".app-well { padding: 1px; }\n", encoding="utf-8")
-        self.app = self.base / "app"
-        (self.app / "static").mkdir(parents=True)
-        (self.registry / "demo.json").write_text(json.dumps({
-            "app": "demo", "repo": str(self.app), "bundle_dir": "static/ui-theme",
-            "extra_files": {"adapters/legacy.css": "overlays/legacy.css",
-                            "adapters/quasar.css": {"append": "overlays/extra.css"}},
-        }), encoding="utf-8")
 
     def tearDown(self):
         self.tmp.cleanup()
-
-    def test_install_then_check_with_overlays(self):
-        code, out = quiet(sync.main, ["install", "--apps", str(self.registry), "--quiet"])
-        self.assertEqual(code, 0, out)
-        copy = self.app / "static" / "ui-theme"
-        self.assertTrue((copy / "adapters" / "legacy.css").is_file())
-        self.assertIn(".app-well", (copy / "adapters" / "quasar.css").read_text(encoding="utf-8"))
-        code, out = quiet(sync.main, ["check", "--apps", str(self.registry)])
-        self.assertEqual(code, 0, out)
-        (copy / "ui-theme.css").write_text("x", encoding="utf-8")
-        code, out = quiet(sync.main, ["check", "--apps", str(self.registry)])
-        self.assertEqual(code, 1)
-        self.assertIn("stale", out)
-
-    def test_install_is_deprecated_but_still_works(self):
-        code, out = quiet(sync.main, ["install", "--apps", str(self.registry), "--quiet"])
-        self.assertEqual(code, 0, out)
-        self.assertIn("deprecated", out)
-        self.assertIn("python -m forgeui vendor", out)
-        target = self.base / "deprecated" / "ui-theme"
-        code, out = quiet(sync.main, ["install", "--to", str(target), "--quiet"])
-        self.assertEqual(code, 0, out)
-        self.assertIn("deprecated", out)
-        self.assertEqual(sync.folder_drift(target, sync.bundle_files(sync.load_registry())), [])
-
-    def test_install_to_folder(self):
-        target = self.base / "plain" / "ui-theme"
-        code, out = quiet(sync.main, ["install", "--to", str(target), "--quiet"])
-        self.assertEqual(code, 0, out)
-        self.assertEqual(sync.folder_drift(target, sync.bundle_files(sync.load_registry())), [])
-
-    def test_bad_extra_file_source(self):
-        (self.registry / "bad.json").write_text(json.dumps({
-            "app": "bad", "repo": str(self.app), "bundle_dir": "static/x",
-            "extra_files": {"adapters/nope.css": "overlays/missing.css"}}), encoding="utf-8")
-        with self.assertRaises(sync.SyncError):
-            sync.load_manifest(self.registry, "bad")
-
-    def test_install_refuses_a_folder_that_is_not_a_bundle(self):
-        static = self.base / "site" / "static"
-        static.mkdir(parents=True)
-        (static / "index.html").write_text("<p>app</p>", encoding="utf-8")
-        code, out = quiet(sync.main, ["install", "--to", str(static), "--quiet"])
-        self.assertEqual(code, 2)
-        self.assertIn("not a copy of ui-theme", out)
-        self.assertTrue((static / "index.html").is_file())
-
-    def test_install_to_a_copy_under_the_old_name(self):
-        """ThemeForge shipped as unifyingTheme: install --to accepts such a copy."""
-        target = self.base / "old" / "ui-theme"
-        target.mkdir(parents=True)
-        (target / "VERSION").write_text("unifyingTheme 1.0.0 68bd24d58a9c\n", encoding="utf-8")
-        (target / "ui-theme.css").write_text("/* old */", encoding="utf-8")
-        code, out = quiet(sync.main, ["install", "--to", str(target), "--quiet"])
-        self.assertEqual(code, 0, out)
-        self.assertTrue((target / "VERSION").read_text(encoding="utf-8").startswith("ThemeForge "))
-
-    def test_install_to_a_copy_stamped_ui_theme_date(self):
-        """Before the first release the folder's VERSION read "ui-theme <date> <hash>"."""
-        target = self.base / "older" / "ui-theme"
-        target.mkdir(parents=True)
-        (target / "VERSION").write_text("ui-theme 2026-09-24 638060cc7dc6\n", encoding="utf-8")
-        (target / "ui-theme.css").write_text("/* old */", encoding="utf-8")
-        code, out = quiet(sync.main, ["install", "--to", str(target), "--quiet"])
-        self.assertEqual(code, 0, out)
-        self.assertTrue((target / "VERSION").read_text(encoding="utf-8").startswith("ThemeForge "))
-
-    def test_install_needs_a_target(self):
-        code, out = quiet(sync.main, ["install"])
-        self.assertEqual(code, 2)
 
     def test_version_is_written_last(self):
         """A copy's VERSION line is what check and update.py trust, so it must be
@@ -474,19 +402,6 @@ class RegistryTests(unittest.TestCase):
         self.assertEqual(order[-1], "VERSION", order)
         self.assertEqual(sorted(order[:-1]), ["README.md", "adapters/z.css", "ui-theme.css"])
         self.assertEqual((target / "VERSION").read_text(encoding="utf-8"), "ThemeForge x y")
-
-    def test_skipping_every_app_is_not_success(self):
-        """Every manifest points at a repo that is not on this machine: the old
-        code printed "installed" and returned 0 after writing nothing."""
-        for name in ("demo", "other"):
-            (self.registry / f"{name}.json").write_text(json.dumps({
-                "app": name, "repo": str(self.base / "nowhere" / name), "bundle_dir": "static/ui-theme"}),
-                encoding="utf-8")
-        code, out = quiet(sync.main, ["install", "--apps", str(self.registry), "--quiet"])
-        self.assertEqual(code, 1, out)
-        self.assertIn("into 0 apps", out)
-        self.assertEqual(out.count("SKIP"), 2)
-        self.assertNotIn("into 1 app", out)
 
 
 class ContrastTests(unittest.TestCase):
