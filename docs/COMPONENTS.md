@@ -302,8 +302,10 @@ All text is set as text, never HTML, so user input is safe to show.
 ### Words and languages
 
 Every word `ui-components.js` puts on the page (Cancel, OK, Copy, Copied, Reset to default, ...)
-comes from a string table. `ui-theme/locales/en.json` lists the keys and the English defaults;
-`ja.json` is the Japanese bundle.
+comes from a string table. `ui-theme/locales/en.json` lists the keys and the English defaults.
+Seven more ship beside it, one per language (`ar`, `de`, `es`, `fr`, `ja`, `pt`, `zh`), each with
+every key. `pt` is European Portuguese and `zh` is Simplified Chinese, so a `pt-BR` or `zh-TW`
+page falls back to them.
 
 ```js
 UIComponents.setStrings({ cancel: 'Annuler', ok: 'OK' });   // merge your own words
@@ -320,7 +322,7 @@ The word for a key is the first of: a `data-ui-str-<key>` attribute (kebab-case:
 then English. `{name}` style placeholders are filled from the call (`resetNamed`: "Reset {name}
 to default"). Options passed to a call (`confirmLabel`, `cancelLabel`, `label`) still win.
 Locale files are flat JSON objects of strings; keys starting with `$` are metadata. Add a
-language by loading any URL: `loadLocale('de', '/my/de.json')`. Dates and numbers:
+language by loading any URL: `loadLocale('nl', '/my/nl.json')`. Dates and numbers:
 `UIComponents.formatNumber(1234.5)` and `UIComponents.formatDate(date)` use `Intl` in the page's
 language (`UIComponents.locale()`).
 

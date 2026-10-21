@@ -92,8 +92,8 @@ labels and ARIA on custom controls, `prefers-reduced-motion` honoured by every a
 people who need more. The layer uses logical properties throughout, so it works right-to-left,
 and `tests/runtime.html` checks a right-to-left page and long pseudo-translated words (at 320px
 wide) for overflow. Every word the JavaScript helpers put on the page is in a string table
-(`UIComponents.setStrings`, `loadLocale`, `data-ui-str-*`), with `locales/en.json` and
-`locales/ja.json` shipped; see [COMPONENTS.md](COMPONENTS.md#words-and-languages).
+(`UIComponents.setStrings`, `loadLocale`, `data-ui-str-*`), with `locales/` shipped in eight
+languages (`en`, `ar`, `de`, `es`, `fr`, `ja`, `pt`, `zh`); see [COMPONENTS.md](COMPONENTS.md#words-and-languages).
 
 ### Microcopy rules
 

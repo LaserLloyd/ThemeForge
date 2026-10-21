@@ -519,6 +519,7 @@
     check('locales: ja-JP falls back to ja', [await U.loadLocale('ja-JP'), U.t('copy')], [true, 'コピー']);
     check('locales: en restores the built-in words', [await U.loadLocale('en'), U.t('cancel')], [true, 'Cancel']);
     check('locales: an explicit url', [await U.loadLocale('ja', LOCALES + 'ja.json'), U.t('basic')], [true, '基本']);
+    check('locales: loadLocale(ar) applies', [await U.loadLocale('ar'), U.t('cancel')], [true, 'إلغاء']);
   }
 
   // 43b. data-locale on the script tag loads a locale by itself.

@@ -41,7 +41,7 @@
    Order of precedence for a word: a data-ui-str-<key> attribute on the element
    or an ancestor, then setStrings()/loadLocale(), then the English default.
    Placeholders like {name} are filled from the call. ui-theme/locales/ holds
-   en.json (the defaults) and ja.json.
+   en.json (the defaults) and one file each for ar, de, es, fr, ja, pt and zh.
    ============================================================================ */
 (function (global) {
   'use strict';

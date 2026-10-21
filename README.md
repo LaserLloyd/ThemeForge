@@ -375,7 +375,7 @@ states read by shape as well as colour in every theme. More in
 | `ui-theme.css` | the tokens of all thirteen themes (about 20 KB gzipped) |
 | `ui-components.js` | optional: themed `confirm()`, `alert()`, `prompt()` and toasts, copy-to-clipboard, inline validation, settings rows, icon and emoji helpers, translatable words (`locales/`) |
 | `icons.svg`, `icons.json` | 105 outline icons in one sprite, and their names, labels, and the emoji and Material Icons names each replaces (license in `icons-LICENSE.txt`) |
-| `locales/` | the words `ui-components.js` shows, in English and Japanese |
+| `locales/` | the words `ui-components.js` shows, in eight languages (en, ar, de, es, fr, ja, pt, zh) |
 | `adapters/` | NiceGUI/Quasar, Tailwind CSS v4 and v3 |
 | `update.py` | installs and updates the folder, checking every file (apps without pip); `python -m forgeui vendor` does the same from a manifest |
 | `ui-theme.d.ts` | TypeScript declarations for `window.UITheme` and `window.UIComponents` |

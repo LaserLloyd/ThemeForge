@@ -1,7 +1,7 @@
 /* GENERATED component helpers: ThemeForge 1.5.0, drop-in bundle (ui-theme/).
    https://github.com/LaserLloyd/ThemeForge . Do not edit this copy: update the whole
    folder (python ui-theme/update.py) and keep app styles in the app.
-   body sha256: 2569bdd5d390ea67 */
+   body sha256: 400822ae87846cc9 */
 /* ============================================================================
    ui-components.js — behaviour for the component layer (optional) · ThemeForge
    ----------------------------------------------------------------------------
@@ -45,7 +45,7 @@
    Order of precedence for a word: a data-ui-str-<key> attribute on the element
    or an ancestor, then setStrings()/loadLocale(), then the English default.
    Placeholders like {name} are filled from the call. ui-theme/locales/ holds
-   en.json (the defaults) and ja.json.
+   en.json (the defaults) and one file each for ar, de, es, fr, ja, pt and zh.
    ============================================================================ */
 (function (global) {
   'use strict';

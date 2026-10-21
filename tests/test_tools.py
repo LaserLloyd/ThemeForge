@@ -279,10 +279,10 @@ class LocaleTests(unittest.TestCase):
     def tables(self):
         return {p.stem: json.loads(p.read_text(encoding="utf-8")) for p in sorted((ROOT / "src" / "locales").glob("*.json"))}
 
-    def test_en_and_ja_are_shipped(self):
+    def test_all_eight_languages_ship(self):
         bundle = sync.bundle_files(sync.load_registry())
-        self.assertIn("locales/en.json", bundle)
-        self.assertIn("locales/ja.json", bundle)
+        for lang in ("en", "ar", "de", "es", "fr", "ja", "pt", "zh"):
+            self.assertIn(f"locales/{lang}.json", bundle)
 
     def test_every_language_has_exactly_the_english_keys(self):
         tables = self.tables()

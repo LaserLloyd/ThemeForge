@@ -1,0 +1,17 @@
+{
+  "$locale": "fr",
+  "cancel": "Annuler",
+  "ok": "OK",
+  "confirm": "Confirmer",
+  "input": "Saisie",
+  "message": "Message",
+  "value": "Valeur",
+  "copy": "Copier",
+  "copied": "Copié",
+  "copyFailed": "Échec de la copie",
+  "reset": "Réinitialiser la valeur par défaut",
+  "resetNamed": "Réinitialiser {name} à la valeur par défaut",
+  "basic": "De base",
+  "advanced": "Avancé",
+  "setByEnv": "Défini par l’environnement"
+}
