@@ -25,6 +25,11 @@ import threading
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
+# Chrome dumps the page when this much virtual time has passed, finished or not. The suite
+# needs about 8 s of it on a fast machine and several times that on a CI runner, where virtual
+# time keeps moving while frames and files load; once the page is idle the rest is skipped at
+# no cost, so the budget is generous.
+VIRTUAL_TIME_BUDGET_MS = 180_000
 CANDIDATES = [
     "google-chrome", "google-chrome-stable", "chromium", "chromium-browser", "chrome", "msedge",
     r"C:\Program Files\Google\Chrome\Application\chrome.exe",
@@ -66,7 +71,7 @@ def main(argv: list[str] | None = None) -> int:
         with tempfile.TemporaryDirectory() as profile:
             result = subprocess.run(
                 [browser, "--headless=new", "--disable-gpu", "--no-first-run", "--no-default-browser-check",
-                 f"--user-data-dir={profile}", "--virtual-time-budget=30000", "--dump-dom", url],
+                 f"--user-data-dir={profile}", f"--virtual-time-budget={VIRTUAL_TIME_BUDGET_MS}", "--dump-dom", url],
                 capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=180)
     finally:
         server.shutdown()
@@ -79,7 +84,10 @@ def main(argv: list[str] | None = None) -> int:
         print("  FAIL", re.sub(r"<[^>]+>", "", item))
     if not title or not title.group(1).startswith("PASS"):
         if summary:
-            print("  ", re.sub(r"<[^>]+>", "", summary.group(1)))
+            text = re.sub(r"<[^>]+>", "", summary.group(1))
+            print("  ", text)
+            if text.startswith("running"):
+                print(f"   (the run did not finish within {VIRTUAL_TIME_BUDGET_MS // 1000} s of virtual time)")
         if not dom.strip():
             print(result.stderr[-2000:], file=sys.stderr)
         return 1
