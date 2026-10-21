@@ -515,7 +515,7 @@ def bundle_files(data: dict) -> dict[str, str]:
 
 GROUP_NOTES = {
     "surfaces": ("core", "Grounds, from the page (`--surface-0`) up through nav (1), cards (2), hover (3) and active (4); `--surface-sunken` for inset wells, `--surface-overlay` for menus and popovers, `--glass-*` for translucent panes, `--code-bg` for code."),
-    "text": ("core", "Text tiers (primary, secondary, tertiary, disabled), links, and the label colour for each kind of fill (`--on-accent`, `--on-danger`, ...). Quieter text is a lower tier, never opacity."),
+    "text": ("core", "Text tiers (primary, secondary, tertiary, disabled), links, and the label colour for each kind of fill (`--on-accent`, `--on-danger`, ...). Quieter text is a lower tier, never opacity. `--text-disabled` (3:1) is for disabled controls only, since WCAG 1.4.3 exempts text in inactive controls; quiet text that is not part of a disabled control uses `--text-tertiary` (4.5:1)."),
     "accent": ("core", "The brand accent: fills for primary actions, with `--on-accent` for labels on them. Accent-coloured text uses `--text-link` instead."),
     "call-to-action": ("core", "A stronger action plate for marketing-style calls to action, and the highlight colour for tips and marks."),
     "lines": ("core", "Borders, dividers, the focus ring, glass strokes. `--border-strong` is the edge of a form control (3:1)."),

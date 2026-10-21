@@ -899,6 +899,34 @@
     dlg.remove();
   }
 
+  // 43l. Sortable table headers: the button, the icon and the sorted and numeric states.
+  {
+    const SPRITE = new URL('../ui-theme/icons.svg', location.href).href;
+    const SORT = (name) => `<svg class="ui-icon ui-table__sort-icon" aria-hidden="true"><use href="${SPRITE}#${name}"/></svg>`;
+    const f = await comp(
+      '<div class="ui-table-wrap"><table class="ui-table"><thead><tr>' +
+      // The header's own weight and colour are set away from the rules, so a passing check
+      // shows the rule at work and not an inherited value.
+      `<th id="hs" aria-sort="ascending" style="font-weight: 400"><button class="ui-table__sort" id="bs" type="button">Minutes${SORT('arrow-up')}</button></th>` +
+      `<th id="hu" aria-sort="none" style="color: var(--text-primary)"><button class="ui-table__sort" id="bu" type="button">Job${SORT('arrow-up-down')}</button></th>` +
+      `<th id="hn" class="num" aria-sort="descending"><button class="ui-table__sort" id="bn" type="button">Total${SORT('arrow-down')}</button></th>` +
+      '</tr></thead><tbody><tr><td>render</td><td class="num">12.4</td></tr></tbody></table></div>' +
+      '<span id="tt" style="color: var(--text-tertiary)">quiet</span><span id="tp" style="color: var(--text-primary)">loud</span>');
+    const w = f.contentWindow, d = f.contentDocument;
+    const cs = (el) => w.getComputedStyle(el);
+    const bs = d.getElementById('bs'), bu = d.getElementById('bu'), bn = d.getElementById('bn');
+    const iu = d.querySelector('#hu svg'), hn = d.getElementById('hn');
+    check('sort: a sorted header is a semibold button in primary text',
+          [cs(bs).fontWeight, cs(bn).fontWeight, cs(bs).color === cs(d.getElementById('tp')).color], ['600', '600', true]);
+    check('sort: an unsorted header keeps its icon in tertiary text',
+          cs(iu).color === cs(d.getElementById('tt')).color, true);
+    check('sort: the button is a reset control (no border, transparent, pointer, inline flex)',
+          [cs(bu).backgroundColor, cs(bu).borderTopWidth, cs(bu).cursor, cs(bu).display], ['rgba(0, 0, 0, 0)', '0px', 'pointer', 'inline-flex']);
+    check('sort: the icon is 1em, the size of the label text', Math.abs(rect(iu).width - parseFloat(cs(iu).fontSize)) < 0.5, true);
+    check('sort: a numeric header fills its cell and the label sits at the end',
+          [cs(bn).justifyContent, Math.abs(rect(bn).right - (rect(hn).right - parseFloat(cs(hn).paddingRight))) < 1], ['flex-end', true]);
+  }
+
   // Report.
   const list = document.getElementById('results');
   for (const r of results) {

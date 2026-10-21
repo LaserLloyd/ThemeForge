@@ -157,7 +157,7 @@ almost every time:
 |---|---|
 | page, nav, card, hover, active grounds | `--surface-0`, `--surface-1`, `--surface-2`, `--surface-3`, `--surface-4` |
 | inset well, menus and popovers | `--surface-sunken`, `--surface-overlay` |
-| text, in tiers | `--text-primary`, `--text-secondary` (labels, descriptions), `--text-tertiary` (hints, timestamps), `--text-disabled` |
+| text, in tiers | `--text-primary`, `--text-secondary` (labels, descriptions), `--text-tertiary` (hints, timestamps), `--text-disabled` (disabled controls only, 3:1 floor; other quiet text uses `--text-tertiary`) |
 | links and accent-coloured text | `--text-link`, `--text-link-hover` |
 | primary action fill | `--accent`, `--accent-hover`, label on it `--on-accent` |
 | on / checked / selected / current | `--selected` (fill or indicator), `--on-selected` (on it) |
@@ -198,7 +198,7 @@ Buttons `.ui-btn` + `--primary` `--ghost` `--outline` `--danger` `--cta` `--sm` 
 `.ui-switch-state`; `.ui-card` (`__header` `__title` `__footer`) `.ui-well` `.ui-stat`;
 `.ui-badge` (`--success` `--warning` `--danger` `--info` `--live` `--accent`...) `.ui-dot`
 `.ui-count`; `.ui-callout` (`--info` `--success` `--warning` `--danger`); `.ui-tabs` +
-`.ui-tab`; `.ui-segmented`; `.ui-table-wrap` + `.ui-table` (`--hover` `--compact`, `td.num`);
+`.ui-tab`; `.ui-segmented`; `.ui-table-wrap` + `.ui-table` (`--hover` `--compact`, `td.num`) and `.ui-table__sort` for sortable headers;
 `.ui-dialog`; `.ui-drawer` (side sheet); `.ui-menu` + `.ui-menu__item`; `[data-ui-tooltip]`
 (`data-ui-tooltip-side="bottom"` near the top); `.ui-progress` `.ui-spinner` `.ui-skeleton`;
 `.ui-breadcrumbs`; `.ui-pagination`; `.ui-avatar`; `.ui-chip` (+ `__remove`); `.ui-details`

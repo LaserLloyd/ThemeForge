@@ -265,6 +265,20 @@ Variants `--info`, `--success`, `--warning`, `--danger` (use `role="alert"` for 
 
 `--compact` tightens rows. `aria-selected="true"` marks a selected row.
 
+Sortable headers: the app sorts its own rows and updates `aria-sort` on the `th` and the icon's
+`#name` when the sort changes. `ascending` takes `arrow-up`, `descending` takes `arrow-down`, and
+`none` takes `arrow-up-down`.
+
+```html
+<th aria-sort="ascending">
+  <button class="ui-table__sort" type="button">Minutes
+    <svg class="ui-icon ui-table__sort-icon" aria-hidden="true"><use href="/static/ui-theme/icons.svg#arrow-up"/></svg>
+  </button>
+</th>
+<th aria-sort="none"><button class="ui-table__sort" type="button">Job
+  <svg class="ui-icon ui-table__sort-icon" aria-hidden="true"><use href="/static/ui-theme/icons.svg#arrow-up-down"/></svg></button></th>
+```
+
 ## Dialog
 
 ```html

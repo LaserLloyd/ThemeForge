@@ -11,8 +11,8 @@
 
    Naming: .ui-<block>, .ui-<block>--<variant>, .ui-<block>__<part>. State
    comes from native attributes (:disabled, :checked, [aria-pressed],
-   [aria-selected], [aria-current], [aria-invalid], [aria-busy]), never from
-   extra state classes. Most selectors are one class (0-1-0). Logical
+   [aria-selected], [aria-current], [aria-invalid], [aria-busy], [aria-sort]),
+   never from extra state classes. Most selectors are one class (0-1-0). Logical
    properties throughout, so the layer works right-to-left.
 
    States read the same way in every theme, by shape as well as colour:
@@ -875,7 +875,8 @@
 /* ---- Tables --------------------------------------------------------------------------
    <div class="ui-table-wrap"><table class="ui-table">…</table></div>
    Numbers: <td class="num">. Variants: --hover, --compact. A selected row:
-   <tr aria-selected="true">. */
+   <tr aria-selected="true">. A sortable header: <th aria-sort="ascending"> holding a
+   <button class="ui-table__sort"> and its arrow icon (see the sort rules below). */
 
 .ui-table-wrap {
   overflow-x: auto;
@@ -907,6 +908,27 @@
 .ui-table tr[aria-selected="true"] td { background: var(--accent-subtle); }
 .ui-table tr[aria-selected="true"] td:first-child { box-shadow: inset 3px 0 0 var(--selected); }
 .ui-table tr[aria-selected="true"] td:first-child:dir(rtl) { box-shadow: inset -3px 0 0 var(--selected); }
+
+/* Sortable headers. The app sorts its rows and keeps aria-sort and the icon in step;
+   the button inherits the header's type, and the icon stays quiet until the column is sorted. */
+.ui-table__sort {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  padding: 0;
+  cursor: pointer;
+  text-align: inherit;
+}
+.ui-table__sort:hover { color: var(--text-primary); }
+.ui-table__sort-icon { --ui-icon-size: 1em; }
+th[aria-sort="none"] .ui-table__sort-icon { color: var(--text-tertiary); }
+th[aria-sort="ascending"] .ui-table__sort,
+th[aria-sort="descending"] .ui-table__sort { color: var(--text-primary); font-weight: var(--fw-semibold); }
+th.num .ui-table__sort { width: 100%; justify-content: flex-end; }
 
 /* ---- Lists ------------------------------------------------------------------------------- */
 

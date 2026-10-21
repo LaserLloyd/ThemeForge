@@ -68,6 +68,8 @@ for each theme, and how to add one, are in [THEMES.md](THEMES.md).
    (`--myapp-sidebar-w`); aliasing a token is fine (`--myapp-brand: var(--accent)`).
 5. **Quieter text is a lower tier, never `opacity`.** The tiers (`--text-primary`, `-secondary`,
    `-tertiary`, `-disabled`) each carry a contrast floor in every theme; opacity does not.
+   `--text-disabled` (3:1) is for disabled controls only; quiet text that is not part of a
+   disabled control uses `--text-tertiary` (4.5:1).
 6. **State reads by shape as well as colour.** On, checked, pressed and current are filled with
    `--selected` (label `--on-selected`); off is an outline; disabled is dashed and unfilled, even
    when on. State comes from native attributes (`disabled`, `checked`, `aria-pressed`,

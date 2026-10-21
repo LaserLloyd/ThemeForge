@@ -19,6 +19,10 @@ in Paper and in Night Red.
 | Link | `--text-link`, `--text-link-hover` | `.ui-text-link` | links and link-like actions | 12px |
 | Status | `--<status>-text` | none | text that states a status (error, warning, live) | 11px |
 
+Disabled text keeps a 3:1 floor rather than 4.5:1, because WCAG 1.4.3 exempts text in inactive
+controls; use it only for disabled controls. Quiet text that is not part of a disabled control is
+tertiary, which keeps 4.5:1.
+
 `tools/check_contrast.py` measures every text token against every surface, and each theme
 must pass the floors of its contrast profile ([TOKENS.md](TOKENS.md)). Under the standard
 profile tertiary text keeps 4.5:1 everywhere; Night Red's night profile keeps it at 4:1.
