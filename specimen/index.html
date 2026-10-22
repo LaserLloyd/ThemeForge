@@ -4,10 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>ThemeForge — specimen</title>
-<!-- ?theme=<slug> in the URL picks a theme (used for screenshots). -->
+<!-- ?theme=<slug> in the URL picks a theme; &shot also hides the header, so the
+     screenshots (tools/screenshots.py) start at the same place in every theme. -->
 <script>
   try {
-    var shot = new URLSearchParams(location.search).get('theme');
+    var params = new URLSearchParams(location.search);
+    if (params.has('shot')) document.documentElement.setAttribute('data-spec-shot', '');
+    var shot = params.get('theme');
     if (shot) localStorage.setItem('ui-theme-specimen', shot);
   } catch (e) { /* storage blocked: the default paints */ }
 </script>

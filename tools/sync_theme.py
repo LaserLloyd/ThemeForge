@@ -911,7 +911,7 @@ def doc_consistency(data: dict) -> list[str]:
     if any(len(b) != 1 for b in blocks.values()) or blocks["README.md"] != blocks["AGENTS.md"]:
         problems.append("README.md and AGENTS.md must hold one identical <!-- install:start/end --> block")
     docs = [ROOT / "README.md", ROOT / "AGENTS.md", ROOT / "CONTRIBUTING.md", SRC / "bundle-README.md",
-            *sorted((ROOT / "docs").glob("*.md")), *sorted((ROOT / "examples").rglob("*.md"))]
+            *sorted((ROOT / "docs").rglob("*.md")), *sorted((ROOT / "examples").rglob("*.md"))]
     for path in docs:
         if not path.is_file():
             continue

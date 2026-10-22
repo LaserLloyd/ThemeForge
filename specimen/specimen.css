@@ -13,6 +13,8 @@
   border-bottom: 1px solid var(--border);
   background: var(--surface-1);
 }
+/* Screenshots (?shot): the header's height differs by theme, so it would move the crop. */
+[data-spec-shot] .spec-header { display: none; }
 .spec-brand { margin: 0; font-family: var(--font-display); font-size: var(--fs-md); letter-spacing: var(--ls-tight); }
 .spec-tabs { display: flex; flex: 1 1 420px; flex-wrap: wrap; gap: 6px; }
 .spec-tabs [role="tab"] { gap: 7px; }

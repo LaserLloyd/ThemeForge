@@ -12,7 +12,7 @@ keeps a few unprefixed helpers for older apps, listed in `docs/COMPONENTS.md`).
 There is no npm package and no build step: plain CSS files and two small scripts. The rules
 and the versioning policy are in `docs/THEME_SYSTEM.md`.
 
-**What you get.** Thirteen colour themes (including a neutral default, Slate, and a high-contrast pair) and a picker; about 250 design tokens (colours, type,
+**What you get.** Thirteen colour themes (including a neutral default, Slate, and a high-contrast pair) and a picker; 277 design tokens (colours, type,
 spacing, radii, shadows, motion); an element base layer (body text, links, focus ring,
 scrollbars); text tiers and a markdown style; component classes (buttons, form fields,
 switches, cards, badges, callouts, tabs, tables, dialogs, menus, toasts, an app shell);
@@ -31,7 +31,7 @@ component states and menus degrade.
 | Question | Default answer |
 |---|---|
 | Where does the folder go? | The app's static folder, served as-is: `static/ui-theme/` (Flask, FastAPI, Django), `public/ui-theme/` (Vite, Next.js, Create React App), `app/static/ui-theme/`, or next to `index.html` for a plain site. |
-| Which themes? | `purple,midnight-gold,glacier,forest,paper,daylight` plus the high-contrast pair `high-contrast,high-contrast-light`, so people who need more contrast can find it (`slate` is the neutral choice for a tool with no brand). Add an opt-in theme (`night-red`, `electric-yellow`, `laserlloyd`, `laserlloyd-light`) only if the user asked for it. |
+| Which themes? | The six default themes, `purple,midnight-gold,glacier,forest,paper,daylight` (the list section 3 uses). Where accessibility matters, also add the high-contrast pair `high-contrast,high-contrast-light` to `data-themes`, so people who need more contrast can find it. `slate` is the neutral choice for a tool with no brand. Add an opt-in theme (`night-red`, `electric-yellow`, `laserlloyd`, `laserlloyd-light`) only if the user asked for it. |
 | Default theme? | `auto`: follow the visitor's OS light/dark setting until they pick (`data-default-dark="midnight-gold"`, `data-default-light="daylight"`). |
 | Storage key? | `<appname>.theme`, e.g. `notes.theme`. |
 
@@ -70,8 +70,8 @@ Other ways (pip for Python apps; the rest when Python is not available):
 - **No install (prototypes, single HTML files):** load the files from jsDelivr, pinned to a
   release: `https://cdn.jsdelivr.net/gh/LaserLloyd/ThemeForge@v2.0.0/ui-theme/ui-theme.js`
   (and the same path for each CSS file). Never pin `@main`; the CDN caches it for up to
-  12 hours. A CDN page updates by changing the pinned version; `update.py` and steps 8.5, 9
-  and 10 below do not apply to it.
+  12 hours. A CDN page updates by changing the pinned version and has no `update.py`, so skip
+  section 8 steps 5 and 6, the `update.py` line in section 9, and section 10.
 
 ## 3. Wire the page head
 
@@ -338,13 +338,14 @@ major, renames its requirement to `themeforge` in the same edit (the old name wi
 fails), then runs `python -m forgeui vendor` instead. It replaces only the files it owns, leaves
 the app's own files in the folder alone, and refuses to overwrite a file that was edited by hand
 (move the edit into the app's CSS). Read `CHANGELOG.md` in this repository for what changed, then
-repeat step 8. More in `docs/UPDATING.md`.
+repeat section 8. More in `docs/UPDATING.md`.
 
 **An app already on 1.x**, on its first 2.0 update:
 
-1. `forgeui.json` apps: set `"version"` to `"2.0"`, rename the requirement to `themeforge` (the
-   install line in section 2), then `python -m forgeui vendor`. `update.py` apps:
-   `python3 static/ui-theme/update.py --ref v2.0.0`.
+1. `forgeui.json` apps: on pip, run `pip uninstall forgeui` first. Then install the `themeforge`
+   line from section 2, set `"version"` to `"2.0"`, and run `python -m forgeui vendor`. Why the
+   order matters, and the errors you may see: [`docs/UPDATING.md`](docs/UPDATING.md#moving-from-1x-to-20).
+   `update.py` apps: `python3 static/ui-theme/update.py --ref v2.0.0`.
 2. A service worker or offline cache list: add `icons.svg` and the `locales/` files to it.
 3. Swap the UI emoji for icons (section 8, step 5): `<svg class="ui-icon"><use href=".../icons.svg#name"/></svg>`.
 4. Where the app picks its language, call `UIComponents.loadLocale(lang)`, or put `data-locale="auto"`
@@ -366,7 +367,7 @@ repeat step 8. More in `docs/UPDATING.md`.
 | A library reacts to `data-theme` | The runtime sets `<html data-theme>`; see section 3. |
 | `update.py` says "edited by hand" | Something changed a file in `ui-theme/`. Move the change into app CSS, then rerun with `--force`. |
 | `update.py` says "is a major release" | Expected from 2.0: read `CHANGELOG.md`, then rerun with `--ref v<new>`. |
-| `does not match given name 'forgeui'` (uv), `does not start with 'forgeui'` (pip) | The requirement still says `forgeui` and the tag is 2.0. Rename it to `themeforge`; the tag is fine. |
+| `does not match given name 'forgeui'` (uv), `does not start with 'forgeui'` (pip) | The requirement still says `forgeui` and the tag is 2.0. Rename it to `themeforge`; the tag is fine. See [Moving from 1.x to 2.0](docs/UPDATING.md#moving-from-1x-to-20). |
 
 ## 12. Reference
 

@@ -21,7 +21,9 @@ desktop.ini
 # Scratch
 *.log
 *.tmp
+*.tmp.md
 /screenshots/
+/shots/
 
 # Packaging output
 dist/

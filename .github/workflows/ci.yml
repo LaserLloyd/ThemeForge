@@ -2,6 +2,7 @@ name: ci
 
 on:
   push:
+    branches: [main]
   pull_request:
 
 permissions:
@@ -11,8 +12,8 @@ jobs:
   checks:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
       - name: Generated files are current
@@ -36,7 +37,7 @@ jobs:
           ls -l dist
       - name: forgeui vendor self-test on the examples (the built wheel, in a clean venv)
         run: python tools/selftest_forgeui.py --wheel dist/themeforge-*-py3-none-any.whl
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: themeforge-dist
           path: dist/
@@ -50,8 +51,8 @@ jobs:
   tools-on-windows:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.11"
       - name: Check and unit tests
@@ -68,8 +69,8 @@ jobs:
   updater-on-oldest-python:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.9"
       - name: update.py installs from a local archive
@@ -84,10 +85,10 @@ jobs:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
       - name: Install the fonts the specimen uses, and Pillow for the gallery
@@ -98,12 +99,14 @@ jobs:
         run: |
           python tools/screenshots.py --browser "$(command -v google-chrome)" --out shots/after
           cp docs/images/gallery.png shots/after/gallery.png
+          cp docs/images/specimen-*.png shots/after/
       - name: Screenshots of the base branch, with the base's own script
         run: |
           git worktree add ../base "origin/${{ github.base_ref }}"
           python ../base/tools/screenshots.py --browser "$(command -v google-chrome)" --out "$PWD/shots/before"
           cp ../base/docs/images/gallery.png shots/before/gallery.png
-      - uses: actions/upload-artifact@v4
+          cp ../base/docs/images/specimen-*.png shots/before/ 2>/dev/null || true
+      - uses: actions/upload-artifact@v7
         with:
           name: specimen-screenshots
           path: shots/
