@@ -1,11 +1,15 @@
 #!/usr/bin/env python3
-"""Screenshot the specimen in every theme and build docs/images/gallery.png.
+"""Screenshot the specimen and rebuild every image the README shows.
 
     python tools/screenshots.py [--browser PATH] [--out DIR]
 
-Needs a Chromium-based browser (as tests/run_browser_tests.py finds one) and,
-for the gallery sheet, Pillow (pip install pillow). Individual screenshots go
-to --out (default: screenshots/, ignored by git). Maintainers only.
+Writes docs/images/specimen-<theme>.png (the README's whole-board shots, header and
+picker included) and docs/images/gallery.png (the controls in every theme, two
+columns). Needs a Chromium-based browser (as tests/run_browser_tests.py finds one)
+and, for the gallery sheet, Pillow (pip install pillow). The per-theme shots behind
+the gallery go to --out (default: screenshots/, ignored by git). Run it after a change
+to how the specimen looks, with the fonts the themes name installed (CI's
+`screenshots` job lists them). Maintainers only.
 """
 
 from __future__ import annotations
@@ -22,6 +26,9 @@ import threading
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
+IMAGES = ROOT / "docs" / "images"
+# The README's whole-board shots: one dark, the high-contrast pair's dark half, one neutral.
+README_THEMES = ("glacier", "high-contrast", "slate")
 
 
 def find_browser(explicit):
@@ -29,6 +36,16 @@ def find_browser(explicit):
     runner = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(runner)
     return runner.find_browser(explicit)
+
+
+def shoot(browser: str, url: str, target: Path, size: str) -> bool:
+    with tempfile.TemporaryDirectory() as profile:
+        subprocess.run([browser, "--headless=new", "--disable-gpu", "--hide-scrollbars",
+                        f"--window-size={size}", "--force-device-scale-factor=1",
+                        f"--user-data-dir={profile}", "--virtual-time-budget=3000",
+                        f"--screenshot={target}", url],
+                       capture_output=True, timeout=120)
+    return target.is_file()
 
 
 def main(argv=None) -> int:
@@ -48,15 +65,13 @@ def main(argv=None) -> int:
     base = f"http://127.0.0.1:{server.server_address[1]}/specimen/index.html"
     shots = []
     try:
+        for slug in README_THEMES:
+            target = IMAGES / f"specimen-{slug}.png"
+            print(target.relative_to(ROOT), "ok" if shoot(browser, f"{base}?theme={slug}", target, "1440,900")
+                  else "FAILED")
         for slug in themes:
             target = out / f"{slug}.png"
-            with tempfile.TemporaryDirectory() as profile:
-                subprocess.run([browser, "--headless=new", "--disable-gpu", "--hide-scrollbars",
-                                "--window-size=1280,1150", "--force-device-scale-factor=1",
-                                f"--user-data-dir={profile}", "--virtual-time-budget=3000",
-                                f"--screenshot={target}", f"{base}?theme={slug}"],
-                               capture_output=True, timeout=120)
-            print(slug, "ok" if target.is_file() else "FAILED")
+            print(slug, "ok" if shoot(browser, f"{base}?theme={slug}&shot", target, "1280,1150") else "FAILED")
             shots.append(target)
     finally:
         server.shutdown()
@@ -66,7 +81,9 @@ def main(argv=None) -> int:
     except ImportError:
         print("Pillow not installed: screenshots written, gallery not built", file=sys.stderr)
         return 0
-    crops = [Image.open(p).crop((60, 100, 1220, 610)) for p in shots if p.is_file()]
+    # With the header hidden (&shot), the states section starts at the top of <main> in every
+    # theme; the box runs from just above its heading to below the form hints.
+    crops = [Image.open(p).crop((60, 8, 1220, 518)) for p in shots if p.is_file()]
     w, h = crops[0].size
     cols = 2
     rows = (len(crops) + cols - 1) // cols
@@ -74,7 +91,7 @@ def main(argv=None) -> int:
     for i, crop in enumerate(crops):
         sheet.paste(crop, ((i % cols) * w, (i // cols) * h))
     sheet = sheet.resize((sheet.width // 2, sheet.height // 2), Image.LANCZOS)
-    gallery = ROOT / "docs" / "images" / "gallery.png"
+    gallery = IMAGES / "gallery.png"
     sheet.save(gallery, optimize=True)
     print(f"wrote {gallery.relative_to(ROOT)} {sheet.size}")
     return 0
