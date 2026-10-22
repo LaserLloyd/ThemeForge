@@ -21,7 +21,6 @@ import functools
 import http.server
 import importlib.util
 import json
-import re
 import subprocess
 import sys
 import tempfile
@@ -45,8 +44,13 @@ GALLERY_SIZE = (1280, 1150)
 # its heading to just below the form hints.
 GALLERY_CROP = (60, 8, 1220, 518)
 CHROME = ["--headless=new", "--disable-gpu", "--hide-scrollbars", "--force-device-scale-factor=1"]
-# Prints the browser frame's height (see frame_height) into the title, which --dump-dom shows.
-FRAME_PROBE = "data:text/html,<title></title><script>document.title=outerHeight-innerHeight</script>"
+# Headless Chrome lays the page out in the window minus a strip at the bottom that it never
+# paints (87px in Chromium 141 on Linux), yet --screenshot saves the whole window, so a shot
+# taken at the size wanted ends in a blank band. The strip differs by build and the page cannot
+# report it reliably (Chrome stable gives outerHeight - innerHeight = -513), so every window is
+# opened this much taller and only its top is kept. The specimen lays out from the top and has no
+# viewport-height rules, so the taller window changes nothing above the cut.
+FRAME_MARGIN = 300
 
 
 class QuietHandler(http.server.SimpleHTTPRequestHandler):
@@ -61,35 +65,17 @@ def find_browser(explicit):
     return runner.find_browser(explicit)
 
 
-def frame_height(browser: str) -> int:
-    """How much shorter headless Chrome's page is than its window.
-
-    --window-size sizes the window and --screenshot saves an image of that size, but the page
-    lays out in the window minus a strip of browser frame (87px in Chromium 141 on Linux), and
-    nothing is painted in the strip: the image ends in a blank band of the page's background
-    colour, so the board looks cut off. The page can report both heights, so ask it.
-    """
-    with tempfile.TemporaryDirectory() as profile:
-        result = subprocess.run([browser, *CHROME, "--window-size=800,600", f"--user-data-dir={profile}",
-                                 "--dump-dom", FRAME_PROBE],
-                                capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=60)
-    found = re.search(r"<title>(\d+)</title>", result.stdout)
-    if not found:
-        raise SystemExit(f"could not measure the browser's window frame; it printed: {result.stdout[:200]!r}")
-    return int(found.group(1))
-
-
-def shoot(browser: str, url: str, target: Path, size: tuple[int, int], frame: int) -> bool:
+def shoot(browser: str, url: str, target: Path, size: tuple[int, int]) -> bool:
     """Save a width x height image of the page at `url` to `target`; False if the browser failed."""
     width, height = size
     with tempfile.TemporaryDirectory() as tmp:
         raw = Path(tmp) / "raw.png"
         try:
-            # The window is `frame` taller than the shot, so the page is exactly `height` tall
-            # and the blank strip below it is cropped off. The virtual time budget has Chrome run
+            # The window is FRAME_MARGIN taller than the shot and the unpainted strip at its
+            # bottom is cropped off with the rest of the margin. The virtual time budget has Chrome run
             # the page's timers for 3 s of virtual time (no real wait) before it captures, so
             # anything the page does late is in the shot.
-            subprocess.run([browser, *CHROME, f"--window-size={width},{height + frame}",
+            subprocess.run([browser, *CHROME, f"--window-size={width},{height + FRAME_MARGIN}",
                             f"--user-data-dir={tmp}/profile", "--virtual-time-budget=3000",
                             f"--screenshot={raw}", url],
                            capture_output=True, timeout=120)
@@ -110,7 +96,6 @@ def main(argv=None) -> int:
     parser.add_argument("--out", default=str(ROOT / "screenshots"))
     args = parser.parse_args(argv)
     browser = find_browser(args.browser)
-    frame = frame_height(browser)
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
     themes = [t["slug"] for t in json.loads((ROOT / "src" / "themes.json").read_text(encoding="utf-8"))["themes"]]
@@ -124,13 +109,13 @@ def main(argv=None) -> int:
     try:
         for slug in README_THEMES:
             target = IMAGES / f"specimen-{slug}.png"
-            ok = shoot(browser, f"{base}?theme={slug}", target, README_SIZE, frame)
+            ok = shoot(browser, f"{base}?theme={slug}", target, README_SIZE)
             print(target.relative_to(ROOT), "ok" if ok else "FAILED")
             if not ok:
                 failed.append(target.name)
         for slug in themes:
             target = out / f"{slug}.png"
-            ok = shoot(browser, f"{base}?theme={slug}&shot", target, GALLERY_SIZE, frame)
+            ok = shoot(browser, f"{base}?theme={slug}&shot", target, GALLERY_SIZE)
             print(slug, "ok" if ok else "FAILED")
             if ok:
                 shots.append(target)
