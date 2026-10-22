@@ -1,6 +1,6 @@
 # Icons
 
-Generated from `src/icons/icons.json` by `tools/sync_theme.py build` (ThemeForge 2.0.0).
+Generated from `src/icons/icons.json` by `tools/sync_theme.py build` (ThemeForge 2.0.1).
 
 105 outline icons for app chrome, one sprite (`ui-theme/icons.svg`). They draw in
 `currentColor` with the theme's `--icon-stroke`, so every theme colours them and the

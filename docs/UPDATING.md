@@ -8,10 +8,10 @@ Two tools do that safely, with the same guarantees (verified files, no overwriti
 ## With the Python package
 
 ```
-pip install --upgrade "themeforge @ git+https://github.com/LaserLloyd/ThemeForge@v2.0.0"   # the release your forgeui.json accepts (from the tag until it is on PyPI)
+pip install --upgrade "themeforge @ git+https://github.com/LaserLloyd/ThemeForge@v2.0.1"   # the release your forgeui.json accepts (from the tag until it is on PyPI)
 python -m forgeui vendor                      # write the new copy (VERSION last)
 python -m forgeui vendor --check              # CI: exit 1 when the copy drifted
-python -m forgeui vendor --source ThemeForge-2.0.0.zip   # offline: a release zip, wheel, archive or folder
+python -m forgeui vendor --source ThemeForge-2.0.1.zip   # offline: a release zip, wheel, archive or folder
 ```
 
 `--check` fails on a different version, a stale, edited or missing file, a missing or changed
@@ -22,7 +22,7 @@ refused unless you pass `--force`: move the edit into an overlay (`extra_files`,
 ### Moving from 1.x to 2.0
 
 The distribution is now `themeforge`, and two edits go together: the install requirement changes
-its name from `forgeui @ git+…` to `themeforge @ git+…@v2.0.0`, and `"version"` in `forgeui.json`
+its name from `forgeui @ git+…` to `themeforge @ git+…@v2.0.1`, and `"version"` in `forgeui.json`
 changes to `"2.0"` (a `1.x` pin refuses a 2.0 bundle). Keep the old name with the new tag and pip
 or uv refuses the tree:
 
@@ -41,7 +41,7 @@ share. Then `python -m forgeui` fails with `No module named forgeui.__main__` wh
 `themeforge 2.0.0`. Recover with:
 
 ```
-pip install --force-reinstall "themeforge @ git+https://github.com/LaserLloyd/ThemeForge@v2.0.0"
+pip install --force-reinstall "themeforge @ git+https://github.com/LaserLloyd/ThemeForge@v2.0.1"
 ```
 
 ## With update.py
@@ -49,7 +49,7 @@ pip install --force-reinstall "themeforge @ git+https://github.com/LaserLloyd/Th
 ```
 python3 static/ui-theme/update.py            # install the latest release
 python3 static/ui-theme/update.py --check    # report only; exits 1 when an update exists
-python3 static/ui-theme/update.py --ref v2.0.0   # a specific release (or a branch or commit)
+python3 static/ui-theme/update.py --ref v2.0.1   # a specific release (or a branch or commit)
 ```
 
 (On Windows, `python` or `py` instead of `python3`.) It needs Python 3.9 or newer and nothing
@@ -86,7 +86,7 @@ Run it again any time: it is safe to repeat, and an up-to-date copy is left unto
 `files.json` travels inside the download, so it proves the files arrived complete and
 unaltered, and that the installed copy was not edited. It does not prove where they came
 from: that rests on HTTPS to `github.com`. To fix exactly what you get, pin a release tag
-(`--ref v2.0.0`) and review the diff in your app's version control after updating, like any
+(`--ref v2.0.1`) and review the diff in your app's version control after updating, like any
 vendored code.
 
 ## After updating
@@ -103,9 +103,9 @@ vendored code.
 ## Other ways
 
 - **git:** clone this repository (`--depth 1`), copy `ui-theme/` over the app's copy.
-- **degit:** `npx degit LaserLloyd/ThemeForge/ui-theme#v2.0.0 static/ui-theme --force`.
+- **degit:** `npx degit LaserLloyd/ThemeForge/ui-theme#v2.0.1 static/ui-theme --force`.
 - **CDN:** apps that load the files from jsDelivr update by changing the pinned version in the
-  URL: `https://cdn.jsdelivr.net/gh/LaserLloyd/ThemeForge@v2.0.0/ui-theme/ui-theme.css`.
+  URL: `https://cdn.jsdelivr.net/gh/LaserLloyd/ThemeForge@v2.0.1/ui-theme/ui-theme.css`.
   Never pin `@main`: the CDN caches it for up to 12 hours.
 - **Offline:** copy a release archive (`.tar.gz`) to the machine and run
   `python3 update.py --source <archive> --dest static/ui-theme` with the `update.py` from the

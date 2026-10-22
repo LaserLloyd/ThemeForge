@@ -4,6 +4,11 @@ Versions follow [Semantic Versioning](https://semver.org/). A release is a git t
 `ui-theme/VERSION` and `UITheme.version` carry the same number. Token names are the public
 API: removing or renaming one is a major version.
 
+## 2.0.1
+
+Licence holder name: the copyright line in `LICENSE` and `ui-theme/icons-LICENSE.txt` now reads
+"Laser Lloyd", the public name. No token, class, icon, theme or code change.
+
 ## 2.0.0
 
 A major release because two things an app may lean on change names or go away: the Python

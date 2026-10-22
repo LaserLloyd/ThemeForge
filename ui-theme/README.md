@@ -1,4 +1,4 @@
-# ui-theme 2.0.0
+# ui-theme 2.0.1
 
 A drop-in theme for web apps: thirteen colour themes, a theme picker, design tokens, a base
 element layer, a text standard, ready-made component classes and 105 icons that follow the theme. Plain CSS and two small

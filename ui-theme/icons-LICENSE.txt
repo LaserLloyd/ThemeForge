@@ -4,7 +4,7 @@ ship them however you like. Nothing has to be kept or credited, including this f
 
 MIT No Attribution
 
-Copyright 2026 Jake Lloyd
+Copyright 2026 Laser Lloyd
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this
 software and associated documentation files (the "Software"), to deal in the Software

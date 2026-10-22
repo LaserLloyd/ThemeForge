@@ -18,7 +18,7 @@ pip install themeforge
 Or straight from a release tag, which is what the repository documents and pins:
 
 ```
-pip install "themeforge @ git+https://github.com/LaserLloyd/ThemeForge@v2.0.0"
+pip install "themeforge @ git+https://github.com/LaserLloyd/ThemeForge@v2.0.1"
 ```
 
 ## Use
