@@ -1,18 +1,20 @@
 # Running ThemeForge in Docker
 
 ThemeForge is a CSS package, not an application: you install it into your own
-app by copying the `ui-theme/` folder (see the README's Quick start). The
+app by copying the `ui-theme/` folder (see [Install](../../README.md#install) in the README). The
 container exists for one job: **serve the specimen page**, which shows every
 component in every theme, so you can look at it without installing anything.
 
 ```bash
-git clone https://github.com/LaserLloyd/ThemeForge.git && cd ThemeForge        # scrub-ok: public repo URL  (or: git pull)
+git clone https://github.com/LaserLloyd/ThemeForge.git    # first time; later, git pull
+cd ThemeForge
 docker compose -f deploy/compose/compose.yml up -d
 # open http://127.0.0.1:8185/   (redirects to /specimen/)
 ```
 
-To use ThemeForge in an app, do **not** use this image: follow the Quick start
-(`update.py --dest static/ui-theme`), or point an AI agent at `AGENTS.md`.
+To use ThemeForge in an app, do **not** use this image: follow the
+[Install section](../../README.md#install) (`update.py --dest static/ui-theme`), or point an AI agent at
+[`AGENTS.md`](../../AGENTS.md).
 
 ## Ports
 

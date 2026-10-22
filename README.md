@@ -48,14 +48,11 @@ and the high-contrast pair draws them heavier:
 <button class="ui-btn"><svg class="ui-icon" aria-hidden="true"><use href="/static/ui-theme/icons.svg#trash"/></svg>Delete</button>
 ```
 
-`UIComponents.iconFor('🗑️')` returns `'trash'`: 264 emoji and symbols are mapped, so an app that
-used emoji can switch mechanically. NiceGUI apps keep their Material names (223 are mapped):
-`ui.button(icon=forgeui.quasar_icon('delete_forever'))` draws `trash`. Emoji people type stay
-emoji, drawn one of three ways: as the icon (`emojify(el, 'icon')`), in the text colour (`'text'`),
-or in their own colours (`'color'`). Names, both maps and the styles: [`docs/ICONS.md`](docs/ICONS.md).
-With the `themeforge` package installed, `python -m forgeui icons src/` lists the emoji and Material names
-an app still draws, one line each, as candidates. Replace the ones in buttons, tabs, menus and status
-lines; leave comments, regexes and text processing alone.
+`UIComponents.iconFor('🗑️')` returns `'trash'`, so an app that used emoji can switch mechanically.
+NiceGUI apps keep their Material names: `ui.button(icon=forgeui.quasar_icon('delete_forever'))`
+draws `trash`. Emoji people type stay emoji. The names, both maps and the three emoji styles are in
+[`docs/ICONS.md`](docs/ICONS.md); to find the emoji an app still draws, see
+[Moving an app over](docs/ICONS.md#moving-an-app-over).
 
 ## Install
 
@@ -107,7 +104,7 @@ py -3 -m venv .venv
 |---|---|
 | `forgeui.json` records version, themes and overlays in your repo | Needs git and a venv |
 | `vendor --check` exits 1 on drift: use it in CI or a unit test | Not on PyPI yet, so the install line is a long git URL |
-| Python helpers: `forgeui.mount(app, ...)`, `head_html_from_manifest(...)` | The tag must exist: if pip reports it cannot find `v2.0.0`, use the `update.py` route until the release is tagged |
+| Python helpers: `forgeui.mount(app, ...)`, `head_html_from_manifest(...)` | The tag must exist: if pip reports it cannot find `v2.0.0`, use the `update.py` route |
 
 #### 3. `uv`, no venv to manage
 
@@ -136,13 +133,10 @@ Choose this to look at every component in every theme before adopting it. It doe
 ```powershell
 winget install --id Git.Git -e --source winget
 winget install --id Docker.DockerDesktop -e --source winget
-# start Docker Desktop once and wait until it says the engine is running, then:
-git clone https://github.com/LaserLloyd/ThemeForge.git
-cd ThemeForge
-docker compose -f deploy/compose/compose.yml up -d
-curl.exe -s http://127.0.0.1:8185/healthz     # prints: ok
-# open http://127.0.0.1:8185/  (redirects to /specimen/)
+# start Docker Desktop once and wait until it says the engine is running
 ```
+
+Then clone the repository and start the preview as in [docs/deploy/docker.md](docs/deploy/docker.md).
 
 | Pros | Cons |
 |---|---|
@@ -208,7 +202,7 @@ python3 -m venv .venv
 | Pros | Cons |
 |---|---|
 | Only the standard tools; the venv is also where `forgeui.mount()` runs | Most steps of the three; needs git and `python3-venv` |
-| Same manifest and drift check as method 2 | If pip cannot find tag `v2.0.0`, use method 1 until the release is tagged |
+| Same manifest and drift check as method 2 | If pip cannot find tag `v2.0.0`, use method 1 |
 
 #### 4. Docker Compose, specimen preview only
 
@@ -268,11 +262,9 @@ uvx --from "$F" forgeui vendor --check     # prints ok, exit 0
 
 ```bash
 brew install --cask docker     # then open Docker Desktop once and wait for "Engine running"
-git clone https://github.com/LaserLloyd/ThemeForge.git
-cd ThemeForge
-docker compose -f deploy/compose/compose.yml up -d
-curl -s http://127.0.0.1:8185/healthz     # prints: ok
 ```
+
+Then clone the repository and start the preview as in [docs/deploy/docker.md](docs/deploy/docker.md).
 
 | Pros | Cons |
 |---|---|
@@ -305,8 +297,8 @@ its `ui-theme/` folder. If you were handed `ThemeForge.zip` (the release zip), u
   `vendor --check` confirms the copy. To roll back, install the earlier tag, set `forgeui.json`'s `version` to it, and
   `vendor` again. A hand-edited bundle file is refused unless you pass `--force`, so keep edits in overlays
   (`extra_files`). To uninstall, delete the vendored folder and `forgeui.json`, and `.venv` if you made one for this.
-- **Docker preview:** `git pull && docker compose -f deploy/compose/compose.yml up -d --build` updates it;
-  `docker compose -f deploy/compose/compose.yml down` removes it. Nothing is stored, so there is no data to back up.
+- **Docker preview:** update and remove it as in [docs/deploy/docker.md](docs/deploy/docker.md#upgrading-and-removal).
+  Nothing is stored, so there is no data to back up.
 
 Preview settings (optional, in `deploy/compose/.env`): `HOST_PORT` (8185), `BIND_ADDR` (127.0.0.1; `0.0.0.0` publishes to your
 network), `IMAGE`, `VERSION`, `MEM_LIMIT` (64m), `CPU_LIMIT` (0.5). More in [docs/deploy/docker.md](docs/deploy/docker.md);
@@ -362,7 +354,8 @@ How the manifest, versions and overlays work: [`docs/THEME_SYSTEM.md`](docs/THEM
 | ![](docs/images/swatch-night-red.svg) | Night Red | OLED, opt-in | Low blue light: ember text on black, zero blue in any colour. |
 
 The first nine are the core set an app offers by default; the opt-in four appear only when an
-app lists them. Every theme passes a contrast audit
+app lists them. The slugs for `data-themes` are in [`docs/THEME_SYSTEM.md`](docs/THEME_SYSTEM.md#the-themes).
+Every theme passes a contrast audit
 ([`docs/contrast-report.md`](docs/contrast-report.md)): body text at 7:1, secondary text at
 4.5:1 on every surface, control edges and on/off states at 3:1. On, selected and disabled
 states read by shape as well as colour in every theme. More in
@@ -375,7 +368,7 @@ states read by shape as well as colour in every theme. More in
 | `ui-theme.js` | the runtime: applies the saved theme before first paint, follows the OS light/dark setting with `data-default="auto"`, fills pickers, syncs tabs, exposes `window.UITheme` |
 | `ui-theme-base.css` | element defaults, focus ring, scrollbars, reduced motion, text tiers, `.ui-markdown`, highlight.js colours |
 | `ui-components.css` | buttons, fields, checkboxes, radios, switches, cards, badges, callouts, tabs, segmented controls, tables, dialogs, menus, tooltips, toasts, progress, code blocks, an app shell |
-| `ui-theme.css` | the tokens of all thirteen themes (about 20 KB gzipped) |
+| `ui-theme.css` | the tokens of all thirteen themes (about 26 KB gzipped) |
 | `ui-components.js` | optional: themed `confirm()`, `alert()`, `prompt()` and toasts, copy-to-clipboard, inline validation, settings rows, icon and emoji helpers, translatable words (`locales/`) |
 | `icons.svg`, `icons.json` | 105 outline icons in one sprite, and their names, labels, and the emoji and Material Icons names each replaces (license in `icons-LICENSE.txt`) |
 | `locales/` | the words `ui-components.js` shows, in eight languages (en, ar, de, es, fr, ja, pt, zh) |
