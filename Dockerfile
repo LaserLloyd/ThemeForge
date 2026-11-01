@@ -21,7 +21,7 @@
 # =============================================================================
 
 # The base is the current nginx stable line, pinned by digest so a rebuild is the same image; move
-# both together (docker buildx imagetools inspect nginxinc/nginx-unprivileged:1.30-alpine-slim).
+# both together (docker buildx imagetools inspect nginxinc/nginx-unprivileged:1.31-alpine-slim).
 FROM nginxinc/nginx-unprivileged:1.31-alpine-slim@sha256:a8cb0f33d51fa107c96fd2bd3a71aaf564ec131e9d2bdf8700944f0ed8b170d7 AS runtime
 
 ARG VERSION=dev
